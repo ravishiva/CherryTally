@@ -1,0 +1,19 @@
+[#Menu:Outstandings]
+	Add	: Key Item:At Beginning: "Routewise Receivables" 	: R :  Modify Variables	:RECvByDaysTrig; ReceivablesByDays	
+
+;[#Menu:DisplayMenu]
+;	
+;	Add: Key Item	: Before	: @@LocQuit 		: "Rootwise Party"				: T : Display	: ledger_mst_day_alloc
+;	Add: Key Item	: Before	: @@LocQuit 		: Blank
+;	
+[#Menu:GateWayOfTally]
+;	Add:Key Item	: "Rootwise Party"				: T : Display	: ledger_mst_day_alloc
+;	Add: Key Item	: "Rootwise Receivables" 		: R : Display	: ReceivablesByDays
+;	Add	: Key Item	: Test					: T : Alter	: SMS Sending Form
+[Include:Config.txt]
+[Include:ledger_mst_day_alloc.txt]
+[Include:receivablesByDays.txt]
+
+
+
+	

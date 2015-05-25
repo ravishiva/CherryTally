@@ -1,0 +1,245 @@
+[Report:ProductSalesReports]
+	Title		: "Products Sales Report"
+	Form		: ProductSalesReports
+	
+[Form:ProductSalesReports]
+	Part		: ProductSalesRepTop,ProductSalesReports
+	Button		: Print Button, Export Button
+	
+[Part:ProductSalesRepTop]
+	Line		: ProductSalesRepTop
+	Space Bottom: 0.8
+	Space Top	: 0.5
+[Line:ProductSalesRepTop]
+	Field		: ProductSalesReportPrompt
+	Right Field	: ProductSalesFromToDate
+
+[Field:ProductSalesReportPrompt]	
+	Width		: 0
+	Style		: Normal Bold
+	Set as		: "Products Sales Report"
+
+[Field:ProductSalesFromToDate]
+	Width		: 20
+	Set as		: $$String:##SVFromDate + " to " + $$String:##SVToDate
+	Style		: Small Bold
+	
+	
+[Part:ProductSalesReports]
+	Lines		: ProdSleRep ItemsDtlsTitle, ProdSleRep ItemsDtls
+	Bottom Line	: ProdSleRep BtmTotals
+	Repeat		: ProdSleRep ItemsDtls			: SalesInventoryDtlsColl
+	Scroll		: Both
+	Border		: Thin Bottom
+	CommonBorder: Yes
+	Totals		: ProdSleRep Gross,	ProdSleRep SGTotal
+	
+[Line:ProdSleRep ItemsDtlsTitle]
+	Use			: ProdSleRep ItemsDtls
+	Local		: Field	: DEFAULT				: Align		: Centre
+	Local		: Field	: DEFAULT				: Style		: Small Bold
+	Local		: Field	: ProdSleRep VchDate	: Info		: "Vch Date"
+	Local		: Field	: ProdSleRep VchNo		: Info		: "Vch No"
+	Local		: Field	: ProdSleRep SleOrdNo	: Info		: "Sle OrdNo"
+	Local		: Field	: ProdSleRep SalesMan	: Info		: "Sales Man"
+	Local		: Field	: ProdSleRep Godown		: Info		: "Godown"
+	Local		: Field	: ProdSleRepName		: Info		: "Party Name"
+	Local		: Field	: ProdSleRep Division	: Info		: "Division"
+	Local		: Field	: ProdSleRep Product	: Info		: "Product"
+	Local		: Field	: ProdSleRep Size		: Info		: "Size"
+	Local		: Field	: ProdSleRep System ID	: Info		: "System Id"
+	Local		: Field	: ProdSleRep Inch		: Info		: "Inch"
+	Local		: Field	: ProdSleRep Tin		: Info		: "Tin"
+	Local		: Field	: ProdSleRep Qty		: Info		: "Qty"
+	Local		: Field	: ProdSleRep Rate		: Info		: "Rate"
+	Local		: Field	: ProdSleRep LedName	: Info		: "Account Ledger"
+	Local		: Field	: ProdSleRep Gross		: Info		: "Gross"
+	Local		: Field	: ProdSleRep SGRebate	: Info		: "SGRebate"
+	Local		: Field	: ProdSleRep SGDisc		: Info		: "SGDisc%"
+	Local		: Field	: ProdSleRep GDiscAmt	: Info		: "GDisc%"
+	Local		: Field	: ProdSleRep SGVat		: Info		: "SGVAT"
+	Local		: Field	: ProdSleRep SGCST		: Info		: "SGCST"
+	Local		: Field	: ProdSleRepServiceTax12: Info		: "Service Tax@12%"
+	Local		: Field	: ProdSleRep ECess2		: Info		: "ECESS @2%"
+	Local		: Field	: ProdSleRep Ecess1		: Info		: "ECESS @1%"
+	Local		: Field	: ProdSleRep TaxP		: Info		: "Tax %"
+	Local		: Field	: ProdSleRep SGTotal	: Info		: "SG Total"
+	Local		: Field	: ProdSleRep RoundOff	: Info		: "Round Off"
+	Local		: Field	: ProdSleRep Net		: Info		: "Net"
+	Local		: Field	: ProdSleRep DocType	: Info		: "Doc Type"
+	Local		: Field	: ProdSleRep PrintDate	: Info		: "PrintDate"
+	Local		: Field	: ProdSleRep PrintTime	: Info		: "PrintTime"	
+	Local		: Field	: ProdSleRep Basic		: Info		: "Basic"
+	Local		: Field	: ProdSleRep LRDate		: Info		: "LRDate"
+	Local		: Field	: ProdSleRep TransPort	: Info		: "Transport"
+	Local		: Field	: ProdSleRep Articals	: Info		: "Articles"
+	Border		: Thin Top Bottom
+	
+[Line:ProdSleRep ItemsDtls]
+	Field		: ProdSleRep VchDate, ProdSleRep VchNo,ProdSleRep SleOrdNo,ProdSleRep SalesMan, ProdSleRep Godown, ProdSleRepName, ProdSleRep Division, +
+				  ProdSleRep Product, ProdSleRep Size, ProdSleRep System ID, ProdSleRep Inch, ProdSleRep Tin, ProdSleRep Qty, ProdSleRep Rate, ProdSleRep LedName, +
+				  ProdSleRep Gross, ProdSleRep SGRebate, ProdSleRep SGDisc, ProdSleRep GDiscAmt, ProdSleRep SGVat, ProdSleRep SGCST, ProdSleRep ServiceTax12,+
+				  ProdSleRep ECess2, ProdSleRep Ecess1, ProdSleRep TaxP, ProdSleRep SGTotal, ProdSleRep RoundOff, ProdSleRep Net, ProdSleRep DocType, ProdSleRep PrintDate,+
+				  ProdSleRep  PrintTime, ProdSleRep Basic, ProdSleRep LRDate, ProdSleRep TransPort, ProdSleRep Articals
+				  
+	Local		: Field	: Default					: Width		: 10
+	Local		: Field	: ProdSleRep Name			: Width		: 24
+	Local		: Field	: ProdSleRep Product		: Width		: 25	
+	Local		: Field	: ProdSleRep LedName		: Width		: 16
+	
+	Local		: Field	: Default					: Border	: Thin LEFT	
+	
+
+[Field:ProdSleRep VchDate]
+	Set as		: $DAte
+[Field:ProdSleRep VchNo]
+	Set as		: $VoucherNumber
+[Field:ProdSleRep SleOrdNo]
+	Set as		: $OrderNo;"";$VoucherTypeName
+;	Background	: White
+[Field:ProdSleRep SalesMan]
+	Set as		: $SalesMan
+[Field:ProdSleRep Godown]
+	Set as		: $Godown
+[Field:ProdSleRep Name]
+	Set as		: $LEDGERNAME
+[Field:ProdSleRep Division]
+	Set as		: $Division
+[Field:ProdSleRep Product]
+	Set as		: $StockItemName
+[Field:ProdSleRep Size]
+	Set as		: $SIZE:StockItem:$STOCKITEMNAME 
+[Field:ProdSleRep System ID]
+	Set as		: $UdfSystemID:StockItem:$STOCKITEMNAME 
+[Field:ProdSleRep Inch]
+	Set as		: $UdfInch:StockItem:$STOCKITEMNAME 
+[Field:ProdSleRep Tin]
+	Set as		: ""
+;	Background	: White
+[Field:ProdSleRep Qty]
+	Set as		: $BilledQty
+[Field:ProdSleRep Rate]
+	Set as		: $Rate	
+[Field:ProdSleRep LedName]
+	Set as		: $ACCOUNTINGALLOCATIONS[1].LEDGERNAME
+;	Background	: White 
+[Field:ProdSleRep Gross]
+	Set as		: $ACCOUNTINGALLOCATIONS[1].Amount;$Amount
+	Use			: XAmount Field
+[Field:ProdSleRep SGRebate]
+	Type		: Amount
+	Set as		: $VchRebateValue
+	Align		: Right
+[Field:ProdSleRep SGDisc]
+	Type		: Number
+	Set as		: $VchDiscountPer
+	Align		: Centre
+	Format		: "Symbol,NoZero"
+[Field:ProdSleRep GDiscAmt]
+	Type		: Number
+	Set as		: $VchDiscountPer2
+	Align		: Center
+	Format		: "Symbol,NoZero"
+[Field:ProdSleRep SGVat]
+	Type		: Amount
+	Set as		: @Value
+	
+	Value		: If(@ExclusiveLed Contains "Vat") then @VatAmount Else ""
+	VatAmount	: if(@NumItems = 2) then @InclusiveVat Else @ExTaxAmt
+	
+	NumItems	: $$NumItems:ACCOUNTINGALLOCATIONS 
+	InclusiveVat: $ACCOUNTINGALLOCATIONS[2].Amount 
+	TaxPercent	: $ChrApplicableTaxPer:LEDGER:@ExclusiveLed
+	ExclusiveLed: $ACCOUNTINGALLOCATIONS[1].LedgerName
+	
+	ExTaxAmt	: $ACCOUNTINGALLOCATIONS[1].Amount * @TaxPercent /100
+	Align		: Right
+	
+[Field:ProdSleRep SGCST]
+	Type		: Amount
+	Set as		: @Value
+	
+	Value		: If(@ExclusiveLed Contains "Cst") then @VatAmount Else ""
+	VatAmount	: if(@NumItems = 2) then @InclusiveVat Else @ExTaxAmt
+	
+	NumItems	: $$NumItems:ACCOUNTINGALLOCATIONS 
+	InclusiveVat: $ACCOUNTINGALLOCATIONS[2].Amount 
+	TaxPercent	: $ChrApplicableTaxPer:LEDGER:@ExclusiveLed
+	ExclusiveLed: $ACCOUNTINGALLOCATIONS[1].LedgerName
+	
+	ExTaxAmt	: $ACCOUNTINGALLOCATIONS[1].Amount * @TaxPercent /100
+	Align		: Right
+[Field:ProdSleRep ServiceTax12]
+	;Background	: White
+[Field:ProdSleRep ECess2]
+	;Background	: White
+[Field:ProdSleRep Ecess1]
+	;Background	: White
+[Field:ProdSleRep TaxP]
+	;Background	: White
+[Field:ProdSleRep SGTotal]
+	Type		: Amount
+	Set as		: #ProdSleRepSGCST	+ #ProdSleRepSGVat + #ProdSleRepGross
+	Style		: Small Bold
+	Align		: Right
+	
+[Field:ProdSleRep RoundOff]
+	;Background	: White
+[Field:ProdSleRep Net]
+	;Background	: White
+[Field:ProdSleRep DocType]
+	Set as		: $DocType
+	Align		: Centre
+[Field:ProdSleRep PrintDate]
+	Background	: White
+	Invisible	: Yes
+[Field:ProdSleRep PrintTime]
+;	Background	: White
+	Invisible	: Yes
+[Field:ProdSleRep Basic]
+;	Background	: White
+[Field:ProdSleRep LRDate]
+;	Background	: White
+[Field:ProdSleRep TransPort]
+;	Background	: White
+[Field:ProdSleRep Articals]
+;	Background	: White
+
+
+
+[Line:ProdSleRep BtmTotals]
+	Use			: ProdSleRep ItemsDtls
+	Local		: Field	: Default			: Type	: String
+	Local		: Field : default 			: Set as: ""
+	Local		: Field	: ProdSleRep SGTotal: Set as: $$Total:ProdSleRepSGTotal
+	Local		: Field	: ProdSleRep Gross	: Set as: $$Total:ProdSleRepGross
+	Border		: Totals
+	
+
+[Collection:ProductSalesDtlsColl]
+	Type		: Vouchers		: GROUP
+	Child Of	: ##ProdRepGroup
+	Filter		: FltByChrVchTypeSales
+	Fetch		: Date, PartyLedgerNAme, VoucherTypeName, ChrVchDivision, ChrVchLocation, ChrVchSalesMan, ChrVchGodown, AllLedgerEntries.*, AllInventoryEntries.*
+	Filter		: ChrFLtBySalesMan,FilterByChrVchLedgers
+[Collection:SalesInventoryDtlsColl]
+	Source Collection			: ProductSalesDtlsColl
+	Walk		: ALL INVENTORY ENTRIES
+	
+	Compute		: DATE					: $DAte
+	Compute		: VoucherNumber			: $..VoucherNumber
+	Compute		: PartyLedgerNAme		: $..PartyLedgerNAme
+	Compute		: VoucherTypeName		: $..VoucherTypeName
+	Compute		: Division				: $..ChrVchDivision
+	Compute		: Location				: $..ChrVchLocation
+	Compute		: SalesMan				: $..ChrVchSalesMan
+	Compute		: LEDGERNAME			: $..LEDGERNAME
+	Compute		: Godown				: $..ChrVchGodown
+	Compute		: DocType				: $..VchUdfDocType
+	
+	Fetch		: .* ,ACCOUNTINGALLOCATIONS.*
+	Filter		: FilterVchsbyChrItmGroup,FilterByCherryStkItem 
+	
+	Sort		: @@default				: $Date
+
+	

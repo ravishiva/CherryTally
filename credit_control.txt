@@ -1,0 +1,51 @@
+[#Field:CHVCHPtyName]
+	
+;	Control	: CtrlCreditDays	: @@ChkCreditDays>0 and $$InCreateMode and $$IsSales:##SVVoucherType AND Not ($$IsCmpOwner Or $$CmpUserLevel = 'Owner')
+
+	Notify	: CtrlCreditDays	: @@ChkCreditDays>0 and $$InCreateMode and $$IsSales:##SVVoucherType ;AND Not ($$IsCmpOwner Or $$CmpUserLevel = 'Owner')
+;	Notify	: CtrlCreditDays	: @@ChkCreditDays>0 and $$InCreateMode and ($$IsSales:##SVVoucherType or @@isSalesOrder) AND @ControlType = "Notify"
+;	Control : CtrlCreditDays	: @@ChkCreditDays>0 and $$InCreateMode and ($$IsSales:##SVVoucherType or @@isSalesOrder) AND @ControlType = "Block"
+;	
+	
+	ControlType	: $PtyLedControlType:VoucherType:##SVVoucherType
+	
+	
+[#Field: EI Consignee]
+
+;	Control	: CtrlCreditDays	: @@ChkCreditDays>0 and $$InCreateMode and $$IsSales:##SVVoucherType
+
+;	Notify	: CtrlCreditDays	: @@ChkCreditDays>0 and $$InCreateMode and ($$IsSales:##SVVoucherType or @@isSalesOrder)
+	
+	
+[Collection: Credit PartyPending Bills]
+
+    Type        : Bills
+    Child of    : #EIConsignee
+    Unique      : $$Name		
+	Format		: @@DateDiff
+    Format      : $BillDate, 8      : Universal Date
+    Format      : $$Name, 10
+    Format      : $BaseClosing,-30  : "AllSymbols, DrCr"
+	Format		: @@DueDate
+	Format		: ##SVCurrentDate
+	Filter		: FltrCreditDays, FltrCrAmt
+	
+
+
+
+[System	: Formula]
+
+	CtrlCreditDays		: if @@ChkCreditDays = 1 then "The Customer has " + $$NewLine + $$String:@@ChkCreditDays +  $$NewLine + " Bill OverDue." else "The Customer has " + $$NewLine + $$String:@@ChkCreditDays +  $$NewLine + " Bills OverDue."
+	ChkCreditDays		: $$Numitems:CreditPartyPendingBills
+	FltrCreditDays		: $$Number:@@DateDiff>=1 
+	DueDate				: $$Date:$$String:$BillCreditPeriod:UniversalDate
+	DateDiff			: ##SVCurrentDate - @@DueDate
+	FltrCrAmt			: $$IsDr:$BaseClosing 
+
+;;---------------------------------------------------------------------------------------------------
+[#Menu: Ledgers]
+
+	Delete	: Item	  : @@locCreditLimits
+	Delete	: Item    : BLANK
+    Add		: Item    : @@locCreditLimits	     :Alter   Collection    :Multi Ledger Limit :$$NumLedgers> 0 AND $$Allow:Alter:AccountsMasters  and $$IsCmpOwner
+	Add		: Item    : BLANK

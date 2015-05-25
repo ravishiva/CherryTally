@@ -1,0 +1,367 @@
+[Report:ApproveUserVouchers]	
+;	Use			: Optional Vouchers 
+	Title		: "Approve Vouchers"  
+;	Delete		: Family	
+;	Variable		: SVTODATE1		: Date	: ##SVtoDate
+	Variable		: SVFromDate,SVtoDate
+	Set			: SVFromDate			: $$SystemPeriodFrom
+	Set			: SVtoDate			: $$SystemPeriodTo
+;	Full Screen	: No
+
+ [Form:ApproveUserVouchers]
+	 Width		: 100% Screen
+	 Height		: 100% Screen
+	 Part		: ApproveUserVouchers Top, ApproveUserVouchers Body
+	 Background	: StoneWash 
+	 Buttons		: F2 ChangePeriod 
+	 
+[Part:ApproveUserVouchers Top]
+	Line			: ApproveUserVouchers Top
+	Space Bottom	: 0.5
+[Line:ApproveUserVouchers Top]
+	Fields		: ApproveUserVouchers Left
+	Right Field	: ApproveUserVouchers Right
+	
+[Field:ApproveUserVouchers Left]
+	Use			: Name Field
+	Set as		: "Voucher Approval"	
+	Style		: Large Bold
+[Field:ApproveUserVouchers Right]
+	
+	Set as		: $$String:##SVFromDate+" to "+$$string:@SVTODate
+	Width		: 40
+;	Background	: White
+	Align		: Right
+	SVTODate		: if($$isEmpty:##SVTOdate)then  $$SystemPeriodTo else ##SVTOdate
+	Style		: Normal Bold
+
+[Part:ApproveUserVouchers Body]
+	Line			: ApproveUserVchs Title,ApproveUserVchs 
+	Repeat		: ApproveUserVchs : ApproveUserVchsColl 
+	Scroll		: Vertical
+
+[Line:ApproveUserVchs Title]	
+	Use			: ApproveUserVchs 
+	Local		: Field	: Default		: Type		: String
+	Local		: Field	: Default		: Style		: Small Bold
+	;Local		: Field	: Default		: Align		: Left
+	Border		: Thin Top Bottom
+	
+	Local		: Field	: ApproveUserVchs Date			: Info	: "Date"
+	Local		: Field	: ApproveUserVchs particulars	: Info	: "Particulars"
+	Local		: Field	: ApproveUserVchs User			: Info	: "Posted By"
+	Local		: Field	: ApproveUserVchs Type			: Info	: "VchType"
+	Local		: Field	: ApproveUserVchs No			: Info	: "VchNo."	
+	Local		: Field	: ApproveUserVchs DrAmt			: Info	: "Debit"
+	Local		: Field	: ApproveUserVchs CrAmt			: Info	: "Credit"
+	Local		: Field	: ApproveUserVchs Date			: Align	: Left 
+
+[Line:ApproveUserVchs]
+	
+	Fields		: ApproveUserVchs Date, ApproveUserVchs particulars, 
+	Right Field	: ApproveUserVchs User,ApproveUserVchs Type, ApproveUserVchs No, ApproveUserVchs DrAmt, ApproveUserVchs CrAmt
+;	Option		: Alter On Enter	: Yes
+	Key			: CallFunctionOnEnter
+	
+[Key:CallFunctionOnEnter]
+	Key			: Enter
+	Action		: Call		: AltVchCustFunction:$MasterId
+		
+	
+[Field:ApproveUserVchs Date]
+	Use			: Uni Date Field
+	Style		: Small Bold
+	Width		: 7.5
+	Set as		: $Date
+;	Alter		: VoucherAlter
+	
+[Field:ApproveUserVchs particulars]
+	Style		: Small Bold
+	Set as		: @RValue;$AllLedgerEntries[1].LedgerName
+	
+	RValue		: IF($$IsInventoryVch:$VoucherTypeName) then @StkITEMNAME Else  $AllLedgerEntries[1].LedgerName
+	stkItemNAme	: $AllINVENTORYENTRIES[First].STOCKITEMNAME;StockItemName
+	
+[Field:ApproveUserVchs User]
+	Set as		: $EneredByUser
+;	Background	: White
+	Width		: 10 
+
+[Field:ApproveUserVchs Type]
+	Style		: Small 
+	Set as		: $VoucherTypeName
+	Width		: 10
+;	Background	: White
+[Field:ApproveUserVchs No]
+	Use			: Name Field
+	Style		: Small 
+	Width		: 10
+	Set as		: $VoucherNumber
+[Field:ApproveUserVchs DrAmt]
+	Use			: Amount Field
+	Style		: Small Bold
+	Set as		: if	($$IsDr:@RValue) then @RValue Else ""	
+	AmtVar		: $AllLedgerEntries[1].Amount	
+	RValue		: IF	($$IsInventoryVch:$VoucherTypeNAme)then @InvTqty Else @AmtVar
+	InvTqty		: $AllInventoryEntries[first].BILLEDQTY	
+	
+[Field:ApproveUserVchs CrAmt]
+	Style		: Small  Bold
+	Use			: Amount Field
+	Set as		: if	(Not $$IsDr:@RValue) then @RValue Else ""	
+	AmtVar		: $AllLedgerEntries[1].Amount	
+	RValue		: IF	($$IsInventoryVch:$VoucherTypeNAme)then @InvTqty Else @AmtVar
+	InvTqty		: $AllInventoryEntries[first].BILLEDQTY	
+
+;;----------------------------------
+
+[Function:AltVchCustFunction]
+	Parameter		: VchMstId		: String
+	Variable		: VoucherID
+	
+	000 			: Set	: VoucherID	: $$Sprintf:"ID:%s":##VchMstId	
+;	010 			: Log	: ##VchMstId	+ " ----- " + ##VoucherID
+;	050 			: Msg Box	: "Alert" : ##VchMstId 
+	060 			: Alter	: VoucherAlter
+
+;;---------------	
+[Collection:ApproveUserVchsColl]
+	
+;	Delete		: Family
+	
+	Type			: Voucher
+	Fetch		: IsOptional, Date, VoucherTypeName, PartyLedgerName, VoucherNumber, EneredByUser,AllLedgerEntries.*, INVENTORYENTRIESIN.*,AllINVENTORYENTRIES.*
+	Filter		: FilterByNotEmptyUser,FltByApprovalUserVchTyp ;FilterByApprovalUser 
+	
+[System:Formulas]
+	
+	FilterByNotEmptyUser	: Not $$IsEmpty:$EneredByUser AND $IsOptional 
+	FilterByApprovalUser	: $$FilterByApprovalUser:$EneredByUser:$$CmpUserName 
+	FltByApprovalUserVchTyp	: $$FltByApprovalUserVchTyp:$EneredByUser:$VoucherTypeName:$$CmpUserName
+	
+[Function:FltByApprovalUserVchTyp]
+	
+	Parameter		: VchUserVar	: String
+	Parameter		: VchType		: String
+	Parameter		: LoggedUser	: String
+	
+	Variable		: UserApproval	: Logical	
+	Variable		: VCHApproval	: Logical
+	
+	
+	030 : Set Object:(Company,##SVCurrentCompany).
+	040 : Walk Collection			: Cherry USER List
+	050 : If		: $UDFApproverName = ##LoggedUser 	
+	
+	060 : Log		: $ApproveAuth + " -- " +  $UDFApprovVchs   
+
+	070 : If		: $$IsEmpty:$ApproveAuth
+	080 : Set		: UserApproval	: Yes
+	090 : Else		
+	100 : Walk Collection			: ApproveAuth
+	120 : If		: ($ApproveAuth = ##VchUserVar) 
+	130 : Set		:  UserApproval : Yes
+	140 : Break
+	145 : Break
+	160 : End If
+	170 : End Walk
+	200 : End If
+	
+	210 : If		: $$IsEmpty:$UDFApprovVchs
+	220 : Set		: VCHApproval	: Yes
+	230 : Else		
+	240 : Walk Collection			: UDFApprovVchs
+	250 : If		: $UDFApprovVchs = ##VchType OR $$IsVchTypeOfFamily:##VchType:$UDFApprovVchs
+	260 : Set		: VCHApproval	: Yes
+	270 : Break	
+	280 : Break
+	290 : End If
+	300 : End Walk
+	310 : End IF
+	
+	400 : End If
+	470 : End Walk
+	480 : Log		: "------------------------" 
+	
+	1110 : Return	: ##UserApproval  AND ##VCHApproval
+	
+	
+[Function:FilterByApprovalUser]
+	Parameter		: VchUserVar	: String
+	Parameter		: Loggeduser	: String
+;	010 : Log		: ##VchUserVar	+ " -- " + ##Loggeduser
+		
+	000 : If		: $$IsCmpOwner
+	001 : Return	: Yes
+	002 : End If 
+	
+;	0100 : Log	: "---------------------------";$$IsCmpOwner
+	
+	020 : Set Object		: (Company,##SVCurrentCompany).
+	030 : Walk Collection	: User List
+	040 : If		: ##Loggeduser	= $Name
+	050 : If		: $ApproveAuth = "ALL"
+;	051 : Log		: "-ALL-"
+	060 : Return	: Yes
+	070 : Else	
+	090 : If		: $ApproveAuth	= "NONE"
+;	091 : Log		: "-NONE-"
+	100 : Return	: No
+	110 : Else		
+	120 : If		: $ApproveAuth = ##VchUserVar
+;	121 : Log		: $ApproveAuth
+	130 : Return	: Yes
+	140 : End If
+	150 : End If
+	160 : End If
+;	180 : Log		:"-----------"+ $Name	+ " -- " + $ApproveAuth 	
+	190 : End If
+	200 : End Walk
+			
+;	100 : Return	: Yes
+	
+;;-----------------------------------------------------;-----------------------------------------------------
+
+[Report:VoucherAlter]
+	Use			: Voucher 
+	Delete		: Family
+	Add			: Family	: $$Translate:"Cherry Voucher Approval"
+	Local		: Part	: Voucher Approval Part Def 		: Invisible	: Yes
+	Local		: Form	: Default		: 	Add			: Bottom Part	: At End			: Voucher Approval Part 
+;	Local		: Field	: Default		: Read Only		: Yes
+;	Local		: Field	: Default		: Delete			: Table
+	Local		: Part	: Voucher Approval Part			: Local		: Field		: Default	: Read Only	: No
+	
+[Form:VoucherAlter]
+	Use			: Voucher
+	On			: Form Accept			:  Yes	: Call	: Post Vch As Regular
+;;===============================================BOTTOM=APPROVAL=PART===========================================================
+	
+[Part:Voucher Approval Part]
+		
+	Background	: StoneWash
+	Line			: Voucher Approval Part	
+	Border		: Thin Top Bottom
+	
+[Line:Voucher Approval Part]
+	Space Top		: 0.2
+	Space Bottom	: 0.2
+	Field		:  VchApproved PostedByTitle,VchApproved PostedBy,VchApproved ByTitle, VchApproved By,VchApprove DateTitle, VchApprove Date,VchApproveTimeTitle, VchApproveTime ,  VchApprove Now Title ,VchApprove Now  
+;	Simple Prompt,	
+;	Local		: Field	: Simple Prompt		: Info	: "Approval Details"
+;	Local		: Field	: Simple Prompt		: Color	: Blue
+;	Local		: Field	: Simple Prompt		: Style	: Small Bold
+;	Local		: Field	: Simple Prompt		: Invisible: Not #VchApproveNow
+
+[Field:VchApproved PostedByTitle]
+	Style		: Small 
+	Space Left	: 3
+	Set as		: "Posted By"
+	Align		: Prompt
+	Skip			: Yes
+[Field:VchApproved PostedBy]
+	Use			: Name Field
+	Width		: 10
+	Style		: Small Bold
+	Border		: Grey Box
+	Skip			: Yes
+	Set as		: $EneredByUser
+	Case			: Normal
+;	Option		: VchApproved PostedBy InCreate Yes: $$InCreateMode
+;;	
+;[!Field:VchApproved PostedBy InCreate]
+;;	
+;;	Storage		: EneredByUser
+;	Background	: Red
+;	Set as		: $$CmpUserName
+
+[Field:VchApprove DateTitle]
+	Space Left	: 1 
+	Set as		: "Date Time"
+	Style		: Small; Bold
+	Invisible		: Not #VchApproveNow
+	Skip			: Yes
+[Field:VchApprove Date]
+	Use			: Uni Date Field
+	Style		: Small Bold
+	Set as		: $$MachineDate;##SVCurrentDate
+	Width		: 8
+	Border		: GreyBox 
+	Invisible		: Not #VchApproveNow
+	Inactive		: Not #VchApproveNow
+	Skip			: Yes
+	Storage		: VchApprovalDate
+
+[Field:VchApproveTimeTitle]
+	Width		: 0.5
+	Skip			: yes
+	Invisible		: Not #VchApproveNow
+[Field:VchApproveTime]
+	
+	Width		: 7.5
+	Set as		: $$MachineTime
+	Type			: Time
+	Storage		: VchApprovalTime
+	Border		: GreyBox 
+	Style		: Small Bold
+	Invisible		: Not #VchApproveNow
+	Inactive		: Not #VchApproveNow
+	Skip			: Yes
+	
+[Field:VchApproved ByTitle]
+	Set as		: "Approved By"
+	Space Left	: 1
+	Align		: Prompt
+	Style		: Small; Bold
+	Skip			: Yes
+	Invisible		: Not #VchApproveNow 
+	
+[Field:VchApproved By]
+	Use			: NAme Field
+	Delete		: Case	
+	Style		: Small Bold
+	Width		: 13
+	Border		: GreyBox
+	Invisible		: Not #VchApproveNow
+	Skip			: Yes
+	Storage		: VchApprovedBy
+	Set as		: $$CmpUserName	
+	Inactive		: Not #VchApproveNow
+	
+[Field:VchApprove Now Title]
+	Set as		: "Approve"
+	Align		: Prompt
+	Space Left	: 1
+	Style		: Small; Bold
+	Skip			: Yes
+;	Color		: Blue
+[Field:VchApprove Now]
+	Use			: Logical Field
+	Show Table	: On Empty
+	Border		: GreyBox
+	Storage		: IsVchApproved	
+	Color		: Blue
+;[Border:GreyBox]
+;	
+;	Use			: Thin Box
+;	Color		: Deep Grey
+
+[System:Udf]
+	
+	VchApprovalDate		: Date	: 1391	
+	VchApprovedBy		: String	: 1391	
+	IsVchApproved		: Logical	: 1391	
+	VchApprovalTime		: Time	: 1391	
+	
+[Function:Post Vch As Regular]
+	
+	Local Formula		: isApproved		: $IsVchApproved	
+;	020 : Log			: "Post Vch As Regular "+$$String:@isApproved
+	030 : If			: @isApproved
+;	031 : Log			: "Approved.."
+	040 : Set Target	
+	050 : Set Value	: IsOptional 		: No
+	060 : End If
+	070 : Alter Target  
+;	100 : Log		: $$LastResult
+	

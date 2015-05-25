@@ -1,0 +1,142 @@
+
+[Report:SelectStockItemForStock]
+	;Variable		: SVStockItem
+	Title			: "Select Stock Item"
+	Use				: Collection Variable
+	Local			: Line		: Collection Variable			: Field		: SelectStockItemForStock
+	Local			: Field		: MVTITLE						: Info		: "Stock Items" 
+	Local			: Form		: Default	: On: Form Accept	: Yes		: Form Accept
+	Local			: Form		: Default	: On: Form Accept	: Yes		: Display		: GodownStockReport
+	Local			: Form		: DEFault	: On: Form Accept	: Yes		: Alter			: SelectStockItemForStock
+	
+[Field:SelectStockItemForStock]
+	Use				: XName Field 
+	Table			: CherryStockItemsTable
+	Show Table		: Always
+;	Variable		: SVStockItem
+	Modifies		: CherySVStockItem
+	
+[Collection:CherryStockItemsTable]
+	Use				: Extract Alias Collection
+	Type			: StockItem
+	Fetch			: Name, ClosingBalance
+	Format			: $ClosingBalance, 7
+	Align			: Centre
+	Full Height		: Yes
+
+[System:Variables]
+	CherySVStockItem	: ""
+[Variable:CherySVStockItem]
+	
+
+
+
+[Collection:ItemsWiseGodownStockColl]
+	
+	Use		: StkgodownTableVar
+	Parm Var: StockItemName	: String	: ##SVStockItem;"2000 MG 20W50 3 Ltrs"
+	
+[Collection:StkgodownTableVar]
+    Use     			: Godown
+	Fetch				: HasNoSpace, ItemClBalance, GodownItemClBal
+    Filter  			: StockableGodownFilter
+    Format  			: @@StkGdwItemBalance   : "Base"    
+	Format				: $ItemClBalance, 5
+	Format				: $GodownItemClBal, 6
+	Format				: $HasNoSpace, 4
+
+
+[Report:GodownStockReport]
+	Title			: "Items Godown Stock "
+	Form			: GodownStockReport
+	Variable		: SV Stock Item			
+	Set				: SV Stock Item			: ##CherySVStockItem;"2000 MG 20W50 3 Ltrs" 
+[Form:GodownStockReport]
+	Part			: Form Subtitle, GodownStockRePTop,GodownStockReport
+	Local			: Field	: Form Subtitle			: Info		: "Items Godown Stock "
+	Local			: Line	: Form Subtitle			: Space Bottom	: 0.5
+	Width			: 50
+;	Space Left		: 1
+;	Space Right		: 1
+[Part:GodownStockRePTop]
+	Line			: GodownStockItemName
+	Space Bottom	: 0.5
+	Space Left		: 1 
+	Space Right		: 1
+	
+[Line:GodownStockItemName]
+	Field			: ShortPrompt, GodownStockItemName
+	Local			: Field	: Short Prompt			: Info		: "Item Name"
+	
+[Field:GodownStockItemName]
+	Full Width		: Yes
+	Set as			: ##SVStockItem
+	Style			: Small Bold 
+
+
+[Part:GodownStockReport]
+	
+	Line			: GodownStockReportTitle,GodownStockReport
+	Repeat			: GodownStockReport		: ItemsWiseGodownStockColl
+	Scroll			: Vertical
+	Total			: CherryGodownStock
+	Bottom Line		: GodownStockRepTotals
+[Line:GodownStockReportTitle]
+	Use				: GodownStockReport
+	Local			: Field	: Default				: Type		: String
+	Local			: Field	: Default				: Style		: Small Bold
+	Local			: Field	: CherryGodownName		: Info		: "Godown" 
+	Local			: Field	: CherryGodownStock		: Info		: "Stock" 
+	Border			: Thin Top Bottom 
+[Line:GodownStockReport]
+	
+	Field			: CherryGodownName
+	Right Field		: CherryGodownStock
+	
+[Field:CherryGodownName]
+	Use				: Name Field
+	Style			: Small Bold
+	Set as			: $Name
+	Space Left		: 1
+	
+[Field:CherryGodownStock]
+	Use				: Qty Field
+	Width			: 11
+	Set as			: $GodownItemClBal
+	Space Right		: 1
+	
+[Line:GodownStockRepTotals]
+	Right Field		: GodownStockRepTotals
+	Border			: Totals
+	
+[Field:GodownStockRepTotals]
+	Use				: Qty Field
+	Set as			: $$Total:CherryGodownStock
+	
+
+[#Field:VchStockItem]
+	
+	Add				: Sub Form	: At Beginning	: SaleOrderGodownStock  : $$IsSalesOrder:##SVVoucherTYpe and Not $$IsEndOfList:$StockItemName
+	
+[Report:SaleOrderGodownStock]
+	Title			: "Godown Stock" 	
+	Form			: GodownStockReport
+	Variable		: SV Stock Item			
+	Set				: SV Stock Item			: #VchStockItem;##CherySVStockItem
+	Local			: Field					: Default					: Read Only	: Yes
+	Local			: Field					: CherryGodownStock			: Skip			: YES	
+	Local			: Form					: Default					: Add		: Bottom Part	: GodownChrStockPrompt 
+	Local			: Field					: GodownStockItemName		: Skip		: Yes	
+
+[Part:GodownChrStockPrompt ]
+	Line			: GodownChrStockPrompt 
+	Space Top		: 0.4
+[Line:GodownChrStockPrompt ]
+	Field			: GodownChrStockPrompt 
+[Field:GodownChrStockPrompt]
+	Full Width		: Yes
+	Align			: Centre
+	Skip			: Yes
+	Info			: "Press Ctrl + A for next screen."
+	Style			: Tiny Bold
+	Color			: RED

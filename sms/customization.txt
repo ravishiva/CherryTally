@@ -1,0 +1,73 @@
+;;-------------SALES VOUCHER---------------------
+
+[#Field:EI Consignee]
+	Width		: 35
+[#Line:EI Consignee]
+;	Local		: Field	: Default		: Background		: White  
+;	Option		: EI Consignee SMSSales OPTion	: Yes	
+	
+[!Line:EI Consignee SMSSales OPTion]
+	Add			: Fields	: At End			: Mobile Prompt, EI Consignee MobNo1,EI Consignee MobNo2   
+	Local		: Field	: Mobile Prompt	: Info	: "Mobile No."
+	Local		: Field	: Mobile Prompt	: Space Left	: 3
+	
+[Field:Mobile Prompt]
+	Align		: Prompt
+	
+[Field:EI Consignee MobNo1]
+	Use			: Number Field
+	Format		: "NoZero,NoComma"
+	Width		: 10
+	Set Always	: Yes
+;	Background	: Lily Yellow
+	Set as		: @Value
+	Value		: $$GetFirstLedgerMob:@MobNo
+	MobNo		: $LedgerMobile:Ledger:#EIConsignee
+	storage		: VchLedMobile1
+	Validate		: $$IsEmpty:$$Value	 OR ($$Value < 10000000000 AND $$Value > 999999999)
+
+[Field:EI Consignee MobNo2]
+	Use			: Number Field
+	Format		: "NoZero,NoComma"
+	Width		: 10
+	Set Always	: Yes
+;	Background	: White
+	Set as		: @Value
+	Value		: $$GetSecondLedgerMobile:@MobNo
+	MobNo		: $LedgerMobile:Ledger:#EIConsignee
+	storage		: VchLedMobile2
+	Validate		: $$IsEmpty:$$Value	 OR ($$Value < 10000000000 AND $$Value > 999999999)
+	
+[Function:GetFirstLedgerMob]
+	Parameter		: MobNo			: String
+	Variable		: Counter			: Number
+;	000 : Log		: ##MobNo
+	
+	010 : For Token:  TokenVar	: ##MobNo	: "/"
+;	020 : Log		: ##TokenVar		
+	025 : Return	: ##TokenVar
+	030 : End For
+;	040 : Log		: "----"
+		
+[Function:GetSecondLedgerMobile]
+	
+	Parameter		: MobNo			: String
+	Variable		: Counter			: Number
+;	000 : Log		: ##MobNo
+	
+	010 : For Token:  TokenVar	: ##MobNo	: "/"
+	011 : Increment: Counter
+;	020 : Log		: ##TokenVar		
+	021 : If		: ##counter = 2
+	025 : Return	: ##TokenVar
+	026 : End If
+	030 : End For
+;	040 : Log		: "----"
+		
+	
+	
+[System:Udf]
+	
+	VchLedMobile1	: Number		: 1020
+	VchLedMobile2	: Number		: 1021
+	

@@ -1,0 +1,252 @@
+[Report:Cherry Salesman Summary]
+	Title		: "Salesman Summary"
+	Variable	: SVFromDate, SVTodate,VoucherID
+	Set			: SVFromDate	: $$Date:"1-Apr-2015"
+	Set			: SVToDate		: $$Date:"2-Apr-2015";##SVCurrentDate
+	Form		: Cherry Salesman Summary
+	
+;	Local		: Part			: Pcr Tyres Trigger					: Local 		: Line		: PcrRep LedGroup					: Invisible		: Yes
+	Local		: Part			: Pcr Tyres Trigger					: Local			: Line		: PcrRep Ledger						: Invisible		: Yes
+	Local		: Part			: Pcr Tyres Trigger					: Local			: Line		: PcrRepItemGroup					: Invisible		: Yes
+	Local		: Part			: Pcr Tyres Trigger					: Local			: Line		: PcrRepItemName					: Invisible		: Yes
+	Local		: Part			: Pcr Tyres Trigger					: Add			: Line		: After	: PcrRepItemName			: PcrRepMonthWiseDayWise 
+	Local		: Field			: Short Prompt						: Width			: 17	
+	
+[Line:PcrRepMonthWiseDayWise]
+	Field		: Short Prompt, PcrRepMonthWiseDayWise
+	Local		: Field	: Short Prompt		: Info	: "Daywise/Monthwise"
+
+[Field:PcrRepMonthWiseDayWise]
+	Use			: XNameField
+	Table		: DaywiseMonthWiseTable, None
+	Show Table	: Always
+	On:Accept	: Yes			: Field Accept
+	On:Accept	: Yes			: Call		: SetDaywiseMonthWiseVar:$$Value
+	Set as		: If (##ISSmryRepDayWise) then "Daywise" Else if ##ISSmryRepMonthWise Then "Monthwise" else $$SysName:None
+
+	
+[Function:SetDaywiseMonthWiseVar]
+	Parameter	: Var			: String	
+	010 : If	: ##Var = $$SysName:None
+	020 : Set	: ISSmryRepDayWise			: No
+	030 : Set	: ISSmryRepMonthWise		: No
+	040 : Else	
+	050 : If	: (##Var	= "Daywise") 	
+	053 : Set	: ISSmryRepMonthWise		: No
+	055 : Set	: ISSmryRepDayWise			: Yes
+	057 : End If
+	060 : If 	: (##Var	= "Monthwise")	
+	062 : Set	: ISSmryRepMonthWise		: Yes
+	067 : Set	: ISSmryRepDayWise			: No
+	069 : End If
+	070 : End If
+	
+	
+	
+[Table:DaywiseMonthWiseTable]
+	Title		: "Select"
+	List Name	: "Daywise","Monthwise"
+	
+[Form:Cherry Salesman Summary]	
+	Part		: Pcr Tyres TriggerOut
+	Space Left	: 1
+	Space Right	: 1
+	Full Width	: No 
+	Background	: Light Petal Pink
+	On			: Form Accept	: Yes								: Form Accept
+	On			: Form Accept	: (#PcrRepOutput = "Display")		: Display		: ChrSleManSumryReport
+	On			: Form Accept	: (#PcrRepOutput = "Export")		: Export		: ChrSleManSumryReport	
+	On			: Form Accept	: Yes								: Alter			: Cherry Salesman Summary					 
+	
+	Excel Sheet Name			: "CHERRY"	
+	
+
+[Report:ChrSleManSumryReport]
+	Title		: "Salesman Summary Report"
+	Form		: ChrSleManSumryReport
+	
+[Form:ChrSleManSumryReport]
+	Part		: ChrSleManSumryRep Top,ChrSleManSumryReport
+	Width		: 100% Screen
+	Height		: 100% Screen
+	Button		: ChrDateWiseButton, ChrDateMonthWise, Print Button, Export Button 
+
+[Part:ChrSleManSumryRep Top]
+	Part		: SMWiseCollREpLeft
+	Right Part	: SMWiseCollREpRight
+
+[Part:ChrSleManSumryReport]
+	Line		: ChrSleManSumryRepTitle, ChrSleManSumryReport
+	Bottom Line	: ChrSleManSumryRepTotals
+	Repeat		: ChrSleManSumryReport		: CHRSleMnSmryColl		
+	Scroll		: Vertical
+	CommonBorder: Yes
+	Totals		: ChrSleManSumryRep SleAmt, ChrSleManSumryRep CNAmt, ChrSleManSumryRep NetSales, ChrSleManSumryRep RcptAmt, ChrSleManSumryRep ChqRtn,ChrSleManSumryRep Total
+	Local		: Field	: Default						: Border	: Thin Left
+	Option		: ChrSleManSumryRepDayWiseBoder			: ##ISSmryRepDayWise Or ##ISSmryRepMonthWise
+[!Part:ChrSleManSumryRepDayWiseBoder]
+	Local		: Field	: ChrSleManSumryRepDayWise		: Border	: Thin Left Right
+	
+[Line:ChrSleManSumryRepTitle]
+	Use			: ChrSleManSumryReport
+	Local		: Field	: Default						: Type	: String
+	Local		: Field	: ChrSleManSumryRep SalesMan	: Info	: "Sales Man"
+	Local		: Field : ChrSleManSumryRep SleAmt		: Info	: "Sales"
+	Local		: Field	: ChrSleManSumryRep CNAmt		: Info	: "Sales Return"
+	Local		: Field	: ChrSleManSumryRep NetSales	: Info	: "Net Sales"
+	Local		: Field	: ChrSleManSumryRep RcptAmt		: Info	: "Receipts"
+	Local		: Field	: ChrSleManSumryRep ChqRtn		: Info	: "Chq. Return"
+	Local		: Field	: ChrSleManSumryRep Total		: Info	: "Total"
+	Local		: Field	: ChrSleManSumryRepDayWise		: Info	: "Date/Month"
+	Local		: Field	: DEfault						: Style	: Small Bold
+	Local		: Field	: DEfault						: Align	: Centre
+
+	
+	Border		: Thin Top Bottom
+
+[Line:ChrSleManSumryReport]
+	Field		: ChrSleManSumryRep SalesMan, ChrSleManSumryRepDayWise
+	Right Field	: ChrSleManSumryRep SleAmt, ChrSleManSumryRep CNAmt, ChrSleManSumryRep NetSales, ChrSleManSumryRep RcptAmt, ChrSleManSumryRep ChqRtn,ChrSleManSumryRep Total
+	
+	
+[Field:ChrSleManSumryRep SalesMan]	
+	Use			: Name Field
+	Set as		: $LEDSALESMAN 
+	Inactive	: $$PrevObj:$LEDSALESMAN = $LEDSALESMAN
+	
+[Field:ChrSleManSumryRepDayWise]
+	Use			: Uni DAte Field
+	Type		: String
+	Style		: Small 
+	Width		: 9
+	SETAS		: if ##ISSmryRepMonthWise then $MonthName Else If ##ISSmryRepDayWise then  $Date Else ""
+;	Invisible	: Yes	 
+	Inactive	: Not ##ISSmryRepMonthWise AND Not ##ISSmryRepDayWise
+	Align		: Centre
+
+[Field:ChrSleManSumryRep SleAmt]
+	Use			: Amount Field
+	Style		: Small 
+	Set as		: $SalesAmount
+[Field:ChrSleManSumryRep CNAmt]
+	Use			: Amount Field
+	Style		: Small 
+	Set as		: $CreditNoteAmt
+[Field:ChrSleManSumryRep NetSales]
+	Use			: Amount Field
+	Style		: Small Bold
+	Set as		: #ChrSleManSumryRepSleAmt - #ChrSleManSumryRepCNAmt
+[Field:ChrSleManSumryRep RcptAmt]
+	Use			: Amount Field
+	Style		: Small 
+	Set as		: $ReceiptAmt
+[Field:ChrSleManSumryRep ChqRtn]
+	Use			: Amount Field
+	Style		: Small 
+	Set as		: $PaymentAmt
+	
+[Field:ChrSleManSumryRep Total]
+	Use			: AMount Field
+	SETAS		: @Value;$SDLedgerAmount
+	Format		: "Symbol,CRDR"
+	Value		: $ReceiptAmt - $PaymentAmt
+	Width		: 14
+
+
+;;TOTALS==========
+[Line:ChrSleManSumryRepTotals]
+	Use			: ChrSleManSumryReport
+	Local		: Field	: ChrSleManSumryRepSleAmt 		: Set as	: $$Total:ChrSleManSumryRepSleAmt
+	Local		: Field	: ChrSleManSumryRepRcptAmt		: Set as	: $$Total:ChrSleManSumryRepRcptAmt
+	Local		: Field	: ChrSleManSumryRepChqRtn		: Set as	: $$Total:ChrSleManSumryRepChqRtn
+	Local		: Field	: ChrSleManSumryRepNetSales		: Set as	: $$Total:ChrSleManSumryRepNetSales
+	Local		: Field	: ChrSleManSumryRep CNAmt		: Set as	: $$Total:ChrSleManSumryRepCNAmt
+	Local		: Field	: ChrSleManSumryRep Total		: Set as	: $$Total:ChrSleManSumryRepTotal
+	Local		: Field	: Default						: Style		: Normal Bold
+	
+	Border		: Totals
+	
+
+[Collection:CHRSleMnSmryVouchers]
+	Type		: Vouchers		: Group
+	Child Of	: ##ProdRepGroup
+	Belongs To	: Yes
+	Fetch		: DAte, VoucherTypeName
+	Filter		: FilterBySalesManCC
+	Compute		: LEDSALESMAN			: @@CHSMSalesMan
+	Compute		: SDLedgerName			: @@CHSMSndryDbtrName
+	Compute		: SDLedgerAmount		: @@CHSMLedgerAmount
+	
+	Compute		: SalesAmount			: @@CHSMSalesAmount
+	Compute		: CreditNoteAmt			: @@CHSMCrNoteAmount
+	Compute		: ReceiptAmt			: @@CHSMReceiptAmount
+	Compute		: PaymentAmt			: @@CHSMPaymentAmount
+	Compute		: MonthName				: $$FullMonthName:$Date
+	
+	Filter		: FilterCherrySMVouchers		
+	
+
+[Collection:CHRSleMnSmryColl]	
+	Source Collection		: CHRSleMnSmryVouchers
+	By			: LEDSALESMAN			: $LEDSALESMAN
+	
+	Aggr Compute: SDLedgerAmount		: Sum	: $SDLedgerAmount	
+	AggrCompute : SalesAmount			: Sum	: $SalesAmount
+	
+	AggrCompute : SalesAmount			: Sum	: $SalesAmount
+	AggrCompute	: CreditNoteAmt			: Sum	: $CreditNoteAmt
+	AggrCompute	: ReceiptAmt			: Sum	: $ReceiptAmt
+	AggrCompute	: PaymentAmt			: Sum	: $PaymentAmt
+	
+	Keep Source	: ().
+	Sort		: @@Default				: $LEDSALESMAN  
+	
+	Option		: DateWiseSummaryColl	: ##ISSmryRepDayWise
+	Option		: MonthWiseSummaryColl	: ##ISSmryRepMonthWise
+	
+[!Collection:DateWiseSummaryColl]
+	By			: Date					: $Date
+	
+[!Collection:MonthWiseSummaryColl]		
+	By			: MonthName				: $MonthName
+	
+[System:Formulas]
+	
+	
+	CHSMSalesMan			: $ChrLedgerCostCentre:LEDGER:@@CHSMSndryDbtrName
+	CHSMSndryDbtrName		: $LEDGERENTRIES[1,@@CHSMSndryDbtr].LEDGERNAME
+	
+	CHSMLedgerAmount		: $LEDGERENTRIES[1,@@CHSMSndryDbtr].Amount
+	
+	CHSMSalesAmount			: if ($$IsEmpty:@@CHSMSalesAmt)then $$AsAmount:"0.00" Else @@CHSMSalesAmt
+	CHSMSalesAmt			: $LEDGERENTRIES[1,@@CHSMSndryDbtrSALES].Amount
+	
+	CHSMCrNoteAmount		: if ($$IsEmpty:@@CHSMCrNoteAmt)then $$AsAmount:"0.00" Else @@CHSMCrNoteAmt
+	CHSMCrNoteAmt			: $LEDGERENTRIES[1,@@CHSMSndryDbtrCrNote].Amount
+
+	CHSMReceiptAmount		: if ($$IsEmpty:@@CHSMReceiptAmt)then $$AsAmount:"0.00" Else @@CHSMReceiptAmt	
+	CHSMReceiptAmt			: $LEDGERENTRIES[1,@@CHSMSndryDbtrRcpt].Amount 
+	
+	CHSMPaymentAmount		: if ($$IsEmpty:@@CHSMPaymentAmt)then $$AsAmount:"0.00" Else @@CHSMPaymentAmt	
+	CHSMPaymentAmt			: $LEDGERENTRIES[1,@@CHSMSndryDbtrPymt].Amount 
+	
+	CHSMSndryDbtr			: $$IsLedOfGrp:$LedgerName:$$GroupSundryDebtors
+	CHSMSndryDbtrSALES		: @@CHSMSndryDbtr AND $$IsSales:$..VoucherTypeName  
+	CHSMSndryDbtrCrNote		: @@CHSMSndryDbtr AND $$IsCreditNote:$..VoucherTypeName
+	CHSMSndryDbtrRcpt		: @@CHSMSndryDbtr AND $$IsReceipt:$..VoucherTypeName 
+	CHSMSndryDbtrPymt		: @@CHSMSndryDbtr AND $$IsPayment:$..VoucherTypeName 
+	
+	FilterCherrySMVouchers	: $$IsSales:$VoucherTYpeName Or $$IsCreditNote:$VoucherTypeName Or $$IsReceipt:$VoucherTYpeName Or $$IsPayment:$VoucherTypeName
+
+
+[Button:ChrDateWiseButton]
+	Title				: if (##ISSmryRepDayWise) then "Remove Daywise" Else "Daywise"
+	Key					: ALT + N
+	Action				: Set		: ISSmryRepDayWise		: Not 	##ISSmryRepDayWise
+	Inactive			: ##ISSmryRepMonthWise
+	
+[Button:ChrDateMonthWise]
+	Title				: if (##ISSmryRepMonthWise) then "Remove Monthwise" Else "Monthwise"
+	Key					: ALT + M
+	Action				: Set		: ISSmryRepMonthWise		: Not 	##ISSmryRepMonthWise
+	Inactive			: ##ISSmryRepDayWise

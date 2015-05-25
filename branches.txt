@@ -1,0 +1,129 @@
+[Report:CHR Branch Master]
+	Title			: "Branch " + @@ModeName
+	Form			: CHR Branch Master
+	Object			: CostCentre
+[Form:CHR Branch Master]
+	Part			: CHR Branch Master
+	Space Left		: 1
+	Space Right		: 1
+[Part:CHR Branch Master]
+	Parts			: Form Subtitle, CHR Branch Mst,CHR Branch Addr,CHR BranchVchs
+	Local			: Field		: Form Subtitle				: Info			: "Branch"
+	Local			: Line		: Form Subtitle				: Space Bottom	: 1
+	Local			: Field		: Short Prompt				: Width			: 14
+	Local			: Field		: Short Prompt				: Style			: Small 
+	Local			: Line		: Default					: Space Bottom	: 0.3
+
+	Vertical		: Yes
+	Width			: 45
+	Space Bottom	: 1
+	Space Left		: 1
+	Space Right		: 1
+	Border			: GreyBox
+	
+[Part:CHR Branch Mst]
+	Line			: CHR Branch Name, CHR Branch Category, 
+	
+[Part:CHR Branch Addr]
+	Lines			: CHR Branch Addr
+	Repeat			: CHR Branch Addr : Address
+	Height			: 5
+	Break On		: $$IsEmpty:#CHRBranchAddr
+	
+[Part:CHR BranchVchs]
+	Lines			: CHR Branch ContactPer,CHR Branch ContactPhone,CHR Branch SAlesVch, CHR Branch ServiceVch
+;;--
+[Line:CHR Branch Name]
+	Field			: Short Prompt, CHR Branch Name
+	Local			: Field		: Short Prompt				: Info	: "Name"
+	
+[Field:CHR Branch Name]
+	Use				: MasterNameField
+	Use				: XNameField
+;	Full Width		: Yes
+;;--
+[Line:CHR Branch Category]
+	Field			: Short Prompt, CHR Branch Category
+	Local			: Field		: Short Prompt				: Info	: "Category"
+	Invisible		: Yes
+	
+[Field:CHR Branch Category]	
+	Use				: XNameField
+	Storage			: Category
+	Set as			: "Branches"
+;	Full Width		: Yes
+;;--
+	
+[Line:CHR Branch SAlesVch]
+	Field			: Short Prompt, CHR Branch SAlesVch
+	Local			: Field		: Short Prompt				: Info	: "Sales Voucher"
+	
+[Field:CHR Branch SAlesVch]
+	Use				: XName Field
+	Storage			: BRSalesVch
+	Full Width		: Yes
+	Table			: CHRVchTypeColl
+	Show Table		: On Empty
+;;---	
+[Line:CHR Branch ServiceVch]
+	Field			: Short Prompt, CHR Branch ServiceVch
+	Local			: Field		: Short Prompt				: Info	: "Service Voucher"
+	
+[Field:CHR Branch ServiceVch]
+	Use				: XName Field
+	Storage			: BRServiceVch
+	Show Table		: On Empty
+	Table			: CHRVchTypeColl
+	
+[Line:CHR Branch Addr]
+	Field			: Short Prompt, CHR Branch Addr
+	Local			: Field		: Short Prompt				: Info	: "Address"
+	Local			: Field		: Short Prompt				: Inactive	: $$Line > 1
+[Field:CHR Branch Addr]
+	Use				: XNAME Field
+	Storage			: Address
+;-----
+[Line:CHR Branch ContactPer]
+	Field			: Short Prompt, CHR Branch ContactPer
+	Local			: Field		: Short Prompt				: Info	: "Contact Person"
+[Field:CHR Branch ContactPer]
+	Use				: XNAme Field
+	Storage			: UDFContactPerson
+;;----
+[Line:CHR Branch ContactPhone]
+	Field			: Short Prompt, CHR Branch ContactPhone
+	Local			: Field		: Short Prompt				: Info	: "Phone"
+[Field:CHR Branch ContactPhone]
+	Use				: XName Field
+	Storage			: UDFContactPhone
+		
+;-----------------------------------------------------------------------------------------------------
+[Collection:ChryCategoryBranch]
+	Title			: "Branch"
+	Type			: CostCentre
+	Fetch			: Name, Category
+	Filter			: FilterByBranches
+	Trigger			: CHRBranchVar
+	Variable		: CHRBranchVar
+	Report			: CHR Branch Master
+	Full Height		: yes
+	Format			: $Name, 25
+	
+[Variable:CHRBranchVar]
+[Report:CHRBranchVar]
+	Use				: Collection Variable
+	Local			: Line		: Collection Variable		: Field	: CHRBranchVar
+	Local			: Field		: MVTitle					: Info	: "Branch"
+	
+[Field:CHRBranchVar]
+	Use				: XNameField
+	Modifies		: CHRBranchVar
+	Table			: ChryCategoryBranch
+	Show Table		: Always
+	
+[Collection:CHRVchTypeColl]
+	Title			: "SELECT"
+	Type			: Voucher Type
+	Child Of		: $$VchTypeSales
+	Fetch			: Name, Parent
+	Belongs To		: Yes

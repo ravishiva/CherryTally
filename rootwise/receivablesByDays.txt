@@ -1,0 +1,217 @@
+[Report:RECvByDaysTrig]
+Title:"Receivables By Days"	
+Form:RECvByDaysTrig	
+[Form:RECvByDaysTrig]
+Width: 50
+Space Left	: 1
+Space Right	: 1
+Space Bottom	: 2	
+Background	: White
+Part:Form Subtitle,RECvByDaysTrig	
+Local	: Field	: Form Subtitle	: Info		: "Select"
+On			: Form Accept	: Yes	: Form Accept
+On			: Form Accept	: Yes	: Display		: ReceivablesByDays
+On			: Form Accept	: Yes	: Alter		: RECvByDaysTrig
+[Part:RECvByDaysTrig]
+Line:RECvByDaysTrig,RECvByDaysRoot,RECvByDaysSalesman
+Local	: Field	: Short Prompt		: Width		: 13 
+[Line:RECvByDaysTrig]
+	Fields	: Short Prompt,RECvByDaysTrig
+	Local	: Field	: Short Prompt	: Info	: "Sales Person"
+	Space Bottom: 0.3
+[Field:RECvByDaysTrig]
+	Use		: Name Field
+	Width	: 15
+	Modifies	: FltByParentVar
+	Table	: AllParentsColl2;, AllItems	
+	Show Table: Always	
+	Full Width: Yes
+	Style	: Small Bold
+[Line:RECvByDaysRoot]
+	Fields	: Short Prompt, RECvByDaysRoot
+	Local	: Field	: Short Prompt	: Info	: "Route"
+[Field:RECvByDaysroot]
+	Width	: 20
+	Modifies	: FltByDayVar
+	Table	: DaysOfWeekColl
+	Show Table: Always
+	Use		: NAme Field
+	Style	: Small Bold
+[Line:RECvByDaysSalesman]
+	Fields	: Short Prompt, RECvByDaysSalesman
+	Local	: Field	: ShortPRompt	: Info	: "Salesman"
+	Space Top	: 0.3
+[Field:RECvByDaysSalesman]
+	Use		: Name Field
+	Style	: Small Bold
+	Table	: CherryLedMstCostCentre,All Items
+	Show Table: Always
+	Modifies	: CherrySalesManVar
+;;------------------------------------------------
+[Report:ReceivablesByDays]
+	Use		: Bills Receivable
+	Set		: ShowByLedBill		: Yes
+	Set		: ShowByBill			: No
+;	Set		: FltByParentVar:$$SysName:AllItems	
+;	Set		: FltByDayVar:"ALL"
+	Local	: Form				: Bills Outstanding : Replace	: Part	: BILL Body  		: BILL Body ByDays 
+	Local	: Part				: GRPLedBILL Body	: Delete	: Repeat	
+	Local	: Part				: GRPLedBILL Body	: Add	: Repeat	: GRPLedBILL BodyTitle	: LedgerwiseBills ByDays		
+	Local	: Form				: Bills Outstanding	: Add	: Part	: At Beginning		: ledger_mst_Days		
+	Local	: PArt				: ledger_mst_Days	: Add	: Space Bottom: 0
+	Local	: Line				: GRPLedBILL Title	: Add	: Fields	: After: BILLFixed 	:  BILLPartyNameCst,BILLPtydUMMY,BILLPtySalesPer , BILLPtyDayOfWeek
+	Local	: Field				: BILLParty		: Invisible		: Yes
+	Local	: Line				: GRPLedBILL Total	: Add	: Fields	: After: BILLFixed 	:  BILLFixed ExcelCell
+	Local	: Line				: BILL Detail		: Add	: Fields	: After: BILLFixed 	:  BILLFixed ExcelCell
+	Local	: Line				: BILLCol1		: Add	: Fields	: After: BILLFixed 	:  BILLPartyNameCst,BILLPtySalesPer , BILLPtyDayOfWeek
+	Local	: Line				: BILLCol2		: Add	: Fields	: After: BILLFixed 	:  BILLPartyNameCst,BILLPtySalesPer , BILLPtyDayOfWeek
+	Local	: Line				: BILLCol1		: Local	: Field	: BILLPtySalesPer 	: Info	: "Sales Person"
+	Local	: Line				: BILLCol1		: Local	: Field	: BILLPtyDayOfWeek 	: Info	: "Route"
+	Local	: Line				: BILLCol2		: Local	: Field	: BILLPtyDayOfWeek 	: Info	: ""	
+	Local	: Field				: BILLDate		: Style	: Small Bold
+	Local	: Form				: Bills Outstanding	: Delete	: Buttons	: BILLToggle
+	Local	: Form				: Bills Outstanding	: Add	: Bottom Buttons			: At Beginning	 : FilterByParent, Blank Button
+	
+[Field:BILLFixed ExcelCell]
+	Background	: White
+	Cells		: 3
+	Width		: 10
+	Invisible		: Not $$InExportMode
+	
+[Field:BILLPtydUMMY]
+	Width		: 5
+;	Background	: Red
+	Invisible		: $$InExportMode
+
+[Field:BILLPartyNameCst]	
+	Width	: 45
+	Set as	: $PartyName
+	Use		: Name Field
+	Style	: Small Bold
+;	Invisible	: $$InExportMode ;OR $$InPrintMode
+	
+[Field:BILLPtySalesPer]
+	Width	: 17
+	Align	: Left
+	Style	: Small Bold
+	Set as	: $Parent:LEdger:$PartyName
+[Field:BILLPtyDayOfWeek]
+	Width	: 7
+	Align	: Centre
+	Style	: Small Bold
+	Set as	: $LedDaysOfWeek:LEdger:$PartyName
+[Variable:CustomOutstandingRep] 
+	Type		: Logical	
+
+[Part: BILL Body ByDays]
+
+    Lines       : BILL Column, BILL Detail
+    BottomLines : BILL Total
+    Scrolled    : Vertical
+
+    Total       : BILLCl, BILLInterest, BILLPDC, BILLFinal, BILLOp, BILLForex
+
+    Option      : BILLRECV Body ByDays 	: ##ShowReceivables
+    Option      : BILLPAYA Body 		: NOT ##ShowReceivables
+	PagedLoad	: ##SVPagedLoad
+
+    Page Break  : BILL ClPageTotal, BILL OpPageTotal
+;;	Background : White
+	Local	: Line	: BILL Detail 	: Add	: Fields	: After	: BILLFixed  :  BILLPartyNameCst,BILLPtySalesPer , BILLPtyDayOfWeek
+	
+ [!Part: BILLRECV Body ByDays]
+	 
+        Repeat  	: BILLDetail    : CompanyReceivablesByDays
+
+[Collection: Company Receivables ByDays]
+
+    Type    : Bills
+	Compute	: PartyName				: $$FuncDSPAccName:$Parent ;;$DSPAccName:Ledger:$Parent
+	Compute	: DSPNameStyle			: ##DSPNameStyle
+
+	Switch	: RemoteCmpReceivables	: RemoteCmpReceivables : $$IsRemoteCompany ;; Temporary solution to improve performance in server
+	Compute	: GrpName				: ##GroupName ;; Dummy Compute to send the Variable to the Client side.
+
+    Filter  : IsReceivable, DueBillsFilter, AgeFilter, BillsOfGroupName, BillsByWeekDays1,BillsBySalesPer1
+
+    Sort    : @@Default             : $BillDate, $Parent
+    Sort    : @@DateIncr            : $BillDate, $Parent
+    Sort    : @@DateDecr            : -$BillDate, -$Parent
+    Sort    : @@PartyIncr           : $Parent, $BillDate
+    Sort    : @@PartyDecr           : -$Parent, -$BillDate
+    Sort    : @@RefNoIncr           : $$Name, $BillDate
+    Sort    : @@RefNoDecr           : -$$Name, -$BillDate
+    Sort    : @@AmtIncr             : $$Abs:$ClosingBalance, $BillDate
+    Sort    : @@AmtDecr             : -$$Abs:$ClosingBalance, -$BillDate
+    Sort    : @@DueDateIncr         : @@CreditPeriod, $BillDate
+    Sort    : @@DueDateDecr         : -@@CreditPeriod, -$BillDate
+    Sort    : @@CurrencyIncr        : $$Currency:$OpeningBalance
+    Sort    : @@CurrencyDecr        : -$$Currency:$OpeningBalance
+
+	ColumnVar: AgeFrom, AgeTo	   
+
+;	
+;;-------------	   
+[Collection: LedgerwiseBills ByDays]
+
+	By			: PartyName			: $PartyName
+
+	Compute		: Parent			: $Parent
+	Compute		: Date				: $Date
+	Aggr Compute: OpeningBalance	: Sum	: $OpeningBalance
+	Aggr Compute: ClosingBalance	: Sum	: $ClosingBalance
+	Aggr Compute: ForexClosing		: Sum	: $ForexClosing
+	Aggr Compute: PDCAmt			: Sum	: $$AmountSubtract:$FinalBalance:$ClosingBalance
+	Aggr Compute: FinalBalance		: Sum	: $FinalBalance
+	Aggr Compute: Interest			: Sum	: $Interest
+
+	Search Key	: $Parent
+
+	ColumnVar	: AgeFrom, AgeTo
+	Keep Source	: ().
+
+	Option		: BillsLedgerwiseReceivables: NOT ##IsGrpBillReport AND ##ShowReceivables
+	Option		: BillsLedgerwisePayables	: NOT ##IsGrpBillReport AND NOT ##ShowReceivables
+	Option		: BillsLedgerwiseGrp		: ##IsGrpBillReport
+
+	Option		: PartwiseDefault			: @@PartywiseDefault OR @@PartywisePartyIncr
+	Option		: PartwisePartyDecr			: @@PartywisePartyDecr
+   
+	Filter		: BillsBySalesPerson, BillsByWeekDays
+	Filter: FilterByLedgerSalesMan 
+	
+[System:Formulas]
+	
+	BillsBySalesPerson	: If	(##FltByParentVar = $$SysName:AllItems) then Yes Else  $Parent:Ledger:$PartyName = ##FltByParentVar
+	BillsBySalesPer1	: If	(##FltByParentVar = $$SysName:AllItems) then Yes Else  $$TestFunctRetGrp:$Parent:##FltByParentVar					 
+	BillsByWeekDays	: IF (##FltByDayVar = "ALL") then YES Else  $LedDaysOfWeek:LEdger:$PartyName = ##FltByDayVar
+	BillsByWeekDays1	: IF (##FltByDayVar = "ALL") then YES Else  $$TestFunctRet:$Parent:##FltByDayVar
+	
+	
+[Function:TestFunctRet]
+	Parameter		: Var1		: String
+	Parameter		: Var2		: String
+	Local Formula	: LEdName		: $$FuncDSPAccName:##Var1	
+	040 : If		: $LedDaysOfWeek:Ledger:@LEdName = ##Var2
+	050 : Return	: Yes
+	060 : End If
+ 				
+[Function:TestFunctRetGrp]
+	Parameter		: Var1		: String
+	Parameter		: Var2		: String
+	Local Formula	: LEdName		: $$FuncDSPAccName:##Var1	
+	040 : If		: $Parent:Ledger:@LEdName = ##Var2
+	050 : Return	: Yes
+	060 : End If			
+;	
+;        [*Field: BILLParty]
+;
+;            Use         : NameField
+;            Set as      : "214124124";$PartyName   ;;$DSPAccName:Ledger:$Parent
+;           ; Style       : if (##ShowOpBillAmt AND NOT $$InPrintMode) then "Normal" else "Normal Bold"
+;          ;  Width       : if NOT $$InPixelMode then @@NameWidth - 3 else if (##ShowOpBillAmt OR $$NumSets > 1) then @@ShortNameWidth + 5 else @@NameWidth + 5
+;           ; QuickSearch : Yes
+;		 Width		: 50
+;            Invisible   : If ##IsTDSOutstandingReport Then No Else @@IsLedBillReport
+;
+;			Option 		: Excel BILLParty				: $$InExportMode AND ($$KeyExplode OR ##ExplodeFlag)

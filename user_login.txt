@@ -1,0 +1,153 @@
+[System:EVENT]
+	CmdOwner	: Load Company	: Yes		: Call				: SetVariableIfOwnerLogin
+	CMDEvent	: LOAD COMPANY	: Yes		: Call				: UserLoginCreditals  
+	
+[Function:SetVariableIfOwnerLogin]
+	010 : If	: $$IsCmpOwner	OR $$CmpUserLevel = "Owner" 
+	030 : Set	: SVVoucherType				: $$VchTypeSales
+	035 : Set	: SVClass					: $$SysName:NotApplicable 
+	036 : Set	: InvoicingModeFlag			: Yes
+	040 : End If
+	
+;	050 : Log	: ##SVVoucherType
+	
+
+[Function:UserLoginCreditals]
+	
+	001 : Set	: CHRSalesVoucher			: ""
+	002 : Set	: CHRServiceVoucher			: ""
+	003 : Set	: CHRReceiptVoucher			: ""
+	006 : Set	: InvoicingModeFlag			: Yes 
+	
+	000 : If	: Not $$IsCmpOwner 
+	
+	010 : Set Object	: (Company,##SVCurrentCompany).
+;	040 : Log	: $Name
+	050 : Walk Collection	: SECURITY
+;	060 : Log	: "__"+$Name + " -- " + $Parent + " -- " 
+	061 : If	: $$CmpUserLevel	= $Name
+	070 : Walk Collection	: Include List
+;	080 : Log	: "_______"+$ActionType + " -- " + $Name
+	090 : Do If	: ($$IsSales:$Name AND $Name Contains "SAL")	: Set		: CHRSalesVoucher	: $Name
+;	095 : Do If	: ($$IsSales:$Name AND $Name Contains "SAL")	: Set		: SVVIEWNAME		: $$SysName:INVVchView
+;	100 : Do If	: ($Name Contains "SER" AND $$IsSales:$Name)	: Set		: CHRServiceVoucher	: $Name
+	120 : Do If	: ($$IsReceipt:$Name)							: Set		: CHRReceiptVoucher	: $Name
+	130 : Do If	: ($$IsPurchase:$Name) 							: Set		: CHRPurchaseVoucher: $Name 
+	
+	190 : End Walk
+	
+	195	: End If
+	200 : End Walk
+	
+	210 : Set	: SVVoucherType			: ##CHRSalesVoucher
+	230 : Log	: ##CHRSalesVoucher + " -- " + ##SVVoucherType + " -- " + ##SVVIEWNAME
+;	250 : Set	: SVClass				: $$SysName:NotApplicable 
+	
+	260 : End If
+;	210 : Log	: "-------------"
+;	220 : Log	: $$CmpUserLevel
+;	230 : Log	: $$CmpUserName
+;	235 : Log	: ##CHRSalesVoucher + " -- " + ##CHRServiceVoucher + " -- " + ##CHRReceiptVoucher
+;	240 : Log	: "---------X----------"
+;	
+	
+	300 : If	: $$IsEmpty:##SVVoucherType 
+	310 : Set	: SVVoucherType			: $$VchTypeSales
+;	320 : Set	: SVViewName			: $$SysName:INVVchView
+	340 : Log	: $$CmpUserLevel + " -- " + ##SVVoucherType + " -- " + ##SVViewName
+	350 : End If
+	
+[Function:MenuCreator]
+	010 : Log	: "Menu Creator"
+	020 : Menu 	: Cherry User Menu
+	
+[!Menu:Cherry User Menu]
+	
+	Title		: "Main Menu"
+	Key Item	: SALES 						: S	: Call		: UserSalesVoucher		: @@ISEmptySleVch
+	Key Item	: SERVICES						: E : Call		: UserServiceVoucher	: @@IsEmptyservVch
+	Key Item	: Blank
+	Key Item	: RECEIPT						: R : Call		: UserReceiptVoucher	: @@IsEmpryReceipt
+	Key Item	: Blank
+	Key Item	: PURCHASE					: P : Call		:  USERPurchaseVoucher	: @@IsEmptyPurchase 
+	Key Item	: Blank
+	Key Item	: DAY BOOK					: D : Call		: UserDayBook
+	
+[System:Formulas]
+	ISEmptySleVch		: Not $$IsEmpty:##CHRSalesVoucher
+	IsEmptyservVch		: Not $$IsEmpty:##CHRServiceVoucher
+	IsEmpryReceipt		: Not $$IsEmpty:##CHRReceiptVoucher
+	IsEmptyPurchase		: Not $$IsEmpty:##CHRPurchaseVoucher
+	
+[Function:UserSalesVoucher]
+	010	: Log	: "Sales Voucher"
+	020 : Set	: SVVoucherType					: ##CHRSalesVoucher	
+	030 : Call	: SalesServiceVoucher
+	
+[Function:UserServiceVoucher]
+	010	: Log	: "Service Voucher"
+	030 : Set	: SVVoucherType					: ##CHRServiceVoucher
+	040 : Call	: SalesServiceVoucher
+	
+[Function:UserReceiptVoucher]
+	010 : Log	: "Receipt Voucher"
+	040 : Set	: SVVoucherType					: ##CHRReceiptVoucher
+	050 : Create	: Voucher
+
+[Function:USERPurchaseVoucher]
+	020 : Log	: "Purchase Voucher"
+	050 : Set	: SVVoucherType					: ##CHRPurchaseVoucher
+	060 : Call	: CherryPurchaseVoucher
+
+[Function:UserDayBook]
+	010 : Log	: "DayBook"
+	050 : Display	:DayBook;CHERYDayBook  
+	
+[Report:CHERYDayBook]
+	Use			: DayBook  
+	Title		: "Day Book"
+;	Local		: Form	: Default			: Local		: Field		: DSP VchAccount	: Background	: Red
+	Local		: Field	: Default			: Delete	: Alter
+	Local		: Field	: DSP VchAccount	: Option	: ReportsByVouchers	: Yes;Add		: Alter		: SalesServiceVoucher 
+	
+;
+[!Field:ReportsByVouchers]
+	
+	Alter		: SalesServiceVoucher 	
+	
+;	Alter		: SalesServiceVoucher	: $$IsSales:$VoucherTypeName
+;	Alter		: CherryPurchaseVoucher	: $$IsPurchase:$VoucherTypeName
+;	Alter		: Voucher				: Not $$IsSales:$VoucherTypeName AND NOT $$IsPurchase:$VoucherTypeName
+
+[Form:CHERYDayBook]
+	Use			: DayBook
+;	Local		: Part		: DB Body		: Background	: White
+;	Local		: Part		: DB Body		: Delete		: Repeat
+	
+;
+;[#Field: DSP VchAccount]
+;	
+;	Option		: IfUserLogdIn		: Yes
+;	Background	: Red
+;	
+;[!Field:IfUserLogdIn]
+;	
+;	Background	: Red
+;	Delete		: Option
+;	Delete		: Alter
+;	
+;[#Field: DSP VchAccount]
+;	Background	: Red
+;    Use         : Name Field
+;    Style       : Normal Bold
+;    QuickSearch : Yes
+;    FullWidth   : Yes
+;    Width       : @@ShortNameWidth
+;
+;    Option      : DSP VchCNCAccount : $$IsVoucher AND ($IsCancelled OR $IsDeleted)
+;    Option      : DSP VchAccAccount : $$IsVoucher AND NOT $IsCancelled AND NOT $IsDeleted AND NOT @@IsVchInvVch
+;    Option      : DSP VchInvAccount : $$IsVoucher AND NOT $IsCancelled AND NOT $IsDeleted AND @@IsVchInvVch
+;    Option      : DSP VchForexGain  : NOT $$IsVoucher
+;    Option      : DSP VchAttdAccount: $$IsVoucher AND NOT $IsCancelled AND NOT $IsDeleted AND @@IsVchAttdVch
+;    Option		: DSP VchMInAccount : $$IsVoucher AND NOT $IsCancelled AND NOT $IsDeleted AND @@IsJobMaterialTransferInVch
+;	

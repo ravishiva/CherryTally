@@ -1,0 +1,502 @@
+
+[Report:Kisan vch Report]
+	Title		: "LR Details"
+	Variable	: SVFromDate, SVToDate
+	Set			: SVFromDate			: ##SVCurrentDate - 7
+	Set			: SVToDate			: ##SVCurrentDate
+	
+	Form:Kisan vch Report
+	
+	[Form:Kisan vch Report]
+		
+	;	Height:50% page
+		Width:50
+		Part:Kisan vch ReportOut
+		
+	;	Background	: Stone Wash 
+	;	Space Left:4 mms
+		No Confirm		: yes
+		On:Form Accept		: Yes	: Form Accept
+		On:Form Accept		: Yes	: Alter				: Vch no details
+		On:Form Accept		: Yes	: Alter				: Kisan vch Report 
+			Space Left	: 1
+			Space Right	: 1
+		Vertical Align		: Top	
+		Button			: F2 ChangePeriod
+			
+		[Part:Kisan vch ReportOut]
+			Space Left	: 1
+			Space Right	: 1
+			Local		: Field	: Form Subtitle		: Info	: "Invoice"
+			Part			: FOrm Subtitle, Kisan vch Report
+			Border		: Deep Grey Box
+			Vertical		: Yes
+			
+		[Part:Kisan vch Report]
+			
+	
+		;	Border:thin box
+			
+			Line:Kisan vch Report
+			Space Bottom	: 1
+			
+			[Line:Kisan vch Report]
+				
+				Field:Kisan vch Report,Kisan vch Report value , Kisan vchMstd
+			;	Space Top:4 mms
+				
+				
+				[Field:Kisan vch Report]
+					
+					Info:"Invoice No.  "
+					Align:Prompt
+					Style:normal bold
+					Invisible		: Yes
+					
+				[Field:Kisan vch Report value]
+					
+					Use:name field
+					Align:Left
+					Show Table:Always
+					Table:KisanVoucherCollection
+					Modifies	: KKInvNoVar
+					Full Width	: Yes
+;					On:Accept:Yes:Field Accept
+;					On:Accept:Yes:Execute:Vch no details
+
+[Field:KisanVchDate]
+	Use			: Uni Date Field
+	Set as		: $Date
+	Align		: Right
+	Width		: 10
+	Style		: Small Bold
+	Skip			: Yes				
+
+[Field:Kisan vchMstd]
+	
+	Use			: Number Field
+	Set as		: $$Table:KisanvchReportvalue:$MasterId 
+	Set Always	: Yes
+	Modifies	: KishanVchMstId
+	Invisible	: Yes
+	
+[System:Variable]
+	
+	KishanVchMstId	: ""
+	KKInvNoVar	: ""
+
+[Variable:KKInvNoVar]
+[Variable:KishanVchMstId]
+	
+	Type : Number 
+											
+[Collection:Kisan Voucher Collection]
+	
+	
+	Title		: "Invoice"
+	Type 		: vouchers : VoucherType
+	Child Of	: $$VchTypeSales
+	Belongs To	: Yes
+	Format		: $VoucherNumber,15
+	Format		: $Date, 8 
+	Format		: $PartyLedgerName,23
+	Format		: $Amount, 10
+	Align		: Centre
+	Sub Title		: "Vch.No.","Date","PartyName","Amount","VchType"
+	Fetch		: VoucherNumber, date, Masterid ,Amount ,PartyLedgerName 
+	Full Height	: Yes
+	Format		: $VoucherTypeName
+;	Unique		: No
+	Filter		: FilterByCherryUserAccess
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Second Report;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[System:Formulas]
+	
+	VchObject		: $$Sprintf:"ID:%s":@@CurrMasterId
+	CurrMasterId	: $$String:##KishanVchMstId
+
+[Report:Vch no details]
+	Title		: "LR Details"
+	
+	Form:Vch no details
+	Object:Voucher	: @@VchObject
+	Family		: $$Translate:"LR ENTRY"
+	
+	[Form:Vch no details]
+		
+	;	Height:22
+		Full Height		: No
+		Width:60
+		Part:Vch no detailsOut
+		Space Left		: 1
+		Space Right		: 1
+		On:Form Accept:Yes:Form Accept
+		On:Form Accept:Yes:call:KisanLedFun:#VCHPartyNameVal:#VCHMobileVal:#VCHemailVal
+		Background	: Stone Wash
+		
+		[Part:Vch no detailsOut]
+			Vertical		: Yes
+			Part			: Form Subtitle, Vch no details, VCH ExecutiveDetails
+			Bottom Part	: Vch no detailsNaar
+			Border		: Deep Grey Box
+			Local		: Field		: Form Subtitle		: Info	: "LR DETAILS" 
+			Local		: Field		: Form Subtitle		: Style	: Small Bold
+			Space Left	: 1
+			Space Right	: 1
+	
+		[Part:Vch no details]
+			
+			Line:VCHInvNo,VCH Party Name,VCH Party NameAlias
+			Line:Vch no details,Vch no details2 ,Vch no details3,Vch no details4,Vch LR No,VCHNoOfBoxes, 
+			Line:Vch Mobile No, Vch Emailid,
+			Local		: Line	: Vch no details	: Invisible	: Yes
+					
+
+; Packed By, Paid / To Pay, Club Booking , Freight Amount, 
+			[Line:Vch no details]
+				
+				Field:Vch no details, Vch no details val
+				Space Top:2 mms
+				
+				[Field:Vch no details]
+					
+					Info:"Despatch Doc No"
+					Width:22
+					Align:Prompt
+					Style:Small 
+					
+				[Field:Vch no details val]
+					
+					Use:name field
+					Storage:BasicShipDocumentNo   ;DespatchNo
+					Width:15% page
+					Align:Left
+					Style:Small bold
+					
+[Line:VCHNoOfBoxes]
+	Field		: Short Prompt, VCHNoOfBoxes
+	Local		: Field	: Short Prompt		: Info	: "No. of Articles"
+	Local		: Field	: Short Prompt		: Width	: 22
+	Space Top		: 0.5
+[Field:VCHNoOfBoxes]
+	Use			: Name Field
+	Style		: Small Bold
+	Width		: 10
+	Storage		: KKNoOfBoxes
+
+
+		[Line:Vch no details2]
+			
+			Use:Vch no details
+			Local:Field:Vch no details:Info:"Transport"
+			Local:Field:Vch no details val:Storage:BasicShippedBy    ;VchDespatched
+		;	Invisible		: Yes
+			
+		[Line:Vch no details3]
+			
+			Use:Vch no details
+			Local:Field:Vch no details:Info:"Destination"
+			Local:Field:Vch no details val:Storage:BasicF1inalDestination    ;VchDestination
+		;	Invisible		: Yes
+			
+		[Line:Vch no details4]
+			
+			Use:Vch no details
+			Local:Field:Vch no details:Info:"Carrier Name/Agent"
+			Local:Field:Vch no details val:Storage:EICHECKPOST     ;VchCarrier
+					
+
+			[Line:Vch LR No]
+				
+				Field:Vch LR No,Vch LR No val,Vch LR No date ,Vch LR No val date
+				Space Top:2 mms
+				
+				[Field:Vch LR No]
+					
+					Info:"Bill of Lading/LR-RR No."
+					Width:22
+					Align:Prompt
+					Style:Small; bold
+					
+				[Field:Vch LR No val]
+					
+					Use:name field
+					Storage:VATForm49No    ;VchLR
+					;Width:15% page
+					Align:Left
+					Style:Small bold
+					Width: 20
+					
+				[Field:Vch LR No date]
+					
+					Info:"Date"
+					Width:5
+					Align:Prompt
+					Style:Small 
+					
+				[Field:Vch LR No val date]
+					
+					Use:Uni date field
+					Storage:BillLadingDate    ;VchLRDate
+					Width	: 10
+					Align:Left
+					Style:Small bold
+					
+			
+		[Line:VCHInvNo]
+			Fields		: VCH INV No ,VCH INV No Val,KisanVchDate
+		
+		[Line:VCH Party Name]
+				
+				Field:VCH Party Name Tit,VCH Party Name Val
+				Space Top:2 mms
+				
+				[Field:VCH Party Name Tit]
+					
+					Info			: "Party Name"
+					Width		: 15% page
+					Align		: Prompt
+					Style		: Small; bold
+					
+				[Field:VCH Party Name Val]
+					
+					Use:name field
+					;Set as:$Name:ledger:$ledgerName  
+					Storage		: Partyledgername					
+					Full Width	: Yes
+					Align		: Left
+					Style		: Small bold
+					Skip			: Yes 
+					
+		[Line:VCH Party NameAlias]
+				Field	: Short Prompt, VCH Party NameAlias
+				Local	: Field:Short Prompt	: Info	: "Alias"
+				Local	: Field:Short Prompt	: Width	: 22 
+				Local	: Field:Default	: Style		: Small  Italic
+			[Field:VCH Party NameAlias]
+				Use		: Name Field	
+				SEtas	: $OnlyAlias:Ledger:$Partyledgername
+				Skip		: Yes				
+			
+				[Field:VCH INV No]
+					
+					Info:"Invoice No"
+					Width:22
+					Align:Prompt
+					Style:Small; bold
+					
+				[Field:VCH INV No Val]
+					
+					Use:name field
+					Set as:$VoucherNumber
+					Align:Left
+					Skip:Yes
+					Style:Small  bold
+					
+
+		[Line:Vch Mobile No]
+			
+				Field:VCH Mobile Tit,VCH Mobile Val
+				Space Top:2 mms
+				
+				[Field:VCH Mobile Tit]
+					
+					Info:"Mobile No"
+					Width:22
+					Align:Prompt
+					Style:Small; bold
+					
+				[Field:VCH Mobile Val]
+					
+					Use:name field
+					Set as:$LedgerMobile:ledger:$ledgername
+				
+					Align:Left
+					Style:Small  bold
+					
+			
+		[Line:Vch Emailid]
+			
+				Field:VCH email Tit,VCH email Val
+				Space Top:2 mms
+				
+				[Field:VCH email Tit]
+					
+					Info:"Email ID"
+					Width:22
+					Align:Prompt
+					Style:Small ; bold
+					
+				[Field:VCH email Val]
+					
+					Use:name field
+					Set as:$EMail:Ledger:$LedgerName
+					
+					Align:Left
+					Style:Small bold
+					Case	: Normal
+;;--------------------
+[Part:VCH ExecutiveDetails]
+	Lines		: VCH ExecutiveName, VCH ExecutiveMobile,  ChrLR Packed By,ChrLR NoOfBundles,ChrLR  Paid_To Pay,ChrLR  Club Booking ,ChrLR  Freight Amount,
+	Space Top		: 1
+	Space Bottom	: 1
+	Local		: Field	: Short Prompt		: Width	: 22.7
+	Local		: Field	: Short Prompt		: Style	: Small 
+
+[Line:VCH ExecutiveName]
+	Field		: Short Prompt ,VCHExecutiveName
+	Local		: Field	: Short Prompt		: Info	: "Salesman" 
+	
+[Field:VCHExecutiveName]
+	Use			: Name Field
+	Style		: Small Bold
+	Set as		: $ChrVchSalesMan
+	Skip			: Yes
+[Line:VCHExecutiveMobile]
+	Field		: Short Prompt,VCH ExecutiveMobile
+	Local		: Field	: Short Prompt		: Info	: "Mobile" 
+	Invisible	: Yes
+[Field:VCHExecutiveMobile]
+	Use			: Name Field
+	Style		: Small Bold
+	Set as		: $ExecMobileNo:CostCentre:#VchExecutiveName
+	Skip			: Yes
+	
+
+;;---------------------OTHER DETAILS---------------------
+
+[Line:ChrLR Packed By]
+	Field		: Short Prompt, ChrLR Packed By
+	Local		: Field	: Short Prompt		: Info	: "Packed By"
+	Space Top	: 0.6
+[Field:ChrLR Packed By]
+	Use			: XNAme Field
+	Storage		: ChrLRPAckedBy
+;;---	
+
+[Line:ChrLR NoOfBundles]
+	Field		: Short Prompt, ChrLR NoOfBundles
+	Local		: Field	: Short Prompt		: Info	: "No of Bundles"
+	Space Top	: 0.6
+[Field:ChrLR NoOfBundles]
+	Use			: XNAme Field
+	Storage		: UDFNoOfBundels
+;;---	
+
+[Line:ChrLR  Paid_To Pay]
+	Field		: Short Prompt, ChrLR Paid_To Pay
+	Local		: Field	: Short Prompt		: Info	: "Paid/To Pay"
+[Field:ChrLR Paid_To Pay]
+	Use			: XNAme Field
+	Storage		: ChrLRPaidType
+	Table		: ChrLR Paid_To PayTable
+	Show Table	: Onempty
+[Table:ChrLR Paid_To PayTable]
+	Title		: "Select"
+	List Name	: "Paid","To Pay"
+	Format		: $Name, 8
+;;---
+	
+[Line:ChrLR  Club Booking] 
+	Field		: Short Prompt, ChrLR Club Booking
+	Local		: Field	: Short Prompt		: Info	: "Club Booking"
+[Field:ChrLR Club Booking]
+	Use			: XNAme Field
+	Storage		: ChrLRClubBooking
+;;---
+	
+[Line:ChrLR  Freight Amount]
+	Field		: Short Prompt, ChrLR Freight Amount
+	Local		: Field	: Short Prompt		: Info	: "Freight Amount"
+[Field:ChrLR Freight Amount]
+	Use			: XAmountField
+	Storage		: ChrLRFreightAmount
+;;---
+
+;;--------------
+[Part:Vch no detailsNaar]
+	Line			: Vch no detailsNaarTxt,Vch no detailsNaar
+	Space Bottom	: 0.4
+[Line:Vch no detailsNaarTxt]
+	Field		: Vch no detailsNaarTxt
+[Field:Vch no detailsNaarTxt]
+	Set as		: "Narration"
+	Skip			: Yes
+	Style		: Tiny
+	Full Width	: Yes
+	
+[Line:Vch no detailsNaar]
+	Field		: Vch no detailsNaar
+[Field:Vch no detailsNaar]
+	Storage		: Narration
+	Use			: Narration Field
+	Border		: Deep Grey Box
+	Line			: 3
+	Full Width	: Yes
+
+	
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Function;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[Function:Kisan Led Fun]
+	
+	Parameter	: PartyLedgerName	: String
+	Parameter	: LedgerMobile		: String
+	Parameter	: Email			: String
+	
+	Variable	: MsgVar			: String	 
+	Local Formula	: Branch		: $KKDealerName:Company:##SVCurrentCompany 
+	Local Formula	: MobileNos	: @LedMob+","+@ExecMobNo
+	Local Formula	: LedMob		: $LedgerMobile:Ledger:$Partyledgername
+	Local Formula	: Execmob		: $ExecMobileNo:CostCentre:$VCHExecutiveName
+	
+	Local Formula	: VchObj			: $$Sprintf:"ID:%s":##KishanVchMstId
+	Local Formula	: IsSMSEnabled		: $KKSMSEnable:Company:##SVCurrentCompany
+	Local Formula	: ISDespatchEnabled	: $SMSEnableDespatch:Company:##SVCurrentCompany
+	Local Formula	: ExecMobNo		: If($VCHExecutiveName = $$SysName:None OR $$IsEmpty:$VCHExecutiveName)then "" else ","+@Execmob
+	Local Formula	: PtyAlias		: $OnlyAlias:Ledger:$PartyLedgerName
+;	001 : Log		: @LedMob
+;	002 : Log		: @ExecMobNo
+;	003 : Log		: @MobileNos 
+
+
+	100 : If	: @IsSMSEnabled AND @ISDespatchEnabled 
+	105 : Set Object	: (Voucher,VchObj).
+	107 : Query Box		: "Send SMS Now ?"
+	110 : If	: $$LastResult
+;	120 : Log	: "------"
+;	140 : Set	: MsgVar		: "Dispatch details for %0D Invoice No:"+$VoucherNumber + "%0D"+"Invoice Date:" + $$String:$Date + "%0D"
+;	142 : Set	: MsgVar		: ##MsgVar+ "Dealer:"+@DelearName +"%0D"+"Value:"+$$String:$Amount+"%0D"+ "LR No:"+$VATForm49No+"%0D"+"LR Date:"+$$String:$BillLadingDate
+;	144 : Set	: MsgVar		: ##MsgVar+ "%0D"+"Transporter Name:"+$EICHECKPOST
+	
+;	140 : Set	: MsgVar		: "Dispatch details for"; Invoice No:"+$VoucherNumber ;+"Invoice Date:" + $$String:$Date 
+;	142 : Set	: MsgVar		: ##MsgVar+ "Dealer:"+@DelearName +"Value:"+$$String:$Amount+ "LR No:"+$VATForm49No+"LR Date:"+$$String:$BillLadingDate
+;	144 : Set	: MsgVar		: ##MsgVar+ "Transporter Name:"+$EICHECKPOST
+
+;	145 : Set	: MsgVar		: "Dispatch details for"+"%0D"+"Invoice No:"+ $VoucherNumber +"%0D"+"Invoice Date: "+$$String:$Date+"%0D"+"Dealer Name: "+@DelearName+","+"%0D"+"Invoice Value: "+$$String:$Amount+"%0D"+"LR No: "+$VATForm49No+"%0D"+"LR Date: "+$$String:$BillLadingDate+"%0D"+"Transporter Name: "+$EICHECKPOST;+" Total No of Boxes : 2"	
+;	146 : Set	: MsgVar		: "Dispatch details for"+"%0D"+"Invoice No:"+ $VoucherNumber +"%0D"+"Date: "+$$String:$Date+"%0D"+"Dealer: "+@DelearName+","+"%0D"+"Invoice Value: "+$$String:$Amount+"%0D"+"LR No: "+$VATForm49No+"%0D"+"LR Date: "+$$String:$BillLadingDate+"%0D"+"Transporter: "+$EICHECKPOST+"%0D"+"Total No of Boxes: "+$KKNoOfBoxes	
+
+	147 : Set	: MSGVar		: "Dispatched"+"%0D"+"INV:"+$VoucherNumber+" ("+$$String:$Date+")"+"%0D"+"DLR:"+@PtyAlias+"%0D"+"AMT: "+$$string:$Amount+"%0D"+"LR: "+$VATForm49No+" ("+$$string:$BillLadingDate+")"+"%0D"+"BY: "+$EICHECKPOST+"%0D"+"CTN: "+$KKNoOfBoxes+"%0D"+"BR: "+@Branch
+
+;	150 : Log	: "Msg= "+##MsgVar
+;	160 : Log	: "Nos-"+@MobileNos
+
+	200 : If	: Not $$IsEmpty:@LedMob
+	210 : Call: SEND SMS From Tally	: @MobileNos:##MsgVar
+;	210 : Call: SEND SMS From Tally	: "9066226867":##MsgVar
+	220 : End If
+	
+	290 : End If
+	300 : End If
+	
+	040:Set Object:(Ledger,##PartyLedgerName).
+	050:Set Target
+	060:Set Value:LedgerMobile:##LedgerMobile
+	070:Set Value:Email:##Email
+	080:Alter Target
+	
+	
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;program end;;;;;;;;;;;;;;;;;

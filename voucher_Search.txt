@@ -1,0 +1,142 @@
+[Report:CherryVoucherSearch]	
+	Title			: "Voucher Search" 
+	Form			: CherryVoucherSearch
+	
+[Form:CherryVoucherSearch]
+	Part			: CherryVoucherSearchOut
+	Local			: Field	: Form Subtitle			: Info		: "Search Voucher"
+	Local			: Field	: Form Subtitle			: Style		: Small Bold
+	Space Left		: 1
+	Space Right		: 1
+	Width			: 50
+	On:Form Accept	: Yes: Form Accept
+	On:Form Accept	: Yes: Call						: VoucherInAlterMode:#CherryVoucherDate 
+	No Confirm		: Yes
+[Part:CherryVoucherSearchOut]
+	Part			: Form Subtitle, CherryVoucherSearch
+	Vertical		: Yes
+	Space Left		: 1
+	Space Right		: 1
+	Border			: Grey Box
+	
+[Part:CherryVoucherSearch]
+	Line			: CherryVoucherType, CherryVoucherSearch
+	Local			: Field	: Short Prompt			: Style		: Small 
+	Local			: Field	: Short Prompt			: Width		: 12
+;;--	
+[Line:CherryVoucherType]
+	Field			: Short Prompt, CherryVoucherType
+	Local			: Field	: Short Prompt			: Info		: "VoucherType" 
+	Space Bottom	: 0.5
+[Field:	CherryVoucherType]
+
+	Use				: XNAme Field
+	Full Width		: Yes
+	Show Table		: Always
+	Table			: CherryVoucherTypeNames
+;;----
+[Line:CherryVoucherSearch]
+	Field			: Short Prompt, CherryVoucherSearch, CherryVoucherMstId,CherryVoucherDate
+	Local			: Field	: Short Prompt			: Info		: "Vouchers"
+	Space Bottom	: 1
+[Field:CherryVoucherSearch]
+	Use				: XName Field
+	Full Width		: Yes
+	Show Table		: Always
+	Table			: CherryPostedVouchers
+	Set Always		: Yes
+	
+[Field:CherryVoucherMstId]
+	Width			: 5
+	Set as			: $$Table:CherryVoucherSearch:$MasterId
+	Set Always		: Yes
+	Modifies		: ChrMstIdVar	: Yes
+	Invisible		: Yes
+
+[Collection:CherryVoucherTypeNames]
+	Title			: "Voucher Types"
+	Type			: VoucherType
+	Fetch			: Name
+	Format			: $Name, 25
+	Align			: Right
+	Full Height		: Yes
+	Filter			: FltByChrryVchTypeMst;IsAccountingVoucher
+	
+[Field:CherryVoucherDate]
+	Width			: 6
+	Set as			: $$Table:CherryVoucherSearch:$Date
+	Set Always		: Yes
+	Invisible		: Yes
+[System:Formulas]
+	IsAccountingVoucher		: $$IsAccountingVch:$Name
+
+[Collection:CherryPostedVouchers]
+	
+	Title			: "Vouchers"
+	Type			: Vouchers		: VoucherType
+;	Belongs To		: Yes
+	Child Of		: #CherryVoucherType
+	Fetch			: Date, VoucherNumber,MasterId, VoucherTypeName
+	Format			: $VoucherNumber, 20
+	Format			: $Date,8
+;	Format			: $Masterid
+;	Format			: $VoucherTypeName
+	Sub Title		: "VoucherNumber","Date";,"VoucherType"
+	Align			: Right
+	Full Height		: Yes
+	
+[System:Variables]
+	ChrMstIdVar		: ""
+[Variable:ChrMstIdVar]
+	Type			: String
+	
+[Function:VoucherInAlterMode]
+	Variable		: VchDaysVar		: Number	: 0
+	Parameter		: DateVar			: String
+	Variable		: alterAccessVar	: Logical
+		
+;	003 : Log		: ##DateVar
+;	010 : Log		: ##ChrMstIdVar
+	020 : Set		: ChrMstIdVar		: $$Sprintf:"ID:%s":##ChrMstIdVar
+;	030 : Log		: ##ChrMstIdVar
+
+	040 : Set		: VchDaysVar		: $$Date:$$MachineDate - $$date:##DateVar
+	
+;	a10 : Log		: $$string:$$machineDate  + " -- " + ##DateVar
+	
+;	041 : Log		: "NoDays-" + $$string:##VchDaysVar
+	042 : Set		: alterAccessVar	:  ##VchDaysVar <= @@CherryDaysOfBackDatedVch
+	
+;	012313 : Log	: ##alterAccessVar;$$CherryDaysAllowed
+;	1233: Log		: @@CherryDaysOfBackDatedVch
+	
+	050 : If		: Not $$IsEmpty:##ChrMstIdVar
+	060 : If		: (($$IsCmpOwner OR $$CmpUserLevel = "Owner") Or ##alterAccessVar)
+	090 : Alter		: VchInAlterMode
+	100 : Else 
+	070 : Display	: VchInDisplayMode
+	120 : End If
+	080 : End If
+
+
+
+[Report:VchInAlterMode]
+	Use				: Voucher
+	Object			: Voucher		: ##ChrMstIdVar
+[Form:VchInAlterMode]
+	Use				: Voucher
+
+[Report:VchInDisplayMode]
+	Title			: "Voucher"
+	Use				: Cherry VCH Display
+	Object			: Voucher		: ##ChrMstIdVar
+	Local			: Form			: Default			: Delete	: Print	
+	Local			: Form			: Default			: Add		: Print	: VchSearchVoucher Print
+	
+[Report: VchSearchVoucher Print]
+	Use				: Voucher Print
+	Delete			: Object
+	Add				: Object			: Voucher		: ##ChrMstIdVar
+	
+
+	

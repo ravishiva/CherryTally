@@ -1,0 +1,182 @@
+[#Collection:Stockable GodownExtarct Server]	
+	Filter		: HideFromGodownList
+	Option		: ADDChrSEcurityFilter			: Not $DisableGodownSec:VOUCHERTYPE:##SVVoucherType 
+
+[!Collection:ADDChrSEcurityFilter]
+	Add			: Filter:FilterByApplicablegodown 
+	
+
+[#Collection:CHRDefaultGodownTable]	
+	
+	Option		: ADDChrSEcurityFilter			: Not $DisableGodownSec:VOUCHERTYPE:##SVVoucherType 
+
+
+[#Collection: Stockable Godown VchExtract]
+	Title		: TEST
+	Add			: Filter		: HideFromGodownList2
+	Option		: ADDChrSEcurityFilter			: Not $DisableGodownSec:VOUCHERTYPE:##SVVoucherType 
+
+	
+;[#Field:GTRNDestination]
+;	Delete		: Table	
+;	Add			: Table		: CherryStockable GodownExtarct       : NOT @@IsJobCostingOn
+;	Add			: Table     : JOB Stockable GodownExtract	: @@IsJobCostingOn
+;	
+;	
+;[Collection:CherryStockable GodownExtarct]
+;	Option       : ChrStockable GodownExtarct Server	 	: NOT $$IsRemoteCompany
+;    Option       : Stockable GodownExtarct Remote 			: $$IsRemoteCompany
+;	
+;
+;[!Collection:ChrStockable GodownExtarct Server]
+;	Use     	: Godown
+;	Fetch		: HasNoSpace, ItemClBalance, GodownItemClBal
+;    Format  	: @@StkGdwItemBalance   : "Base"    
+;	Delete		: Filter
+;	Add			: Filter  				: StockableGodownFilter	, HideFromGodownList  
+;	
+;[!Collection:CheryJOB Stockable GodownExtract]
+;	Use			: JOB Stockable GodownExtract
+;	
+[#Field: VCH Godown]
+;	Delete		: Table	
+;;	Add			: Table		: CherryStockable GodownExtarct       	: NOT @@IsJobCostingOn
+;;	Add			: Table     : CherryJOB Stockable GodownExtract		: @@IsJobCostingOn
+;	Background	: Green 
+;[Collection:CherryJOB Stockable GodownExtract]
+;	Option              : ChrryJob Stockable GodownExtarct Server 	: NOT $$ExclEvaluate:$$IsRemoteCompany
+;    Option              : Job Stockable GodownExtarct Remote : $$ExclEvaluate:$$IsRemoteCompany
+;
+;[!Collection:Chrry Job Stockable GodownExtarct Server]
+;	
+;    Use     : Godown
+;	Fetch   : Name, Language Name, JobName, ItemClBalance, GodownItemClBal	
+;    Format  : $JobName,20
+;    Format  : @@StkGdwItemBalance   : "Base"
+;	Delete	: Filter
+;	Add		: Filter 	: StockableGodownFilter, HideFromGodownList
+;
+
+[Function:ApplicableCGodownByUser]
+	Parameter				: GodownName			: String	
+	Variable				: CmpUserName			: String	: $$CmpUserName
+	010 : Log				: ##CmpUserName
+	020 : Set Object		: (Company,##SVCurrentCompany).
+	030 : Walk Collection	: USER LIST
+;	040 : Log				: $Name
+	050 : If				: $Name = 	##CmpUserName
+	060 : Log				: "---"+$Name
+	055 : Do If				: ($$IsEmpty:$AccissibleGodown Or $AccissibleGodown = $$SysName:AllItems )		: Return	: Yes 
+	070 : Walk Collection	: AccissibleGodown
+;	080 : Log				: $AccissibleCostCentre
+	085 : Do If				: ($$IsBelongsToChrGodown:##GodownName:$AccissibleGodown ) : Return	: Yes	 
+;	085 : Do If				: ($$IsChildOf)
+	090 : End Walk			
+	100 : End If
+	250 : End Walk
+	260 : Log				: "----"
+
+	
+[Function:IsBelongsToChrGodown]
+	Parameter	: ChildGodownVar			: String
+	Parameter	: ParentGodownVar			: String
+	030 : Set Object:(Godown,##ChildGodownVar).
+	040 : Log	: $NAme
+	050 : Return	: $$IsBelongsTo:##ParentGodownVar
+	
+	
+
+[System:Formulas]
+	
+	FilterByApplicablegodown	: If($$IsCmpOwner ) Then Yes Else $$ApplicableCGodownByUser:$Name 
+	
+	
+;[#Collection:CHRDefaultGodownTable]
+;Filter:FilterByApplicablegodown
+	
+;[#Collection: Godown Under MGodown]
+;Filter:FilterByApplicablegodown
+;[#Collection: Godown]
+;;Filter:FilterByApplicablegodown
+;[#Collection: List of Godowns]
+;Filter:FilterByApplicablegodown
+;[#Collection: Godown for Parent]
+;Filter:FilterByApplicablegodown
+;[#Collection: Stockable Godown]				;; Collection Used in StockTransfer Stk Journal
+;Filter:FilterByApplicablegodown	
+;[#Collection: JOB Stockable Godown]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Godown SRC]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Excise Dealer Godown]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Excise Manufacturer Godown]
+;Filter:FilterByApplicablegodown
+;[#Collection: Excise ExportMfgr Godown]
+;Filter:FilterByApplicablegodown
+;[#Collection: ListofExciseMfgrDealerUnit]
+;Filter:FilterByApplicablegodown	
+;[#Collection: ListofExciseMfgrUnit]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Excise Unit]
+;Filter:FilterByApplicablegodown
+;[#Collection: Excise STKI GodownName]
+;Filter:FilterByApplicablegodown	
+;[#Collection: ListofExciseDealerUnit]
+;Filter:FilterByApplicablegodown	
+;[#Collection: EIGodownList]	
+;Filter:FilterByApplicablegodown	
+;[#Collection: Godown VchSrc]
+;Filter:FilterByApplicablegodown	
+;[#Collection: GodownChildOfGodownName]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Primary Godowns]
+;Filter:FilterByApplicablegodown
+;[#Collection: RemoteGodownChildOfGodownName]
+;Filter:FilterByApplicablegodown	
+;[#Collection: JC GodownChildOfGodownName]
+;Filter:FilterByApplicablegodown	
+;[#Collection: JobWork SelectedGodown]
+;Filter:FilterByApplicablegodown	
+;[#Collection: JCGodownChildOfGroupName]
+;Filter:FilterByApplicablegodown
+;[#Collection: JobWorkPrimary Godown]
+;Filter:FilterByApplicablegodown	
+;[#Collection  : GodownChildOfGroupName]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Trader ExciseStockRegisterUnit]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Trader ExcisePurchaseBillRegisterUnit]
+;Filter:FilterByApplicablegodown
+;[#Collection: Trader ExciseStockCENVATRegisterUnit]
+;Filter:FilterByApplicablegodown
+;[#Collection: Trader ExciseStockCENVATRegisterAllItemUnit]
+;Filter:FilterByApplicablegodown
+;[#Collection: Dealer Party ExciseUnit]
+;Filter:FilterByApplicablegodown
+;[#Collection: Trader CustomsClearanceRegisterUnit]
+;Filter:FilterByApplicablegodown
+;[#Collection: Trader CustomsClearanceRegisterAllUnit]
+;Filter:FilterByApplicablegodown	
+;[#Collection: EAT DirGodowns]
+;Filter:FilterByApplicablegodown
+;[#Collection: Excise DSR FG Godown List]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Excise DSR FG All Item List]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Excise Daily DSR FG Godown List]
+;Filter:FilterByApplicablegodown
+;[#Collection: Excise Daily DSR FG AllItem List]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Excise Daily DSR FG Tariff List]
+;Filter:FilterByApplicablegodown	
+;[#Collection: Excise DSR FG Tariff List]
+;Filter:FilterByApplicablegodown	
+;[#Collection:ListofExciseTariffSubGodown]
+;Filter:FilterByApplicablegodown	
+;[#Collection: ExciseMfgrListofERSubGodown]
+;Filter:FilterByApplicablegodown	
+;[#Collection: JobWork AnnexureIV Godowns]
+;Filter:FilterByApplicablegodown
+;[#Collection: JobWork AnnexureV Godowns]
+;Filter:FilterByApplicablegodown	

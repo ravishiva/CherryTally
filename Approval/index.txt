@@ -1,0 +1,33 @@
+[#Menu:GateWayOfTally]
+[#Menu:DisplayMenu]	
+;	Item		: TestVchSetOptionsl		: Call				: TestVchSetOptionsl
+	Option			: AddItemsIfApprovalAccess					: $$UserApprovalAccess;@@DisplayApprovalList
+[!Menu:AddItemsIfApprovalAccess]
+	Add				: KeyItem			: Before				: @@LocQuit:"Vouchers waiting for approval" :V: Display	: ApproveUserVouchers
+	Add				: KeyItem			: Before				: @@LocQuit:Blank
+	
+
+[#Menu:Security Control]
+	
+	Add		: Key Item	: After		: @@locUsersAndPasswords : Blank
+	Add		: Key Item	: After		: @@locTypesofSecurity	: Blank
+	Add		: Key Item	: After		: @@locTypesofSecurity	: "Voucher Approval Access"	: A : Alter	: UserVchApvAccessConfig	
+	Add		: Key Item	: After		: @@locTypesofSecurity	: Blank
+	
+[System:EVent]
+	
+;	CMPLOADCMP		: Load Company		: Yes				: Call	: Display Vouchers For Approval 
+
+[Function:Display Vouchers For Approval]
+
+	Local Formula		: ISVoucherExists	: $$FilterCount:ApproveUserVchsColl > 0	
+;	000 : Log			: @ISVoucherExists	
+	010 : If			: @ISVoucherExists
+	020 : Display		: ApproveUserVouchers
+	040 : End If
+	
+
+[Include:customize.txt]
+[Include:approve_vouchers.txt]
+;[Include:cancledVchparty.txt]
+

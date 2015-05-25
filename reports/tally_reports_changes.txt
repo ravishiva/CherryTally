@@ -1,0 +1,49 @@
+
+[#Line: ORDERDetail]
+;	Local		: Field	: Default		: Background	: YELLOW
+	Add			: Right Field			: At Beginning		: ORDERDetailSalesMan
+
+[Field:ORDERDetailSalesMan]
+	Use			: XNAme Field
+	Style		: Small 
+	Set as		: $Salesman
+	Width		: 15
+;	Background	: Green
+	
+
+[#Collection: SalePosOrderOfCompany]	
+	Compute				: Salesman		: $ChrVchSalesMan
+	
+[#Part: ORDER ColTitle]
+	Local				: Line			: ORDERCol1		: Add		: Right Field 	: At Beginning			: ORDERDetailSalesMan
+	Local				: Line			: ORDERCol1		: Local		: Field		 	: ORDERDetailSalesMan 	: Info	: "Salesman "
+	
+	
+[#Part: CMP COLBasics]
+	Add			: Line		: AddChrPurchaseInvoiceDate
+
+[Line:AddChrPurchaseInvoiceDate]
+	Field		: Medium Prompt, AddChrPurchaseInvoiceDate
+	Local		: Field		: Medium Prompt	: Info	: "Show Purchase Inv. Date ?"
+	Invisible	: Not ($$IsPurchase:##VoucherTypeName)
+	
+[Field:AddChrPurchaseInvoiceDate]
+	Use			: Logical Field
+	Storage		: AddChrPurInvDate
+	
+
+[#Report: Voucher Register]
+	Local		: Line		: DSP ColVchDetail			: Add		: Field	: After	: DBC VchType		: DBC VchType PurInvDate
+	Local		: Line		: DSP ColVchTitle			: Add		: Field	: After	: DBC VchType		: DBC VchType PurInvDate
+	Local		: Line		: DSP ColVchTotal			: Add		: Field	: After	: DBC VchType		: DBC VchType PurInvDate
+	Local		: Line		: DSP ColVchTitle			: Local		: Field	: DBC VchType PurInvDate	: Info	: "Pur. Inv Date"
+[Field:DBC VchType PurInvDate]
+	Width		: 7
+	Border		: Thin Left
+	Invisible	: Not $$IsPurchase:##VoucherTypeName
+	Set as		: $PurchaseInvDate
+	
+[#Collection: Columnar Vouchers of Company]
+		
+	Compute		: PurchaseInvDate		: $ChrPurchaseInvDate
+	

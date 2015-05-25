@@ -1,0 +1,342 @@
+[Function:ChryVoucherTypes]
+	
+	Local Formula		: AccessAllowedCreate		: $$Allow:CREATE:$Name
+	Local Formula		: AccessAllowedAlter		: $$Allow:ALTER:$Name
+	Local Formula		: AccessAllowedPRINT		: $$Allow:ALTER:$Name
+	
+	010 : Walk Collection	: ChryVoucherTypes
+;	020 : Log	: $Name  + " -- " + $$string:@AccessAllowedCreate  + $$String:@AccessAllowedAlter + $$String:@AccessAllowedPRINT
+;	030 : Log	: $$Allow:ALTER:$Name;$$Translate:$Name
+	060 : End Walk
+;	070 : Log			: "--------------"
+	
+
+[Function:IsVoucherApplicable]
+	Parameter			: VchType			: String
+	Variable			: Value				: Number
+	010 : Set	: Value	: $$FilterCount:ChryVoucherTypes:ChrVchFilterCondition	
+;	011 : Log	: ##VchType+"--"+$$String:##Value
+	040 : Do If	: (##Value = 1) : Return	: Yes 
+		
+	
+	
+
+[Collection:ChryVoucherTypes] 
+	
+	Type		: VoucherType
+	Fetch		: Name
+	
+	Filter		: FltByAlloudAccess 
+	
+[System:Formulas]
+	FltByAlloudAccess	 	: $$Allow:CREATE:$Name OR $$Allow:ALTER:$Name OR $$Allow:ALTER:$Name  
+	ChrVchFilterCondition	: ##VchType = $Name
+	FilterByCherryUserAccess: $$IsVoucherApplicable:$VoucherTypeName	
+	FltByChrryVchTypeMst	: $$IsVoucherApplicable:$Name
+
+;;===============================DAYBOOK====================
+[#Collection: Vouchers of Company]
+	Family		: $$Translate:"CHERRY DAY BOOK"
+	Add			: Filter	 : FilterByCherryUserAccess	
+[#Collection: DBVoucher SRC]
+	Add			: Filter	 : FilterByCherryUserAccess
+	Family		: $$Translate:"CHERRY DAY BOOK"
+;===========================================================
+
+[#Collection: Company Vouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Company AccVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: Company InvVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Company OrdVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Company PayrollVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Company Attendance Vouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Excise OpeningStock Voucher]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+;[Collection: Vouchers of Company]
+;[Collection: DBVoucher SRC]
+[#Collection: VATSales]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: VATPurchase]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: ECVATSales]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: ECVATPurchase]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: VATPurchaseVchInComputation]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+;;======================
+
+[#Collection: CSTVoucherVerifySrc]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: SRC Specific Vouchers of Company]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: SRC Filtered Vouchers of Company]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: SRC Filtered Vouchers of Company]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: SRC Vouchers of Group]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: Reconciliation Vouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: Vouchers of CostCentre SRC]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: Vouchers of TaxClassification]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: Vouchers of Stock Item By Name]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: Vouchers of Stock Item]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess	
+[#Collection: Confirm Ledger Vouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: PRPayVouchers of CostCentre]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: PaymentVchrsSrc]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: PaymentVchrsFinYrSrc]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Vouchers of TaxClassificationWithFlag]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Statutory Vouchers of CompanySRC]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: CSTGrpReceivableCollection]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: CST GrpRecvSRCCollection]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Led1DebitVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Led1CreditVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Led2DebitVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Led2CreditVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Led3DebitVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: Led3CreditVouchers]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: JobWork MOut VouchersofStockItem]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: JobWork MIn VouchersofStockItem]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: PyrlITVchofCostCentre]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: PyrlLiabVouchers of CostCentre]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+[#Collection: ITEmpVarianceSalarySRC]
+Fetch		: VoucherTypeName
+Filter		: FilterByCherryUserAccess
+	
+;;=================================================VOUCHERTYPE===============================================
+[#Collection: Voucher Type]
+Filter:FltByChrryVchTypeMst
+[#Collection: Voucher Type PSR]
+Filter:FltByChrryVchTypeMst
+[#Collection: Attendance Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Contra Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Payment Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Receipt Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Journal Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Payroll Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Indent Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Credit Notes]
+Filter:FltByChrryVchTypeMst
+[#Collection: Debit Notes]
+Filter:FltByChrryVchTypeMst
+[#Collection: Sales Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Sales Orders]
+Filter:FltByChrryVchTypeMst
+[#Collection: Job Work Out Orders]
+Filter:FltByChrryVchTypeMst
+[#Collection: Job Work In Orders]
+Filter:FltByChrryVchTypeMst
+[#Collection: Job Material Issue]
+Filter:FltByChrryVchTypeMst
+[#Collection: Job Material Receive]
+Filter:FltByChrryVchTypeMst
+[#Collection: Purc Orders]
+Filter:FltByChrryVchTypeMst
+[#Collection: Purchase Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Delivery Notes]
+Filter:FltByChrryVchTypeMst
+[#Collection: Receipt Notes]
+Filter:FltByChrryVchTypeMst
+[#Collection: Rejections Out]
+Filter:FltByChrryVchTypeMst
+[#Collection: Rejections In]
+Filter:FltByChrryVchTypeMst
+[#Collection: Physical Stock Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Stock Journals]
+Filter:FltByChrryVchTypeMst
+[#Collection: Memo Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection: Rev Jrnl Vouchers]
+Filter:FltByChrryVchTypeMst
+[#Collection : NumVoucherssrc]
+Filter:FltByChrryVchTypeMst
+[#Collection: Voucher Type Product Code]
+Filter:FltByChrryVchTypeMst
+[#Collection: Voucher Type Product Code]
+Filter:FltByChrryVchTypeMst
+[#Collection: VoucherType ProductCode Details]
+Filter:FltByChrryVchTypeMst
+[#Collection: Scenario List]
+Filter:FltByChrryVchTypeMst
+[#Collection : AccountingVchTypeList]
+Filter:FltByChrryVchTypeMst
+[#Collection : InventoryVchTypeList]
+Filter:FltByChrryVchTypeMst
+[#Collection : PayrollVchTypeList]
+Filter:FltByChrryVchTypeMst
+[#Collection : SYNCDepVTypesInServerRule]
+Filter:FltByChrryVchTypeMst
+[#Collection : SYNCDepVTypesInClientRule]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise PurchaseVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise SalesVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise DebitNoteVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise CreditNoteVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise JournalVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise StockJournalVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise PurchaseOrderVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise SalesOrderVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise DeliveryNoteVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Excise ReceiptNoteVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: ExciseDealerVoucherTypeList]
+Filter:FltByChrryVchTypeMst
+[#Collection: ExciseDealer PurchaseVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: ExciseDealer SalesVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: ExciseDealer DebitNoteVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: ExciseDealer CreditNoteVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: ListOfExciseVoucherTypes]
+Filter:FltByChrryVchTypeMst
+[#Collection: VATVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: VATJrnlVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: VATVoucherTypeTable]
+Filter:FltByChrryVchTypeMst
+[#Collection: STX JournalVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: VchTypeBelongsTo]
+Filter:FltByChrryVchTypeMst
+[#Table: ChgVchType]
+Filter:FltByChrryVchTypeMst
+[#Collection: List of VchTypes]
+Filter:FltByChrryVchTypeMst
+[#Table: Trader ChgVchType]
+Filter:FltByChrryVchTypeMst
+[#Collection: ExciseVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Multi Voucher Type]
+Filter:FltByChrryVchTypeMst
+[#Collection: InStJrnls]
+Filter:FltByChrryVchTypeMst
+[#Collection: OutStJrnls]
+Filter:FltByChrryVchTypeMst
+[#Collection: Daybook VoucherTypeColl]
+Filter:FltByChrryVchTypeMst
+[#Collection: MthlyVchType]
+Filter:FltByChrryVchTypeMst
+[#Collection: PaymentVoucherTypes]
+Filter:FltByChrryVchTypeMst
+[#Collection: ReceiptVoucherTypes]
+Filter:FltByChrryVchTypeMst
+[#Collection: List of Voucher Types]
+Filter:FltByChrryVchTypeMst
+[#Collection: STAT VchType]
+Filter:FltByChrryVchTypeMst
+[#Collection: MthlyAccVchType]
+Filter:FltByChrryVchTypeMst
+[#Collection: Audit AllSubVchTypeStat]
+Filter:FltByChrryVchTypeMst
+[#Collection: Audit AllVchTypeStat]
+Filter:FltByChrryVchTypeMst
+[#Collection: AutoBRSVoucherType]
+Filter:FltByChrryVchTypeMst
+[#Collection: EAT Voucher Type]
+Filter:FltByChrryVchTypeMst
+[#Collection: ExciseCreditNoteSrc]
+Filter:FltByChrryVchTypeMst
+[#Collection: MaterialInVchTypeIn]
+Filter:FltByChrryVchTypeMst
+[#Collection: MaterialInVchTypeOut]
+Filter:FltByChrryVchTypeMst
+[#Collection: MaterialOutVchTypeIn]
+Filter:FltByChrryVchTypeMst
+[#Collection: MaterialOutVchTypeOut]
+Filter:FltByChrryVchTypeMst
+[#Collection: CMPVoucherTypes]
+Filter:FltByChrryVchTypeMst
+
+
+
+

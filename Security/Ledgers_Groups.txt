@@ -1,0 +1,446 @@
+[#Menu:GatewayOfTally]
+;	Add		: Item		: TEST	: Call		: ApplicableGroupByUser
+;	Add		: Item		: TEST	: Call		: ApplicableLedGroupByUser
+
+[Function:ApplicableLedGroupByUser]
+	Parameter				: GroupName					: String	;: "AdH"
+	Variable				: CmpUserNAme				: String	: $$CmpUserName;"ADH"
+	Variable				: RetVal					: Logical
+	
+;	010 : Log				: ##GroupName	
+	020 : Set Object		: (Company,##SVCurrentCompany).
+	030 : Walk Collection	: USER LIST
+;	040 : Log				: $Name
+	050 : If				: $Name = 	##CmpUserName
+;	060 : Log				: "---"+$Name
+	055 : Do If				: ($$IsEmpty:$AccissibleLedGroups)		: Return	: Yes 
+	070 : Walk Collection	: AccissibleLedGroups
+;	080 : Log				: $AccissibleLedGroups
+;	082 : Log				: $$IsGrpOfGrp:##GroupName:$AccissibleLedGroups
+	085 : Do If				: ($$IsGrpOfGrp:##GroupName:$AccissibleLedGroups) : Return			: YEs;$$IsGrpOfGrp:##GroupName:$AccissibleLedGroups;If ##GroupName = $AccissibleLedGroups Then Yes Else  $$IsGrpOfGrp:##GroupName:$AccissibleLedGroups
+	090 : End Walk			
+	100 : End If
+	250 : End Walk
+	
+
+
+
+[#Collection: Group Under MGroup]
+Filter		: FltUserGrpByGroup
+[#Collection: Group]
+Filter		: FltUserGrpByGroup
+[#Collection: List of Groups]
+Filter		: FltUserGrpByGroup
+[#Collection: Group SRC]
+Filter		: FltUserGrpByGroup
+[#Collection: Sundry Debtors]
+Filter		: FltUserGrpByGroup
+[#Collection: Sundry Creditors]
+Filter		: FltUserGrpByGroup
+[#Collection: PayHeadGroupEarning MiscExpenses]
+Filter		: FltUserGrpByGroup
+[#Collection: PayHeadGroupEarning Expenses]
+Filter		: FltUserGrpByGroup
+[#Collection: PayHeadGroupEarning PrimaryExpenses]
+Filter		: FltUserGrpByGroup
+[#Collection: PayHeadGroupDeduction LiabAssets]
+Filter		: FltUserGrpByGroup	
+[#Collection: PayHeadGroupDeduction LiabAssets]
+Filter		: FltUserGrpByGroup
+[#Collection: PayHeadGroupEarning PrimaryLiabAssets]
+Filter		: FltUserGrpByGroup
+[#Collection: PayHeadGroupStatDeduction Group]
+Filter		: FltUserGrpByGroup	
+[#Collection: PayHeadGroupLoanAndAdvances]
+Filter		: FltUserGrpByGroup	
+[#Collection: PayHeadGroupCurrentLiab Group]
+Filter		: FltUserGrpByGroup	
+[#Collection: PayHeadGroupCurrentLiab Primary]
+Filter		: FltUserGrpByGroup	
+[#Collection: PayHeadGroupCollection]
+Filter		: FltUserGrpByGroup	
+[#Collection: Include Class Groups]
+Filter		: FltUserGrpByGroup	
+[#Collection: Payroll Include Groups]
+Filter		: FltUserGrpByGroup
+[#Collection: RecptPymt Include Groups]
+Filter		: FltUserGrpByGroup
+[#Collection: MSTKI PartyLedgerGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: ExciseDutyGroup]
+Filter		: FltUserGrpByGroup
+[#Collection: ExciseCENVATGroup]
+Filter		: FltUserGrpByGroup
+[#Collection: ExciseExpensesGroup]
+Filter		: FltUserGrpByGroup
+[#Collection: New Parent]
+Filter		: FltUserGrpByGroup
+[#Collection: Duty Parent]
+Filter		: FltUserGrpByGroup
+[#Collection: Party Parent]
+Filter		: FltUserGrpByGroup
+[#Collection: ExpGroupTable]
+Filter		: FltUserGrpByGroup
+[#Collection: TaxGroupTable]
+Filter		: FltUserGrpByGroup
+[#Collection: PartyGroupTable]
+Filter		: FltUserGrpByGroup
+[#Collection: TCSPartyGroupTable]
+Filter		: FltUserGrpByGroup
+[#Collection: TCSDutyGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: TCSPartyGroups]
+Filter		: FltUserGrpByGroup	
+[#Collection: New Parent For VatSalesLed]
+Filter		: FltUserGrpByGroup	
+[#Collection: New Parent For VatPurcLed]
+Filter		: FltUserGrpByGroup
+[#Collection: New Parent For PartyLedger]
+Filter		: FltUserGrpByGroup
+[#Collection: New Parent For VATAddlLedger]
+Filter		: FltUserGrpByGroup
+[#Collection: VATExpensesGroup]
+Filter		: FltUserGrpByGroup
+[#Collection: ServiceGroupTable]
+Filter		: FltUserGrpByGroup	
+[#Collection: STX New Parent]
+Filter		: FltUserGrpByGroup
+[#Collection: STX Duty Parent]
+Filter		: FltUserGrpByGroup	
+[#Collection: STX Party Parent]
+Filter		: FltUserGrpByGroup
+[#Collection: GroupChildOfGroupStock]
+Filter		: FltUserGrpByGroup
+[#Collection: MAnalyse GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: GroupSourcesOfFunds]
+Filter		: FltUserGrpByGroup
+[#Collection: GroupAppOfFunds]
+Filter		: FltUserGrpByGroup	
+[#Collection: NormalPLExpenses]
+Filter		: FltUserGrpByGroup
+[#Collection: NormalPLDirExpenses]
+Filter		: FltUserGrpByGroup	
+[#Collection: NormalPLInDirExpenses]
+Filter		: FltUserGrpByGroup
+[#Collection: NormalPLDirIncome]
+Filter		: FltUserGrpByGroup	
+[#Collection: NormalPLInDirIncome]
+Filter		: FltUserGrpByGroup	
+[#Collection: NormalPLIncome]
+Filter		: FltUserGrpByGroup
+[#Collection: IC GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: GrpOS GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: TrialBal GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: CCTrialBal GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: BS GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: GroupsForReservedGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: List of InterestGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: List of Groups for CC]
+Filter		: FltUserGrpByGroup
+[#Collection: NormalBSAssets]
+Filter		: FltUserGrpByGroup
+[#Collection: NormalBSLiabs]
+Filter		: FltUserGrpByGroup	
+[#Collection: NormalBSSrc]
+Filter		: FltUserGrpByGroup
+[#Collection: NormalBSAppl]
+Filter		: FltUserGrpByGroup	
+[#Collection: VertPLDirIncome]
+Filter		: FltUserGrpByGroup
+[#Collection: VertPLDirExpenses]
+Filter		: FltUserGrpByGroup
+[#Collection: VertPLInDirIncome]
+Filter		: FltUserGrpByGroup
+[#Collection: VertPLInDirExpenses]
+Filter		: FltUserGrpByGroup
+[#Collection: Include Multi Groups SRC]
+Filter		: FltUserGrpByGroup
+[#Collection: ExGroupSrc]
+Filter		: FltUserGrpByGroup
+[#Collection: GroupList SRC]
+Filter		: FltUserGrpByGroup	
+[#Collection: GRPVoucherExtract]
+Filter		: FltUserGrpByGroup	
+[#Collection: JRNLGRPVoucherExtract]
+Filter		: FltUserGrpByGroup
+[#Collection: SPGRPVoucherExtract]
+Filter		: FltUserGrpByGroup
+[#Collection: CashFlowGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: CashFlowGroupsOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: RemoteGroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: RemotePAYGroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: GPP GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: MAnalyseCAT GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: CST Party Group]
+Filter		: FltUserGrpByGroup
+[#Collection: CST Supplier Group]
+Filter		: FltUserGrpByGroup
+[#Collection: JC GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: JobWork Revenue]
+Filter		: FltUserGrpByGroup
+[#Collection: JobWork Expenses]
+Filter		: FltUserGrpByGroup
+[#Collection: Dealer Party Group]
+Filter		: FltUserGrpByGroup
+[#Collection: EAT Groups]
+Filter		: FltUserGrpByGroup
+[#Collection: EAT PayHeadGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: ICT Revenue GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: ICA GroupChildOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: RP GroupsOfGroupName]
+Filter		: FltUserGrpByGroup
+[#Collection: RP Groups]
+Filter		: FltUserGrpByGroup
+[#Collection: CFP CashSuppotedGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: CFP GrpsChildofGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: CFPOustanidngGroups]
+Filter		: FltUserGrpByGroup
+[#Collection: CFPOustanidngGrpChildofGroup]	
+Filter		: FltUserGrpByGroup
+
+
+
+
+;========================================LEDGERS========================================
+
+[Function:ApplicableGroupByUser]
+	Parameter				: LedgerName				: String	;: "AABC"
+	Variable				: CmpUserName				: String	: $$CmpUserName
+;	010 : Log				: ##CmpUserName
+	020 : Set Object		: (Company,##SVCurrentCompany).
+	030 : Walk Collection	: USER LIST
+;	040 : Log				: $Name
+	050 : If				: $Name = 	##CmpUserName
+;	060 : Log				: "---"+$Name
+	055 : Do If				: ($$IsEmpty:$AccissibleLedGroups)		: Return	: Yes 
+	070 : Walk Collection	: AccissibleLedGroups
+;	080 : Log				: $AccissibleLedGroups
+;	082 : Log				: $$IsLedOfGrp:##LedgerName:$AccissibleLedGroups
+	085 : Do If				: ($$IsLedOfGrp:##LedgerName:$AccissibleLedGroups)	: Return			: Yes
+	090 : End Walk	
+	091 : Break
+	092 : Break
+	100 : End If
+	250 : End Walk
+;	260 : Log				: "----"
+
+[System:Formulas]
+	FltUserLedgerByGroup	: if($$IsCmpOwner) Then Yes Else $$ApplicableGroupByUser:$Name
+	FltUserGrpByGroup		: If($$IsCmpOwner) Then Yes Else $$ApplicableLedGroupByUser:$Name
+	FltUserGrpByGroupLED	: If($$IsCmpOwner) Then Yes Else $$ApplicableLedGroupByUser:$Name
+;
+
+[#Collection: Monthly Ledger]
+Filter		: FltUserLedgerByGroup	
+
+[#Collection: Monthly Ledger Extract]
+Filter		: FltUserLedgerByGroup		
+
+
+
+[#Collection: Ledger]
+Filter		: FltUserLedgerByGroup 
+[#Collection: List of Ledgers]
+Filter		: FltUserLedgerByGroup 	
+[#Collection: List of All Ledgers]
+Filter		: FltUserLedgerByGroup 
+[#Collection: ChildLedgers]
+Filter		: FltUserLedgerByGroup 	
+[#Collection: Employee Pay Heads]
+Filter		: FltUserLedgerByGroup 	
+;[#Collection: EmpSalaryDtls PayHeads]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: CostCentreEnabledLedger]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: POS Cash Ledgers]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection : TCS Ledger Table]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection : FBT Ledger Table]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection : TDSPartyLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: TCSPartyLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Employee Pay Heads]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: POS Bank Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: POS Party Ledgers]
+;Filter		: FltUserLedgerByGroup 	
+;[#Table: Payroll Liab Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Table: Non Payroll Liab Ledgers]
+;Filter		: FltUserLedgerByGroup 	
+;[#Table: Non Payroll Liab PT Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Pay Head]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: List of Pay Heads]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Payroll Vch Journal Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Normal Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: PL Ledger]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: Cash Ledgers]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: Cash Class Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Invoice Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Party Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Sales Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Income Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Inv Income Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Inv Sales Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Purchase Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Expense Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Inv Expense Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Primary Expenses]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Inv Primary Expenses]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Primary Incomes]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Inv Primary Incomes]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Inv Purch Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Taxes Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Revenue Asset Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Revenue Liab Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Sales Support Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Purchase Support Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: ProvisionsCol]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Journal Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Table: Payroll AutoFill Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: PayStat Payheads]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: SrcBankColl]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: TDSDuty LedTableSrc]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: ST BankLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: CostCentreEnabledLedger]
+;Filter		: FltUserLedgerByGroup 
+;;[Collection: InvOutTrackNumbers Src]
+;[#Collection: LedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: NonStockLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: InPartyList]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: MTransferInList]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: OutPartyList]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: MTransferOutList]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: LedgerBelongsToBankGroups]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: MAnalyse LedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: IC NonStockLedgers]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: GrpOSNonStockLedgers]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: IC LedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: TrialBal LedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: TrialBal NonStockLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: TrialBal LedgerBelongsToBankGroups]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: BS LedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: LedgersForReservedGroups]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: List of InterestLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: List of Ledgers for CC]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: CashBank LedgersExtract Server]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: CashFlowLedgersOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: RemoteLedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: RemotePAYLedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: RemotePAYLedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: GPPNonStockLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: MAnalyseCAT LedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 	
+;;[Collection: PendingLedPurcPendingOrderDetails]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection:  OrderLedgerColl Src] 
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Emp Ledger Breakup]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: CST Party GrpLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: JC LedgerChildOfGroupName]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: Dealer Party Ledgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: EMailLedgers]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: EAT DirLedgers]
+;Filter		: FltUserLedgerByGroup 	
+;[#Collection: List of ExtractParty Server]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: RP LedgersOfGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: RP LedgerBelongsToGroupName]
+;Filter		: FltUserLedgerByGroup 
+;[#Collection: Ledger Under BankGroups]
+;Filter		: FltUserLedgerByGroup 
+
+	
+
+	
+
+
+

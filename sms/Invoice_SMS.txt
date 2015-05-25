@@ -1,0 +1,72 @@
+[#Form:AccountingVoucher]
+;	Option		: Send SmsOn Invoice Raised	: $$IsSales:$VoucherTypeName and $$InCreateMode
+[#Form:Voucher]
+;	Option		: Send SmsOn Invoice Raised	: $$IsSales:$VoucherTypeName and $$InCreateMode
+	
+[!Form:Send SmsOn Invoice Raised]
+	
+	On			: Form Accept	: Yes		: Call	: Send Cherry Inv SMS
+	
+[Function:SendCherryInvoiceSMS]
+
+	Parameter		: VchTypeVar			: String	
+	Variable		: MsgVar				: String
+	Local Formula	: IsSmsEnabled			: $CherryEnableSMS:Company:##SVCurrentCompany
+	Local Formula	: IsServiceBill			: $ISChrServiceVoucher:VoucherType:##VchTypeVar
+	Local Formula	: IsVchSmsEnabled		: $EnableChrVchSMS:VoucherType:##VchTypeVar 
+	Local Formula	: MobileNo				: $VchLedMobile1;$LedgerMobile:LEDGER:$PartyLedgerName
+	Local Formula	: BranchName			: $UdfChrBranchName:VoucherType:##VchTypeVar
+	010 : If		: @IsVchSmsEnabled AND @IsSmsEnabled
+	020 : Query Box	: "Send Sms Now ?"
+	030 : If		: $$LastResult
+	040 : Log		: $PartyLedgerName 
+	060 : Do If		: (@IsServiceBill)		: Set		: MsgVar	: "Thank you for availing services at " + @BranchName +" on "+$$String:$Date +" for Rs."+$$String:$Amount+" vide Invoice No "+ $VoucherNumber+  " Happy Shopping at over 30 Tyrepark stores."
+	070 : Do If		: (Not @IsServiceBill)	: Set		: MsgVar	: "Thank you for shopping at "+ @BranchName +" on "+ $$String:$Date+" for Rs."+$$String:$Amount+" vide Invoice No "+$VoucherNumber+"  Happy Shopping at over 30 Tyrepark stores."
+	
+	100 : If		: $$IsInternetActive
+	110 : Set Value: IsTlySmsSent				: Yes
+	120 : Do If	:($$StringLength:@MobileNo=10)		: Call	: SEND SMS From Tally : @MobileNo:##MsgVar
+;	130 : Do If	:($$StringLength:@MobileNo=10)		: Call	: SEND SMS From Tally : @MobileNo:##MessageText
+	150 : End If	
+	
+	195 : Log		: ##MsgVar 
+	196 : Log		: @MobileNo
+	200 : End If
+	210 : End If
+	
+
+[Function:Send Cherry Inv SMS]
+
+	Local Formula	: DateVar				: $$String:$Date
+	Local Formula	: AmtVar				: $$String:$Amount
+	Local Formula	: Mob1 					: $$String:$VchLedMobile1
+	Local Formula	: Mob2					: $$String:$VchLedMobile2
+	
+	Variable		: MessageText			: String
+	
+	000 : Log		: "-----------------"	
+	010 : Log		: $VoucherNumber
+	030 : Log		: $Date
+	040 : Log		: $partyLedgerName 
+	100 : If		: $CherryEnableSMS:Company:##SVCurrentCompany AND ((Not $$IsEmpty:@Mob1) Or (Not $$IsEmpty:@Mob2) )	
+	015 : Set Object
+	110 : Set Target
+	130 : Set Value: IsTallySmsEnabled			: Yes
+	150 : Set		: MessageText				: "Thank you for availing services at CHERRY''S TYRE PARK at Indiranagar on "+ @DateVar + " for Rs:" +
+										  + @AmtVar + "vide InvoiceNo: " + $VoucherNumber + ". Please visit again.Happy Shopping at over 22 Cherry''s Tyrepark stores"
+	
+	160 : Log		: ##MessageText
+	170 : If		: $$IsInternetActive
+	180 : Set Value: IsTlySmsSent				: Yes
+	190 : Do If	:($$StringLength:@Mob1=10)		: Call	: SEND SMS From Tally : @Mob1:##MessageText
+	200 : Do If	:($$StringLength:@Mob2=10)		: Call	: SEND SMS From Tally : @Mob2:##MessageText
+	210 : End If
+	
+	300 : End If
+	
+	
+[System:Udf]
+	IsTallySmsEnabled		: Logical		: 7062
+	IsTlySmsSent			: Logical		: 7063
+	
+	

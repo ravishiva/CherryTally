@@ -1,0 +1,185 @@
+
+[#Part: Company Users]
+;	Background		: White
+	Local			: Line	: Company Users 	: Add 	: Fields 	: ADDAccissibleCost, AddAccessibleLedgers,AddAccessibleGodown
+	Local			: Line	: CUSubTitle		: Add  	: Field	: After:CMP TNet AllowSMSAccessTitle	: ADDAccissibleCostTitle, ApprovedByCmpUser Title,AddAccessibleGodownTitle
+	Local			: Line	: CUTitle			: Add  	: Field	: After:CMP TNet AllowSMSAccessTitle	: ADDAccissibleCostTitle, ApprovedByCmpUser Title,AddAccessibleGodownTitle
+	Local			: Line	: CUTitle			: Local	: Field	: ApprovedByCmpUser Title 	: Info		: "Accessible"
+	Local			: Line	: CUSubTitle		: Local	: Field	: ApprovedByCmpUser Title 	: Info		: "Groups"
+	Local			: Line	: CUTitle			: Local	: Field	: ADDAccissibleCostTitle	: Info		: "Accessible"
+	Local			: Line	: CUSubTitle		: Local	: Field	: ADDAccissibleCostTitle 	: Info		: "CostCentre"
+	Local			: Line	: CUTitle			: Local	: Field	: AddAccessibleGodownTitle	: Info		: "Accessible"
+	Local			: Line	: CUSubTitle		: Local	: Field	: AddAccessibleGodownTitle 	: Info		: "Godown"
+	;
+	
+;-------------------------------------CostCEntre
+
+[Field:ADDAccissibleCostTitle]
+	Width			: 9
+	
+[Field:ADDAccissibleCost]
+	Width			: 9
+	Use				: Logical Field
+	Align			: Centre
+	Style			: Small Bold
+	SEtas			: "No"
+	Sub Form		: AccissibleCostCentre	: $$Value
+	Inactive		: $$IsEndOfList:$Security Or $$IsEmpty:#CmpLevel
+	Set Always		: Yes
+	Unique			: Yes
+	
+[Report:AccissibleCostCentre]
+	Title			: "Cost Centre"
+	Form			: AccissibleCostCentre
+[Form:AccissibleCostCentre]
+	Part			: Form Subtitle, AccissibleCostCentre
+	Local			: Field	: Form Subtitle		: Info	: "Cost Centre"
+	Width			: 35
+	Space Left		: 1
+	Space Right		: 1
+	Height			: 98% Screen
+	
+[Part:AccissibleCostCentre]
+	Line			: AccissibleCostCentre
+	Repeat			: AccissibleCostCentre		: AccissibleCostCentre
+	Scroll			: Vertical
+	Break On		: $$IsEndOfList:$AccissibleCostCentre OR #AccissibleCostCentre = $$SysName:AllItems
+	
+[Line:AccissibleCostCentre]
+	Field			: AccissibleCostCentre 
+[Field:AccissibleCostCentre]
+	Use				: Name Field
+	Style			: Small Bold
+	Table			: AccissibleCostCentreTable, End Of List 	: $$Line > 1
+	Table			: AccissibleCostCentreTable, All Items		: $$Line = 1
+	Full Width		: Yes
+	Show Table		: On Empty
+	Storage			: AccissibleCostCentre
+
+[Collection:AccissibleCostCentreTable]
+	Title			: "Cost Centre"
+	Type			: Cost Centre 
+	Fetch			: Name, Category
+	Format			: $Name, 15
+	Format			: $Category,15
+	Sub Title		: "Cost Centre", "Category" 
+
+	
+;------------------------------------LEdgers
+
+[Field:ApprovedByCmpUser Title]
+	Width			: 9;@@LogicalWidth
+	Skip			: Yes
+	Set as			: ""
+[Field:AddAccessibleLedgers]
+	Use				: Logical Field 
+;	Storage			: ApproveAuth
+	Delete			: Case
+;	Color			: Blue
+	Show Table		: Always
+	Align			: Centre
+	Width			: 9
+	Style			: Small Bold
+	SEtas			: "No"
+	Sub Form		: AddAccessibleLEDGERs	: $$Value
+	Unique			: Yes
+	Inactive		: $$IsEndOfList:$Security Or $$IsEmpty:#CmpLevel
+
+	
+[Collection:UsersCollectionsSource]
+	Type			: Company
+	Fetch			: Name	
+	
+[Collection:UsersCollectionsTable]
+	Title			: "Users"	
+	Type			: User List	: Company
+;	Walk			: User List
+	Format			: $Name, 10
+;	Format			: ;"A"
+	Fetch			: NAme, Security
+		
+
+	
+
+[Report:AddAccessibleLEDGERs]
+	Title			: "Ledger Groups"
+	Form			: AddAccessibleLEDLIST
+[Form:AddAccessibleLEDLIST]
+	Part			: Form Subtitle,AddAccessibleLEDLIST
+	Height			: 98% Screen
+	Width			: 35
+	Space Left		: 1
+	Space Right		: 1
+	Local			: Field	: Form Subtitle			: Info		: "Ledger Groups"
+	
+[Part:AddAccessibleLEDLIST]
+	Line			: AddAccessibleLEDLIST
+	Repeat			: AddAccessibleLEDLIST			: AccissibleLedGroups
+	Scroll			: Vertical
+	Break On		: $$IsEndOfList:$AccissibleLedGroups Or #AddAccessibleLEDLIST = $$SysName:AllItems
+[Line:AddAccessibleLEDLIST]
+	Field			: AddAccessibleLEDLIST
+[Field:AddAccessibleLEDLIST]
+	Use				: Name Field
+	Style			: Small Bold
+	Table			: AssiableLEDGERTable,EndOfList		: $$Line > 1
+	Table			: AssiableLEDGERTable, All Items	: $$Line = 1	
+	Full Width		: Yes
+	Show Table		: On Empty
+	Storage			: AccissibleLedGroups
+	Unique			: Yes
+	
+[Collection:AssiableLEDGERTable]
+	Title			: "Ledger Group" 
+	Type			: Group
+	Fetch			: Name, Parent  
+	
+
+;;-----------------------------------------Godown---------
+[Field:AddAccessibleGodownTitle]
+	Width			: 9
+
+[Field:AddAccessibleGodown]
+	Use				: Logical Field
+	Show Table		: Always
+	Width			: 9 
+	Set as			: "No"
+	Inactive		: $$IsEndOfList:$Security Or $$IsEmpty:#CmpLevel
+	Sub Form		: AddAccessibleGodownList	: $$Value
+	Align			: Center
+
+[Report:AddAccessibleGodownList]
+	Title			: "Godown"
+	Form			: AddAccessibleGodownList
+[Form:AddAccessibleGodownList]
+	Part			: Form Subtitle,AddAccessibleGodownList
+	Height			: 98% Screen
+	Width			: 35
+	Space Left		: 1
+	Space Right		: 1
+	Local			: Field	: Form Subtitle			: Info		: "Godowns"
+	
+[Part:AddAccessibleGodownList]
+	Line			: AddAccessibleGodownList
+	Repeat			: AddAccessibleGodownList			: AccissibleGodown
+	Scroll			: Vertical
+	Break On		: $$IsEndOfList:$AccissibleGodown Or #AddAccessibleGodownList = $$SysName:AllItems
+[Line:AddAccessibleGodownList]
+	Field			: AddAccessibleGodownList
+[Field:AddAccessibleGodownList]
+	Use				: Name Field
+	Style			: Small Bold
+	Table			: AssiableGodownTable,EndOfList		: $$Line > 1
+	Table			: AssiableGodownTable, All Items	: $$Line = 1	
+	Full Width		: Yes
+	Show Table		: On Empty
+	Storage			: AccissibleGodown
+	Unique			: Yes
+	Set as			: If ($$IsEmpty:$$Value) then $$SysName:AllItems Else $$Value
+	
+[Collection:AssiableGodownTable]
+	Title			: "Godown"
+	Type			: Godown
+	Format			: $Name
+	Fetch			: Name
+	

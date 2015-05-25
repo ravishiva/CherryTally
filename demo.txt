@@ -1,0 +1,265 @@
+;[#Menu:GateWayOfTally]
+;	Add		: Key Item	: "DEMO" :  D	: Display		: AgewiseReportDemo
+;	Add		: Item		: "TESt" : Call	: TESTCollection	
+
+
+[Report:AgewiseReportDemo]
+	Title		: "Agewise"
+	Form		: AgewiseReportDemo	
+    Variables			: SVFromDate,SVToDate, CherryDispObj
+	Set			: SVFromDate		: $$SystemPeriodFrom
+	Set			: SVToDate			: ##SvcurrentDate
+ 
+   Repeat      : AgeFrom, AgeTo
+	
+;	Variable			:  DoSetAutoColumn
+
+;	SET					: DoSetAutoColumn		: YES
+    Set         : SV Sort Method    : @@Default
+	Set			: SVLedSortMethod	: @@Default
+    Set         : DSPShowMonthly    : No
+    Set         : DSPNotScaleable   : Yes
+    Set         : DSPHasColumnTotal : No
+    Set         : ShowReceivables   : Yes
+    Set         : ShowOpBillAmt     : No
+    Set         : ShowDaysByBillDate: No
+    Set         : DSPHasMultiLevel  : No
+    Set         : IsBillWiseReport  : No        ;;This is set to YES by LedgerBillWise only!
+    Set         : IsGrpBillReport   : No        ;;This is set to YES by LedgerBillWise only!
+	Set			: InNewPages		: Yes	
+
+   Filtered			: Yes
+;	Set			: DSPRepeatCollection : "AgeWise AnalysisCHR"
+	Column Var	 : AgeFrom, AgeTo
+	
+[Form:AgewiseReportDemo]
+	Part		: CCOutstdRep Top,AgewiseReportDemo
+	Button		: Export Button, AgeWiseAnalysis ;ChrAgewiseButton
+;	Option		: Set Auto Vch Option Cherry 	: ##DoSetAutoColumn AND ( $$SetAutoColumns:AgeTo  Or  $$SetAutoColumns:AgeFrom )
+
+[!Form: Set Auto Vch OptionCherry]
+	
+	
+[Part:AgewiseReportDemo]
+	Line		: AgewiseReportDemoTCol1,AgewiseReportDemoTitle,AgewiseReportDemo
+	Repeat		: AgewiseReportDemo	: LEDBillsUndeSalesMan;BillsAgewiseColl		
+	Bottom Line	: AgewiseReportDemoGrnTotals
+	
+	Scroll		: Vertical
+	CommonBorder: yES
+	Totals		: AgeWiseRep DebitAmt, AgeWiseRep Credit
+	
+
+[Line:AgewiseReportDemoTCol1]
+	Use			: AgewiseReportDemo
+	Delete		: Explode
+	Local		: Field	: Default				: Type 	: String
+	Local		: Field	: Default				: Align	: Centre
+;	Local		: Field	: AgeWiseRep DebitAmt	: setas	: ##AgeFrom ; @@AgeTitle;##AgeFrom
+;	Local		: Field	: AgeWiseRep Credit		: Setas	: ##AgeTo
+	Local		: Field	: AgeWiseRep Balances	: Delete: Fields
+	Local		: Field	: AgeWiseRep Balances	: Set as: @@AgeTitle
+	Border		: Thin Top
+	
+	
+[Line:AgewiseReportDemoTitle]
+	Use			: AgewiseReportDemo
+	Delete		: Explode
+	Local		: Field	: Default				: Type 	: String
+	Local		: Field	: AgeWiseRep BillNo		: Info	:" Bill Name"
+	Local		: Field	: AgeWiseRep Date		: Info	: "Bill Date" 
+	Local		: Field	: AgeWiseRep PtyName	: Info	: "PartyName"
+	Local		: Field	: AgeWiseRep DebitAmt	: Info	: "Debit"
+	Local		: Field	: AgeWiseRep Credit		: Info	: "Credit" 
+	Local		: Field	: AgeWiseRep DocType	: Info	: "Doc Type"
+	Local		: Field	: AgeWiseRep DueOn 		: Info	: "Due on"
+	Local		: Field	: AgeWiseRep DueDays	: Info	: "Overdue Days"	
+	Local		: Field	: Default				: Align	: Centre
+	Local		: Field	: Default				: Style	: Small Bold
+	Border		: Thin Bottom	
+	
+	
+
+[Line:AgewiseReportDemo]
+	Field		: AgeWiseRep PtyName, AgeWiseRep Date, AgeWiseRep BillNo,AgeWiseRep DocType, AgeWiseRep DueOn , AgeWiseRep DueDays,  AgeWiseRep Balances
+	Repeat		: AgeWiseRep Balances	;: AgeWise AnalysisCHR
+	Explode		: AgeWiseRep Totals		:  $$IsLastLine OR $$nextObj:$PartyName != $PartyName 
+	
+[Field:AgeWiseRep BillNo]
+	Use			: name Field
+	Width		: 13
+	Set as		: $Name
+	Style		: Small 
+	
+[Field:AgeWiseRep Date]
+	Use			: UniDateField
+	Set as		: $BillDate
+	Style		: Small 
+	
+[Field:AgeWiseRep PtyName]
+	Set as		: $PartyName
+	Width		: 30
+	Style		: Small Bold
+	Inactive	: $$PrevObj:$PartyName = $PartyName
+	
+
+[Field:AgeWiseRep DocType]
+	Width		: 6
+	Set as		: if ($$IsEmpty:$VchUdfDocType) then $LEdgerEntries[1].VchUdfDocType Else 	$VchUdfDocType;$VchUdfDocType 
+	Style		: Small
+[Field:AgeWiseRep DueOn] 
+	Width		: 7
+	Set as		: $$String:$BillCreditPeriod
+	Style		: Small
+[Field:AgeWiseRep DueDays]
+	Width		: 9
+	Set as          : @OverDueDays;if ##ShowDaysByBillDate then @DaysByBillDate else @DaysByDueDate
+    DaysByBillDate  : $$String:@BillDays
+	DaysByDueDate   : if @@DSPToDate >= @@CreditPeriod then $$String:@OverDueDays else ""
+	OverDueDays     : @@DSPToDate - @@CreditPeriod
+	BillDays        : @@DSPToDate - $BillDate
+	Align			: Centre
+	Style		: Small
+[Field:AgeWiseRep Balances]
+	Field		: AgeWiseRep DebitAmt, AgeWiseRep Credit
+;	Width		: 10
+;	Background	: Lily Yellow
+;	Set as		: $$STRING:$AgeFrom  + " -- " + $$String:$AgeTo
+;	Background	: if (##DSPAgeByDueDate) then "White" Else "Surf Green"
+	
+[Field:AgeWiseRep DebitAmt]
+	Use			: Amount Field
+	Border		: Thin Left
+	Set as		: If ($$IsDr:$ClosingBalance) then $ClosingBalance Else ""
+	Style		: Small bold
+	Width		: 11
+	
+	Option		: AgeWiseRep DebitAmtOpt		: Not (##AgeFrom = 0 AND ##AgeTo = 0)
+	
+[!Field:AgeWiseRep DebitAmtOpt]
+	Inactive	: $$AgewiseDueDaysColmn:@@CherryCalCulDate:##AgeFrom:##AgeTo;($$Number:#AgeWiseRepDueDays <= ##AgeFrom and $$Number:#AgeWiseRepDueDays > ##AgeTo )
+	
+[Field:AgeWiseRep Credit]
+	Use			: Amount Field
+	Border		: Thin Right
+	Set as		:  If ($$IsDr:$ClosingBalance) then "" Else $ClosingBalance 
+	
+	Style		: Small bold
+	Width		: 11
+	Option		: AgeWiseRep DebitAmtOpt		: Not (##AgeFrom = 0 AND ##AgeTo = 0)
+	
+[Function:AgewiseDueDaysColmn]
+	
+	Parameter	: DueDt		: String
+	Parameter	: AgFrm		: Number
+	Parameter	: AgTo		: Number
+	Variable	: RETVAL	: Logical
+	Local Formula	: DueDt	: $$Number:##DueDt
+	
+	Return		: Logical
+	010 : Log	: ##DueDt + " -- " + $$String:##AgFrm + " -- " + $$String:##AgTo 
+	110 : If	: ##AgFrm = 0 and @DueDt <=0
+	120 : Return: No
+	130 : End If
+
+	015 : If	: ##AgTo = 0  and @DueDt > ##AgFrm
+	016 : Return: No
+	017 : Else
+	
+	020 : Set	: RETVAL	: @DueDt >= ##AgFrm AND @DueDt < ##AgTo
+	030 : Log	: ##RETVAL
+	040 : Return	: Not ##RETVAL
+	050 : End If
+	
+[Part:AgeWiseRep Totals]
+	Line		: AgeWiseRep Totals
+
+[Line:AgeWiseRep Totals]
+	Use			: AgewiseReportDemo
+;	Add			: Field	: Before:AgeWiseRep Balances: SimpleField
+	Delete		: Explode
+	Delete		: Totals
+	Local		: Field	: Default					: Type	: String
+	Local		: Field	: Default					: Set as: ""
+	Local		: Field	: AgeWiseRep PtyName		: Set as: $partyName
+	Local		: Field	: AgeWiseRep PtyName		: Inactive	: No
+	Local		: Field	: AgeWiseRep PtyName		: Invisible	: Yes
+	Local		: Field : AgeWiseRep DebitAmt		: Set as: $$FilterAmtTotal:LedBillsAgeWiseTtl:BillTotalsUnderLed:$ClosingBalance
+	Local		: Field : AgeWiseRep Credit			: Set as: $$FilterAmtTotal:LedBillsAgeWiseTtl:BillTotalsUnderLedCR:$ClosingBalance
+	Local		: Field	: AgeWiseRep Balances		: Background	: Lily Yellow
+	Local		: Field	: SimpleField				: Full Width	: Yes
+	Local		: Field	: SimpleField				: Set as		: ""
+	Local		: Field : AgeWiseRep DebitAmt		: Inactive		: No
+	Local		: Field : AgeWiseRep Credit			: Inactive		: No
+	Border		: Thin Top Bottom
+	
+
+
+;;=======================GRANDTOTALS======================
+
+[Line:AgewiseReportDemoGrnTotals]
+	Use			: AgewiseReportDemo
+	Delete		: Explode
+	Delete		: Totals
+	Local		: Field	: AgeWiseRep DebitAmt			: Set as	: $$Total:AgeWiseRepDebitAmt
+	Local		: Field	: AgeWiseRep Credit				: Set as	: $$Total:AgeWiseRepCredit
+	Border		: Totals
+
+[Collection:LedBillsAgeWiseLoop]
+	Type		: Bills
+	Child Of	: $$LoopCollObj:$Name
+	Belongs To	: Yes
+	Compute		: PartyName				: $$FuncDSPAccName:$Parent 
+	Fetch		: BillDate, Name, ClosingBalance,BillCreditPeriod, VchUdfDocType,LEdgerEntries.VchUdfDocType
+
+[Collection:LedgerUndeSalesMan]
+	Type		: Ledger	
+	Child Of	: $$GroupSundryDebtors
+	Belongs To	: Yes
+	Fetch		: Name, ChrLedgerCostCentre
+	Filter		: FilterLEDGERBySalesMan
+
+[System:Formulas]
+	FilterLEDGERBySalesMan		: $ChrLedgerCostCentre = ##CherryDispObj;"AMR" 
+	BillTotalsUnderLed			: #AgeWiseRepPtyName = $PartyName AND $$IsDr:$ClosingBalance AND @@AgeWiseFilter
+	BillTotalsUnderLedCR		: #AgeWiseRepPtyName = $PartyName AND Not $$IsDr:$ClosingBalance AND @@AgeWiseFilter
+
+	AgeWiseFilter				: if (##AgeTo = 0 and ##AgeFrom= 0) then Yes Else  Not $$AgewiseDueDaysColmn:@@CherryCalCulDate:##AgeFrom:##AgeTo
+	
+	CherryCalCulDate			: if(##DSPAgeByDueDate) then @@CHEROverDueDays Else @@CherryByBillDays
+	CHEROverDueDays    			: @@DSPToDate - @@CreditPeriod	
+	CherryByBillDays			: ##SVCurrentDate - $BillDate
+	
+[Collection:LEDBillsUndeSalesMan]
+	Collection	: LedBillsAgeWiseLoop	: LedgerUndeSalesMan
+
+
+[Function:TESTCollection]
+	
+	100 : Walk Collection	: LedBillsAgeWiseLoop
+	110 : Log	: $Name ;+ " --- " +$ChrLedgerCostCentre
+	120 : End Walk
+;	
+;	010 : Walk Collection	: AgeWise AnalysisCHR
+;	020 : Log	: $$string:$AgeFrom + " --- " + $$String:$AgeTo
+;	050 : End Walk
+	060 : Log	: "----"	
+	
+	
+[Collection:LedBillsAgeWiseTtl]
+	Type		: Bills
+	Child Of	: #AgeWiseRepPtyName
+	Belongs To	: Yes
+	Compute		: PartyName				: $$FuncDSPAccName:$Parent 
+	Fetch		: BillDate, Name, ClosingBalance
+	
+
+[Collection: AgeWise AnalysisCHR]
+
+    Type        : Ageing Analysis : Company
+    Child of    : ##SVCurrentCompany
+ ;   Object      : AgeAllBills;, AgeOnAcc
+  ;  Sort        : @@Default   : $SortPosition, $Name
+	Compute		: AgeFrom		: $AgeFrom
+	Compute		: AgeTo			: $AgeTo
+    Client Only : Yes

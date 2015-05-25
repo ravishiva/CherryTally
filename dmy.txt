@@ -1,0 +1,96 @@
+[Function:CherryCostCategoryAllocation]
+		
+	Variable			: CCDivisionName	: String
+	Variable			: CCDivisionAmt		: Amount
+	Variable			: CCSalesManName	: String
+	Variable			: CCSalesManAmt		: Amount
+	Variable			: ISDEEMEDPOSITIVE	: Logical 
+	Variable			: IndexVar			: Number
+	Variable			: LineVar			: Number
+	Variable			: LocationVar		: String
+	Variable			: AmtVar			: Amount
+	
+	Local Formula		: CCSalesManAmt		: IF(##ISDEEMEDPOSITIVE) then  $$Negative:$CCSalesManAmt Else $CCSalesManAmt
+	Local Formula		: CCDivisionAmt		: IF(##ISDEEMEDPOSITIVE) then  $$Negative:$CCDivisionAmt Else $CCDivisionAmt 
+	010 : Set			: LocationVar		: $VchCherryLocation
+
+		
+	020 : Walk Collection						: ALLLEDGERENTRIES
+	022 : Set			: AmtVar				: $Amount 
+	025 : List Delete	: CostAllocList
+	026 : Set			: LineVar	: 0
+;	030 : Log			: $LedgerName + " -- " + $$String:$Amount + $$String:$ISDEEMEDPOSITIVE
+	035 : Set			: ISDEEMEDPOSITIVE		: $ISDEEMEDPOSITIVE
+	040 : Walk Collection			: ChrCostAllocAggr
+;	050 : Log			: $CCDivisionName + " - " +$$string:$CCDivisionAmt + " - "+ $CCSalesManName + " - " +$$string:$CCSalesManAmt
+	055 : Increment		: LineVar
+	056 : If			: ##LineVar > 1
+	060 : List Add		: CostAllocList			: ##LineVar
+	070 : Set			: IndexVar	: $$ListIndex:CostAllocList:##LineVar
+	080 : Set			: CostAllocList[##IndexVar].CCDivisionName		 : $CCDivisionName
+	090 : Set			: CostAllocList[##IndexVar].CCDivisionAmt		 : $CCDivisionAmt
+	100 : Set			: CostAllocList[##IndexVar].CCSalesManName		 : $CCSalesManName
+	110 : Set			: CostAllocList[##IndexVar].CCSalesManAmt		 : $CCSalesManAmt
+	115 : End If
+	120 : End Walk	
+
+
+	A10 : Walk Collection			: CATEGORYALLOCATIONS
+	A15 : Set Target
+;	A20 : Log			: $$NumItems:COSTCENTREALLOCATIONS
+	A30 : While			: $$NumItems:COSTCENTREALLOCATIONS !=0
+	A40 : Delete Collection Object	: COSTCENTREALLOCATIONS: 0 : Yes 
+	A45 : Log			: "!!---DELETED--LIST---"
+	A50 : End While		 
+	A60 : End Walk 
+	
+	205 : Log			: $$NumItems:CATEGORYALLOCATIONS
+	210 : Set Target	
+	212 : While			: $$NumItems:CATEGORYALLOCATIONS != 0
+	220 :  Delete Collection Object				: CATEGORYALLOCATIONS : 1 : Yes 
+	222 : Log			: "---DELETED--LIST---"
+	225 : End While
+	
+	340 : Insert Collection Object				: CATEGORYALLOCATIONS
+	350 : Set Value		: Category				: "Division"
+	360 : Set Value		: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	
+	365 : Walk Collection						: CostAllocList
+	370 : Insert Collection Object				: COSTCENTREALLOCATIONS
+	380 : Set Value		: NAME					: $CCDivisionName
+	390 : Set Value		: AMOUNT				: @CCDivisionAmt
+	400 : Set Target	: ..
+	410 : End Walk
+	420 : Set Target	: ..
+	
+	440 : Insert Collection Object				: CATEGORYALLOCATIONS
+	450 : Set Value		: Category				: "Sales Man"
+	460 : Set Value		: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	
+	465 : Walk Collection						: CostAllocList
+	470 : Insert Collection Object				: COSTCENTREALLOCATIONS
+	480 : Set Value		: NAME					: $CCSalesManName
+	490 : Set Value		: AMOUNT				: @CCSalesManAmt
+	500 : Set Target	: ..
+	510 : End Walk
+	520 : Set Target	: ..
+	
+	640 : Insert Collection Object				: CATEGORYALLOCATIONS
+	650 : Set Value		: Category				: "Location"
+	660 : Set Value		: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	
+	670 : Insert Collection Object				: COSTCENTREALLOCATIONS
+	680 : Set Value		: NAME					: ##LocationVar
+	690 : Set Value		: AMOUNT				: ##AmtVar
+	700 : Set Target	: ..
+	720 : Set Target	: ..
+	
+	
+	780 : Walk Collection			: CATEGORYALLOCATIONS
+	790 : Log			: "_____"+$Category
+	800 : Walk Collection			: COSTCENTREALLOCATIONS
+	810 : Log			: "_____"+$Name + " -- " + $$string:$Amount
+	820 : End Walk
+	830 : End Walk
+	
+	900 : End Walk

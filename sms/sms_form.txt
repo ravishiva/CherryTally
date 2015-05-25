@@ -1,0 +1,113 @@
+;[#Menu:GatewayOfTally]
+;	Add		: Key Item	: "SMS Form"		 : S : Alter		: SMS Sending Form
+
+[Report:SMS Sending Form]
+	
+Form:SMS Sending Form
+Full Screen	: No
+[Form:SMS Sending Form]
+	Width		: 45
+	Space Left	: 1
+	Space Right	: 1
+	Space Bottom	: 1.5
+	Part	: Form Subtitle,SMS Sending Form
+	Local: Field	: Form Subtitle	: Info	: "" 
+	On:Form Accept:Yes:Form Accept
+	On:Form Accept:Yes:Call			: SEND SMS From Tally:#SMSPhoneNo:#SMSMSGTEXT 
+	
+[Part:SMS Sending Form]
+	Lines: SMS PhoneNo, SMS MSGTEXT
+	
+[Line:SMS PhoneNo]
+	Fields	: Short Prompt,SMS PhoneNo
+	Local	: Field	: Short Prompt  : Info	: "Mobile No."
+	
+[Field:SMS PhoneNo]
+	Use		: NumberField
+	Width	: 12
+	Validate	: Not $$IsEmpty:$$Value	 AND $$Value < 10000000000 AND $$Value > 999999999
+	Format	: "NoZero,NoComma"
+	
+[Line:SMS MSGTEXT]
+	
+	Fields	: Short Prompt, SMS MSGTEXT
+	Local	: Field	: Short Prompt	: Info	: "Message"
+	
+[Field:SMS MSGTEXT]
+	
+	Full Width: Yes
+	Max		: 150
+	Line		: 3
+	Validate	: Not $$IsEmpty:$$Value	
+	
+
+[Function:SEND SMS From Tally]
+	
+	Parameter		: MobNo			: String
+	Parameter		: Message			: String
+	Local Formula	: SentTimeDate		: $$SysInfo:"SYSTEMTimeHMS"
+;	Local Formula	: UserName		: $MantraUserId:Company:##SVCurrentCompany
+	Local Formula	: APIkey		: $CherryApiKey:Company:##SVCurrentCompany
+	Local Formula	: SenderID		: $CherrySenderId:Company:##SVCurrentCompany
+	Local Formula	: msg			: $$removeBlankSpaces:##Message  
+	Local Formula	: LogMsgVar		: "Mob.No-"+##MobNo+" MsgLength-"+@StrLength+" Message- "+ ##Message;@Msg
+	Local Formula	: StrLength		: $$string:@Strlen
+	Local Formula	: Strlen			: $$StringLength:@Msg
+	Variable		: SmsGatewayLnkVar
+	
+	
+;	010 : Log		: @msg
+	A10 : Call	: SRSSMSLog:@LogMsgVar
+	A01 : If		: $$IsInternetActive	
+	001 : Set		: SmsGatewayLnkVar	: "http://alerts.sinfini.com/api/web2sms.php?workingkey="+@APIkey+"&sender="+@SenderID+"&to="+##MobNo+"&message="+@msg+"&type=xml"
+;	010 : Log 	: ##MobNo
+;	020 : Log		: ##Message
+;	030 : Log 	: @msg
+;	
+	040 : Walk Collection	: SMSCollValMantraByForm
+	050 : Log		: "-- "
+	060 : End Walk
+	070 : Log		: "Message sent -"+ $$String:@SentTimeDate 	 
+	075 : Call	: SRSSMSLog: "Mob.No-"+##MobNo+" MsgLength-"+@StrLength+" Message Sent" 
+	080 : End If
+
+[Collection:SMSCollValMantraByForm]
+	RemoteURL		: ##SmsGatewayLnkVar;"http://bulksms.mysmsmantra.com:8080/WebSMS/SMSAPI.jsp?username=srsmutt&password=rayara123&sendername=SRSMUT&mobileno=918792696141&message=Messages%20Sent%20From%20Tally" ;@@MantraUrL 
+	Client Only	: Yes
+	
+[Function:removeBlankSpaces]
+	
+	Parameter	: Var	: String	
+	Variable	: RVal	: String
+		
+	
+
+	010 : For Token	: TokenVar	: ##Var : " "
+	;030 : Set : RVal	: ##RVal + "%20" + ##TokenVar 
+	030 : Set : RVal	: ##RVal + "+" + ##TokenVar 
+	040 : End For
+	
+;	120 : Log		: $$StringLength:##RVAL	
+;	125 : Set		: RVal: $$StringPart:##RVAL:1:158	
+;	130 : Log		: $$StringLength:##RVAL
+;	140 : Log		: ##RVal
+	150 : Return	: ##RVal
+	
+	
+[Function:SRSSMSLog]
+	Parameter		: Str		: String	: "__ERROR__"
+	Local Formula	: DateVar		: $$SysInfo:SystemDate
+	Local Formula	: TimeVar		: $$SysInfo:SystemTimeHMS
+	Local Formula	: DateTime	: $$String:@DateVar + " "+ $$String:@TimeVar	
+	
+;	010  : Log	: @DateTime + " - " +##Str
+	020  : Open File			: "CHERRY_SMS_LOG.txt" : TEXT : WRITE
+	030  : Write File Line		: @DateTime + " - " +##Str
+	040  : Close Target File
+	
+;	050  : Exec Command	: NotePad: "SRS_SMS_LOG.txt" 
+
+	
+[Variable:SmsGatewayLnkVar]
+	Type	: String
+	

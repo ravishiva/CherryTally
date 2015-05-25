@@ -1,0 +1,362 @@
+;[#Field: Vch Bank AllocTransType]
+;	Background		: White
+;	Set Always		: Yes	
+;	Set as			: "Same Bank";@Value
+;	Value			: $$FilterValue:$Name:CherryTransType:1:FltByBankAllCond
+;	Delete			: Storage
+;	 
+[Field: Vch Bank AllocTransTypedMY]
+;	Delete			: Table
+	
+	ADD:Table		: Vch Bank AllocTransType,CherryTransType				: $$IsDr:@@OwnerAmt
+	ADD:Table		: Vch Bank AllocTransTypePay, CherryTransType			: NOT $$IsDr:@@OwnerAmt
+	Use				: Name Field
+	Width			: If ##IsMultiBankAllc then +
+						If ##NumLedgerEntries < 3 Then @@FavouringNameWidth+1 Else 17 Else @@FavouringNameWidth+1
+	Storage			: UDFTransactionType
+	Show Table		: Always
+
+	On:Accept		: Yes				: Field Accept
+	On:Accept		: Yes				: Call			: SetBankTransType:$$Value
+
+[Function:SetBankTransType]
+	Parameter		: TransTypeVar		: String
+	Local Formula	: BankTranType		: IF (##TransTypeVar = "Local" OR ##TransTypeVar = "Outstation" OR ##TransTypeVar = "Corporate" OR ##TransTypeVar = "Direct" OR ##TransTypeVar = "Co-Operative") Then "Others" Else ##TransTypeVar
+	010 : Log		: ##TransTypeVar
+	
+	020 : Log		: @BankTranType
+	050 : Set Value	: TransactionType	: @BankTranType;##TransTypeVar
+
+	
+;[#Line: Vch Bank Allocations Title]
+;	Local		: Field	:Default 	: Background	: Yellow
+[#Line: Vch Bank Allocations]
+	Add			: Field	: Before	: Vch Bank AllocTransType				: Vch Bank AllocTransTypeDmy 
+	Local		: Field	: Vch Bank AllocTransType	: Skip					: Yes
+	Local		: Field	: Vch Bank AllocTransType	: Invisible				: Yes
+
+
+[#Line: Vch Bank Allocations Exp]
+	Add			: Field	: Before	: Vch Bank AllocTransType				: Vch Bank AllocTransTypeDmy 
+	Local		: Field	: Vch Bank AllocTransType	: Skip					: Yes
+	Local		: Field	: Vch Bank AllocTransType	: Invisible				: Yes	
+
+
+[Table:CherryTransType]
+	
+	List Name		: "Local","Outstation","Direct","Co-Operative" 
+	
+;---------------
+
+[Report:ChrBankVchTrig]
+	Title			: "Bank Vouchers"
+	Form			: ChrBankVchTrig
+	Variable		: ChrBankVar,ChrTranTypeVar,ChrLocationVar
+[Form:ChrBankVchTrig]
+	Part			: FormSubtitle,ChrBankVchTrig
+	Local			: Field	: FormSubtitle			: Info	: "Bank Vouchers"	
+	Local			: Field	: FormSubtitle			: Style	: Small Bold
+
+	Full Width		: No
+	Space Left		: 1
+	Space Right		: 1
+	Space Bottom	: 1.7
+	No Confirm		: Yes
+	On: Form Accept	: Yes	: Form Accept
+	On: Form Accept	: Yes	: Display				: CherryBankVouchers
+[Part:ChrBankVchTrig]
+	Line			: ChrBankVchTrigName,ChrBankVchTrigDivision,ChrBankVchTrigTrnType
+	Local			: Field	: Short PRompt			: Width	: 13
+	Local			: Field	: Short PRompt			: Style	: Small 
+	
+[Line:ChrBankVchTrigName]
+	Field			: Short Prompt, ChrBankVchTrigName
+	Local			: Field	: Short Prompt			: Info	: "Bank A/c"
+[Field:ChrBankVchTrigName]
+	Use				: XName Field
+	Table			: BankLedgerTable
+	Show Table		: Always
+	Modifies		: ChrBankVar
+	Width			: 30
+[Table:BankLedgerTable]
+	Title			: "Bank Accounts"
+	Type			: LEDGER
+	Format			: $name
+	Fetch			: Name,Parent
+	Filter			: FilterByBankAcOd
+
+[Line:ChrBankVchTrigDivision]
+	Field			: Short Prompt, ChrBankVchTrigDivision
+	Local			: Field	: Short Prompt			: Info	: "Location"
+
+[Field:ChrBankVchTrigDivision]
+	Use				: XName Field
+	Modifies		: ChrLocationVar
+	Table			: CherryLocatonTable
+	Show Table		: Always
+	
+
+[Line:ChrBankVchTrigTrnType]
+	Field			: Short Prompt, ChrBankVchTrigTrnType
+	Local			: Field	: Short Prompt			: Info	: "Transaction Type"
+	Space Top		: 1
+[Field:ChrBankVchTrigTrnType]
+	Use				: XName Field
+	Modifies		: ChrTranTypeVar
+	Table			: Vch Bank AllocTransType,Vch Bank AllocTransTypePay,CherryTransType,AllItems
+	Show Table		: Always
+	Width			: 30
+;=======================
+[Report:CherryBankVouchers]
+	Title			: "Bank Vouchers"
+	Form			: CherryBankVouchers
+	Variable		: SVFromDate,SVTodate,SVCurrentDate
+	Set				: SVFromDate			: ##SVCurrentDate
+	Set				: SVToDate				: ##SVCurrentDAte
+	
+[Form:CherryBankVouchers]
+	Width			: 100% Screen
+	Height			: 100% Screen
+	Part			: CherryBankVouchersTop,CherryBankDetails, CherryBankVouchers,
+	Option			: ChrBankVch InPrintMode				: Yes
+	
+	Buttons			: Print Button, Export Button, ChangeDybkDate
+[!Form:ChrBankVch InPrintMode]
+	
+	Add				: Bottom Part		: ChrBankVch Bottom
+	
+
+[Part:CherryBankVouchersTop]
+	Line			: CherryBankVchCmpTitle, CherryBankRepTitle
+
+[Line:CherryBankVchCmpTitle]
+	Field			: CherryBankVchCmpTitle
+	Invisible		: Not $$InPrintMode
+[Field:CherryBankVchCmpTitle]
+	Full Width		: Yes
+	Align			: Centre
+	Set as			: $BasicCompanyFormalName:Company:##SVCurrentCompany
+	Style			: Normal Bold
+[Line:CherryBankRepTitle]
+	Field			: CherryBankRepTitle
+[Field:CherryBankRepTitle]
+	Style			: Small Bold
+	Set as			: "Bank Receipt Voucher" 
+	Align			: Centre
+	Full Width		: yes
+
+[Part:CherryBankDetails]
+	Part			: CherryBankDetailsLeft
+	Right Part		: CherryBankDetailsRight
+[Part:CherryBankDetailsLeft]
+	Line			: CherryBankName,CherryBankLocation,CherryBankClientCode,CherryBankPrompt
+	Local			: Field	: ShortPrompt				: Style	: Small
+[Line:CherryBankName]
+	Field			: Short Prompt, CherryBankName
+	Local			: Field	: ShortPrompt				: Info	: "Bank A/c"
+[Field:CherryBankName]
+	Use				: XName Field
+	Set as			: ##ChrBankVar
+;;--
+[Line:CherryBankLocation]
+	Field			: Short Prompt, CherryBankLocation
+	Local			: Field	: ShortPrompt				: Info	: "Location"
+[Field:CherryBankLocation]
+	Use				: XName Field
+	Set as			: ##ChrLocationVar	
+	
+;;---
+[Line:CherryBankClientCode]
+	Field			: Short Prompt, CherryBankClientCode
+	Local			: Field	: ShortPrompt				: Info	: "Client Code"
+[Field:CherryBankClientCode]
+	Use				: XName Field
+	
+;;--
+[Line:CherryBankPrompt]
+	Field			: CherryBankPrompt
+[Field:CherryBankPrompt]
+	Style			: Small Bold
+	Full Width		: Yes
+	Set as			: ""
+
+;;-----
+[Part:CherryBankDetailsRight]
+	Line			: CherryBankDtlsRcptNo,CherryBankDate
+	Local			: Field	: ShortPrompt				: Style	: Small
+	Local			: Field	: ShortPrompt				: Width	: 14
+	
+[Line:CherryBankDtlsRcptNo]
+	Field			: Short Prompt, CherryBankDtlsRcptNo
+	Local			: Field	: ShortPrompt				: Info	: "Bank Receipt no."
+[Field:CherryBankDtlsRcptNo]
+	Use				: XName Field
+	Width			: 11
+;----	
+[Line:CherryBankDate]
+	Field			: Short Prompt, CherryBankDate
+	Local			: Field	: ShortPrompt				: Info	: "Bank Receipt Date"
+[Field:CherryBankDate]
+	Use				: XName Field
+	Set as			: ##SVCurrentDate
+	Width			: 11
+	
+
+;;-------------------------------------------	
+[Part:CherryBankVouchers]
+	Line			: CherryBankVchTitle,CherryBankVouchers
+	Repeat			: CherryBankVouchers	: CHRBankSummaryColl
+	Bottom Line		: CherryBankVouchersTotals
+	Scroll			: Vertical 
+	Common Border	: Yes
+	Totals			: CherryBankVchAmt
+[Line:CherryBankVchTitle]
+	Use				: CherryBankVouchers
+	Border			: Thin Top Bottom
+	Local			: Field	: Default					: Type		: String
+	Local			: Field	: Default					: Align		: Center
+	Local			: Field	: Default					: Style		: Small Bold
+	
+	Local			: Field	: CherryBankVchSl			: Info		: "Sl."
+	Local			: Field	: CherryBankVchDate			: Info		: "Cheque Dt."
+	Local			: Field	: CherryBankVchNo			: Info		: "Cheque No"
+	Local			: Field	: CherryBankVchBank			: Info		: "Drawee Bank"
+	Local			: Field	: CherryBankVchBranch		: Info		: "Branch"
+	Local			: Field	: CherryBankVchPty			: Info		: "Party Name"
+	Local			: Field	: CherryBankVchAmt			: Info		: "Amount" 
+[Line:CherryBankVouchers]
+	
+	Field			: CherryBankVchSl,CherryBankVchDate, CherryBankVchNo,CherryBankVchBank,CherryBankVchBranch,CherryBankVchPty,
+	Right Field		: CherryBankVchAmt
+	
+[Field:CherryBankVchSl]
+	Width			: 3
+	Set as			: $$Line
+	Style			: Small Bold
+	Align			: Centre
+[Field:CherryBankVchDate]
+	Use				: UniDateField
+	Style			: Small Bold
+	Set as			: $date
+	Border			: Thin Left
+	Width			: 9
+	Style			: Small Bold	 
+	
+[Field:CherryBankVchNo]
+	Use				: XName Field
+	Width			: 10
+	Set as			: $INSTRUMENTNUMBER
+	Border			: Thin Left
+[Field:CherryBankVchBank]
+	Use				: XName Field
+	Set as			: $BANKNAME
+	Border			: Thin Left
+[Field:CherryBankVchBranch]
+	Use				: XName Field
+	Set as			: $BANKBRANCHNAME
+	Border			: Thin Left
+[Field:CherryBankVchPty]
+	Use				: XName Field
+	Width			: 30
+	Set as			: $BANKPARTYNAME 
+	Border			: Thin Left
+[Field:CherryBankVchAmt]
+	Use				: XAmount Field
+	Set as			: $Amount
+	Border			: Thin Left Right
+
+;;-------------------
+[Line:CherryBankVouchersTotals]
+	Use				: CherryBankVouchers
+	Local			: Field		: Default				: Type		: String
+	Local			: Field		: Default				: Set as	: " "
+	Local			: Field		: CherryBankVchAmt		: Set as	: $$Total:CherryBankVchAmt
+	Border			: Totals
+
+
+[Part:ChrBankVch Bottom]
+	Parts			: ChrBankVch BtmWords ,ChrBankVch BottomSign	
+	Space Top		: 0.5
+	Vertical		: Yes
+
+[Part:ChrBankVch BtmWords]
+	Line			: ChrBankVch BtmWords
+[Line:ChrBankVch BtmWords]
+	Field			: Short Prompt , ChrBankVchBtmWords
+	Local			: Field	: Short PRompt 				: Info	: "Amount In Words"
+	Local			: Field	: Short PRompt				: Width	: 0
+	Local			: Field	: Short PRompt				: Style	: Small ;Bold
+[Field:ChrBankVch BtmWords]
+	Full Width		: Yes
+	Line			: 0
+	Set as			: $$InWords:@TotalAmt + " Only"
+	TotalAmt		: $$Total:CherryBankVchAmt
+	Style			: Small Bold
+		
+[Part:ChrBankVch BottomSign]
+	Line			: ChrBankVch BottomSign
+	Space Top		: 1
+	Invisible		: Not $$InprintMode 
+
+[Line:ChrBankVch BottomSign]
+	Field			: ChrBankVch PrepairedBy, ChrBankVch CheckedBy
+	Right Field		: ChrBankVchDepositedBy
+
+[Field:ChrBankVch PrepairedBy]
+	Use				: Xname Field
+	Set as			: "Prepaired By"
+	Width			: 30
+[Field:ChrBankVch CheckedBy]
+	Use				: XName Field
+	Width			: 0
+	Set as			: "Checked By"
+[Field:ChrBankVchDepositedBy]
+	Use				: XName Field
+	Width			: 30
+	Set as			: "Deposited By: " 
+	
+
+;=======================================================================
+[Collection:CherryBankODVchColl]
+	Type			: Vouchers		: Group
+	Child Of		: $$GroupBankod 
+	Belongs To		: Yes
+	Fetch			: Date, AllLedgerEntries.*	, VchCherryLocation
+	Filter			: FilterBnkVchByLocation
+	
+[Collection:CherryBankVchColl]
+	Type			: Vouchers		: Group
+	Child Of		: $$GroupBank 
+	Belongs To		: Yes
+	Fetch			: Date, AllLedgerEntries.*,VchCherryLocation
+	Filter			: FilterBnkVchByLocation
+	
+[Collection:CHRBankSummaryCollScr]
+	Collection		: CherryBankVchColl,CherryBankODVchColl
+	
+[Collection:CHRBankSummaryColl]
+	Source Collection: CHRBankSummaryCollScr
+	
+	Walk			: AllLedgerEntries,BankAllocations 
+	Compute			: Date				: $InstrumentDate
+	Compute			: INSTRUMENTNUMBER	: $INSTRUMENTNUMBER
+	Compute			: BANKNAME			: $BANKNAME
+	Compute			: BANKBRANCHNAME	: $BANKBRANCHNAME
+	Compute			: BANKPARTYNAME		: $BANKPARTYNAME
+	Compute			: Amount			: $Amount
+	Compute			: BankLedgerName	: $..LedgerName
+	Compute			: TRANSACTIONTYPE	: $UDFTransactionType
+	Compute			: Location			: $...VchCherryLocation
+	Filter			: FltBySelectedBank, FilterByTeanType
+	
+	
+[System:Formulas]
+	FilterByBankAcOd		: $$IsLedOfGrp:$Name:$$GroupBank Or $$IsLedOfGrp:$Name:$$GroupBankod
+	FltBySelectedBank		: $BankLedgerName = ##ChrBankVar
+	FilterByTeanType		: if(##ChrTranTypeVar = $$SysName:AllItems) then Yes Else  $TRANSACTIONTYPE=##ChrTranTypeVar
+	FilterBnkVchByLocation	: $VchCherryLocation = ##ChrLocationVar
+	
+[Variable:ChrBankVar]
+[Variable:ChrTranTypeVar]
+[Variable:ChrLocationVar]	
+	

@@ -1,0 +1,291 @@
+[Report:ledger_mst_day_alloc]
+Title:"LEDGERS"	
+Set:FltByParentVar:$$SysName:AllItems	
+Set:FltByDayVar:"ALL"
+Form:ledger_mst_day_alloc
+;;Full Screen	: No
+[Form:ledger_mst_day_alloc]
+Background:StoneWash		
+Part:ledger_mst_Days,ledger_mst_day_alloc
+Buttons: Print Button, Mail Button, Export Button 
+Bottom Button:FilterByParent,LedDaysAllocations, Blank Button,Second Blank Button,Third Blank Button,Forth Blank Button,Fifth Blank Button
+Width: 100% Screen	
+[Part:ledger_mst_Days]
+Line	: ledger_mst_Days
+Space Bottom	: 0.5
+Invisible		: $$InExportMode OR $$InPrintMode
+Local		: Field	: Default		: Invisible	: $$InExportMode Or $$InPrintMode
+
+[Line:ledger_mst_Days]
+Fields:Dmy,ledger_mst_DayAll,Dmy1,ledger_mst_Day1,Dmy2,ledger_mst_Day2,Dmy3,ledger_mst_Day3,Dmy4,ledger_mst_Day4,Dmy5,ledger_mst_Day5,Dmy6,ledger_mst_Day6,Dmy7,ledger_mst_Day7,Dmy8,ledger_mst_OUT
+
+[Field:ledger_mst_DayAll]
+	Use		: ledger_mst_Days
+	Set as	: "ALL"	
+	Option:ChangeIfSelected:##FltByDayVar="ALL"
+;-
+[Field:ledger_mst_Day1]
+	Use		: ledger_mst_Days
+	Set as	: "MON"
+	Option:ChangeIfSelected:##FltByDayVar="MON"
+;-	
+[Field:ledger_mst_Day2]
+	Use		: ledger_mst_Days
+	Set as	: "TUE"
+	Option:ChangeIfSelected:##FltByDayVar="TUE"	
+;-
+[Field:ledger_mst_Day3]
+	Use		: ledger_mst_Days
+	Set as	: "WED"
+	Option:ChangeIfSelected:##FltByDayVar="WED"
+;-
+[Field:ledger_mst_Day4]
+	Use		: ledger_mst_Days
+	Set as	: "THU"
+	Option:ChangeIfSelected:##FltByDayVar="THU"
+;-
+[Field:ledger_mst_Day5]
+	Use		: ledger_mst_Days
+	Set as	: "FRI"
+	Option:ChangeIfSelected:##FltByDayVar="FRI"
+;-
+[Field:ledger_mst_Day6]
+	Use		: ledger_mst_Days
+	Set as	: "SAT"
+	Option:ChangeIfSelected:##FltByDayVar="SAT"	
+;;-
+[Field:ledger_mst_Day7]
+	Use		: ledger_mst_Days
+	Set as	: "SUN"
+	Option:ChangeIfSelected:##FltByDayVar="SUN"
+;;--
+[Field:ledger_mst_OUT]
+	Use		: ledger_mst_Days
+	Set as	: "OUT"
+	Option:ChangeIfSelected:##FltByDayVar="OUT"	
+	
+[Field:ledger_mst_Days]
+	Width	: 6
+	Background: Geranium
+	Style	: Tiny Bold
+	Align	: Centre
+	Border	: Thin Box
+	Color	: White
+	Key		: SetVarOnClicl	
+	Option:ChangeIfSelected:##FltByDayVar="MON"
+	
+[!Field:ChangeIfSelected]
+	Background: Grey
+	Color	: Black
+	
+[Key:SetVarOnClicl]
+	Key		: Left Click
+	Action	: Call	: FltByDayVar	: $$Value
+	
+[Function:FltByDayVar]
+	Parameter	: Day	: String
+;	010 : Log	: ##Day
+	020 : Set : FltByDayVar	: ##Day 
+
+[Field:Dmy]	
+Width:21% Screen
+;Background: Yellow	
+[Field:Dmy1]
+Width:1	
+[Field:Dmy2]
+Width:1	
+[Field:Dmy3]	
+Width:1	
+[Field:Dmy4]
+Width:1	
+[Field:Dmy5]
+Width:1	
+[Field:Dmy6]
+Width:1	
+[Field:Dmy7]	
+Width:1	
+[Field:Dmy8]	
+Width:1
+;;--------------	
+[Part:ledger_mst_day_alloc]
+Line:ledger_mst_day_allocTitle,ledger_mst_day_alloc
+Repeat:ledger_mst_day_alloc : LedgerCollectionSndryDbt
+Scroll:Vertical
+Common Border	: Yes
+Border:Thin Bottom 
+
+[Line:ledger_mst_day_allocTitle]
+	Use			: ledger_mst_day_alloc
+	Local		: Field	: Default			: Style	: Small Bold
+	Local		: Field	: Default			: Align	: Centre
+	Local		: Field	: ChrryLedMstName	: Info	: "PARTY  NAME"
+	Local		: Field	: ChrryLedParent	: Info	: "Sales Person"
+	Local		: Field	: ChrryDayOfWeek	: Info	: "Day"
+	Local		: Field	: ChrryLedAddress	: Info	: "ADDRESS"
+	Local		: Field	: ChrryLedMstName	: Align	: Left
+	Border		: Thin Top Bottom
+;;--
+[Line:ledger_mst_day_alloc]
+Fields:ChrryLedMstName,ChrryLedAddress
+Right Field:ChrryLedParent, ChrryDayOfWeek 	
+Space Top			: 0.1
+Space Bottom		: 0.1
+[Field:ChrryLedMstName]
+	Set as		: $Name
+	Style		: Small Bold
+	Width		: 35
+
+[Field:ChrryLedAddress]
+	
+	Style		: tiny 
+	Set as		: $$fullLEDAddress
+	Width		: 62% Screen	
+	Border		: Thin Left
+
+[Function:FullLEDAddress]
+	Variable		: Addr		: String
+	010 : Walk Collection		: Address
+	020 : Set		: Addr		: ##Addr + $Address + " "
+	040 : End Walk
+	050 : Return	: ##Addr
+	
+
+[Field:ChrryLedParent]
+	Set as		: $Parent
+	Width		: 13
+	Style		: Small Bold
+	Align		: Centre
+	Border		: Thin Left Right
+[Field:ChrryDayOfWeek]
+	Set as		: $LedDaysOfWeek
+	Width		: 7
+	Style		: Small Bold
+	Align		: Centre
+[Collection:LedgerCollectionSndryDbt]
+	Type			: Ledger
+	Child Of		: $$GroupSundryDebtors
+	Belongs To	: Yes
+	Fetch		: NAme,Parent, LedDaysOfWeek
+	Filter		: FltByParentVar, FltByDayVar
+	
+;;------------------------------
+[Button:FilterByParent]
+	Title		: "Sales Person"
+	Key			: ALT + U
+	Action		: Modify Variables		: FilterByParent	
+[Report:FilterByParent]
+	Form			: FilterByParent
+[Form:FilterByParent]
+	Part			: FormSubtitle, FilterByParent
+	Local		: Field	: Form Subtitle	: Info		: "Sales Person"
+	Local		: Line	: Form Subtitle	: Space Bottom	: 0.2
+	Width		: 21
+	Space Left	: 1
+	Space Right	: 1
+	On: Form Accept	: Yes:Form Accept	
+	On:Form Accept		: Yes: Refresh Tdl	
+[Part:FilterByParent]
+	Line			: FilterByParent
+[Line:FilterByParent]
+	Field		: FilterByParent
+[Field:FilterByParent]
+	Full Width	: yes
+	Use			: Name Field
+	Style		: Small Bold
+	Modifies		: FltByParentVar
+	Table		: AllParentsColl, AllItems
+	Show Table	: Always
+	
+[Collection:AllParentsColl]
+	Title		: "Sales Person"	
+	Type			: Group
+	Child Of		: $$GroupSundryDebtors
+	Belongs To	: Yes
+	Fetch		: Name,Parent
+	Format		: $Name, 14 
+	Align		: Centre
+	Filter		: NotPrimaryGrp
+	
+[Collection:AllParentsColl2]
+	Title		: "Sales Person Group"	
+	Type			: Group
+	Child Of		: $$GroupSundryDebtors
+	Belongs To	: Yes
+	Fetch		: Name,Parent
+	Format		: $Name, 30 
+	Align		: Right
+	Filter		: NotPrimaryGrp
+
+[System:Variable]
+	FltByParentVar	: ""
+	LedWeekDaysVar	: "" 
+	FltByDayVar	: ""
+[Variable:FltByParentVar]
+[Variable:LedWeekDaysVar]
+[Variable:FltByDayVar]	
+	
+[System:Formulas]
+	NotPrimaryGrp	: $Parent != $$SysName:Primary and $Name != "Sundry Debtors" 
+	FltByParentVar	: if (##FltByParentVar = $$SysName:AllItems)then Yes Else +
+				  if (##FltByParentVar = $Parent) then Yes Else No
+	FltByDayVar	: If	(##FltByDayVar = "ALL")then YES Else +
+				  If	(##FltByDayVar = $LedDaysOfWeek) then Yes Else No
+	
+
+	
+[Collection:CurrentReportData]
+	Data Source	: Report	: Selected
+	
+[Button:LedDaysAllocations]	
+	Title		: "Add/Alter Days" 
+	Key			: ALT  + S
+	Action		: Call			: LedDaysAllocations	
+	
+
+
+[Report:LedDaysAllocations]
+	Title		: "Select Day"	
+	Use			: FilterByParent
+	Local		: Part	: Form Subtitle	 	: Local			: Field	: FormSubtitle	: Info	: "Select Day"	
+	Local		: Line	: FilterByParent 	: Replace		: Field	: FilterByParent : LedDaysAllocations
+	Local		: Form	: Default			: No Confirm	: Yes
+	
+[Field:LedDaysAllocations]
+	
+	Use			: NAme Field
+	Full Width	: Yes
+	Modifies	: LedWeekDaysVar
+	Style		: Small Bold
+	Table		: DaysOfWeekColl
+	Show Table	: Always	
+	
+	
+	
+[Function:LedDaysAllocations]
+	010 : Log	: $$SysInfo:SystemTimeHMS
+	
+	020 : Alter		: LedDaysAllocations
+;	030 : Log				: ##LedWeekDaysVar
+	034 : If	: $$LastResult
+	035 : If	: $$NumItems:CurrentReportData > 0 
+	050 : Walk Collection	: CurrentReportData
+	060 : Log	: $Name + " -- " + $Parent + " -- " + $LedDaysOfWeek
+	070 : Call	: Cherry Alter Ledgers:$Name:##LedWeekDaysVar
+	100 : End Walk 	
+	110 : Else
+	120 : Msg Box			: "Alert" : "Please select parties"
+	135 : End If
+	136 : End If
+	
+[Function:Cherry Alter Ledgers]
+	Parameter		: NameVar		: String
+	Parameter		: DayVar		: String
+		
+	000 : Log	: ##NameVar + " -- " + ##DayVar 
+	010 : Set Object		: (Ledger,##NameVar).
+	020 : Set Target
+	030 : Set Value		: LedDaysOfWeek	: ##DayVar
+	040 : Alter Target
+	050 : Log	: $$LastResult
+	
+	

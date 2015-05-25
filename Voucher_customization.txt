@@ -1,0 +1,1487 @@
+[#Report:VOUCHER]
+	
+	On:Load	: ($$InCreateMode AND Not @@ISChrPymtRcptJrnl)		: Call	: ChgVchTypeVariables
+	On:Load	: Yes			: Call		: InitializeCherryVariable	
+;	Set		: ICFGCommonLed			: No
+
+[Function:InitializeCherryVariable]
+	010 : List Delete		: ItemsCurQtyList
+	020 : Log	: "List initialized" 
+	030 : Do If : $$InAlterMode: Call	: SetChrCurrentQty 
+
+[#Form:Voucher]
+	
+	Option		: EnableCustomizationVoucher		: @@IsCustomVchEnabled
+[!Form:EnableCustomizationVoucher]
+	
+	Add: 	Option		: IsChrrySalesVouchers		: ((@@IsSales AND  ##InvoicingModeFlag) or @@IsSalesOrder OR @@IsCreditNote Or @@IsDelNote)
+	Add:	Option		: IsChrryPurchaseVouchers	: (@@ISPurchase OR @@IsDebitNote) AND ##InvoicingModeFlag
+;@@IsSalesOrder OR or  @@IsCreditNote Or @@IsDelNote
+	On:Form Accept:(((@@IsSales OR @@IsPurchase) AND  ##InvoicingModeFlag) OR @@IsCreditNote Or @@IsDebitNote ) : Call		: InsertCostCentreForSales:$$InAlterMode:#CHVCHTopCenLocation:#CHVCHTopCenSalesMan:#CHVCHTopCendIVISION
+	On:Form Accept:(@@ISSales)		: Call	: SendCherryInvoiceSMS:##SVVoucherType
+[#Report:OrderVoucher]
+	On:Load	: $$InCreateMode		: Call	: ChgVchTypeVariables
+
+[#Form:OrderVoucher]
+	Option	: EnableCustomizationOrdVoucher			: @@IsCustomVchEnabled
+	On		: Form Accept	: Yes		: Form Accept
+[!Form:EnableCustomizationOrdVoucher]
+	Add: 	Option		: IsChrrySalesVouchers		: ((@@IsSales AND  ##InvoicingModeFlag) or @@IsSalesOrder OR @@IsCreditNote Or @@IsDelNote)
+	Add:	Option		: IsChrryPurchaseVouchers	: (@@ISPurchase OR @@IsDebitNote) AND ##InvoicingModeFlag
+
+;	On:Form Accept:((@@IsSales AND  ##InvoicingModeFlag) or @@IsSalesOrder OR @@IsCreditNote Or @@IsDelNote) : Call		: CherryCostCentreAllocations
+	
+
+[#Form:InventoryVoucher]
+	Option	: EnableCustomizationInvtVoucher		: @@IsCustomVchEnabled
+	On		: Form Accept	: Yes		: Form Accept
+[!Form:EnableCustomizationInvtVoucher]
+	Add: 	Option		: IsChrrySalesVouchers		: ((@@IsSales AND  ##InvoicingModeFlag) or @@IsSalesOrder OR @@IsCreditNote Or @@IsDelNote)
+	Add:	Option		: IsChrryPurchaseVouchers	: (@@ISPurchase OR @@IsDebitNote) AND ##InvoicingModeFlag
+
+;	On:Form Accept:((@@IsSales AND  ##InvoicingModeFlag) or @@IsSalesOrder OR @@IsCreditNote Or @@IsDelNote) : Call		: CherryCostCentreAllocations
+	
+
+[#Field:EIAccAllocAmt]	
+	Option			: EIAccAllocAmtCustom			: @@IsCustomVchEnabled
+[!Field:EIAccAllocAmtCustom]			
+	Delete			: Sub Form    : VCHCST Allocation 	
+
+[!Form:IsChrrySalesVouchers] 
+	Width			: 100% Screen
+	Height			: 100% Screen
+	Horizontal Align: Centre
+	Vertical Align	: Centre
+;	Add				: Part			: SalesServiceVoucherCustom
+	Space Left		: 1
+	Space Right		: 1
+	Local			: Part	: VCH Status			: Invisible			: Yes
+	Local			: Part	: VCH Title				: Invisible			: Yes
+	Local			: Part	: VCHTitle2				: Invisible			: Yes
+	Local			: Part	: VCH Optional			: Invisible			: Yes
+	Local			: Part	: EI BaseInfo			: Invisible			: Yes	
+;	Local			: Part	: EI BaseInfo			: Local				: Field	: Default		: Invisible	: No
+;	Local			: Part	: EI BaseInfo			: Local				: Field	: Default		: Skip	: Yes
+;	Local			: Line	: EI Consignee			: Delete			: Field		:  EI FirstLedger, INVMailName
+;	Local			: Part	: EIBaseInfo			: Local	: Field		: DEfault		: Set Always	: Yes
+;	Local			: Part	: EIBaseInfo			: Local	: Field		: EI FirstLedger: Set as	: #CHVCHPtyName
+;	Local			: Part	: Default		: Add 	: Background		: Stone Wash
+;	Local			: Form	: Default				: Delete			: Part			: EI Details 
+;	Local			: Form	: Default				: Delete			: Part			: Vch Narration
+;	Local			: Part	: Vch Narration			: Invisible			: Yes
+;	Local			: Part	: Vch Narration			: Local				: Field	: Default		: Invisible	: No
+;	Local			: Part	: Vch Narration			: Local				: Field	: Default		: Background	: White
+
+
+;	Local			: Field	: VCH NrmlRate			: Delete			: Set as		;: ""
+;	Local			: Field	: VchBilledQty			: Delete			: Set as
+	Local			: Field	: VchValue				: Read Only			: No 
+	
+	Option			: BottomNarrationChanges		: Yes
+	Option			: IsBatchAllocRemovedform			: @@IsBatchAllocRemoved
+
+	
+[!Form:IsBatchAllocRemovedform]
+
+	Local			: Field	: VchStockItem			: Delete			: Sub Form		: STKVCH BatchAllocations
+	Local			: Field	: VCH NrmlRate			: Delete			: Set as		;: ""
+	Local			: Field	: VchBilledQty			: Delete			: Set as
+
+[!Form:BottomNarrationChanges]
+	Local			: Part	: VchNarration			: Local				: Line	: VCH NarrPrompt:Local:Field:Default:Background:Light Grey	
+	Local			: Part	: VchNarration			: Local				: Field	: Default		: Invisible	: Yes
+	Local			: Part	: VchNarration			: Local				: Field	: EIValueTotal	: Invisible	: No
+	Local			: Part	: VchNarration			: Local				: Field	: EIValueTotal	: Delete	: Border
+	Local			: Part	: VchNarration			: Local				: Field	: EIValueTotal	: Width		: @@VCHAmountWidth
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: SimplePRompt	: Invisible	: Yes
+	Local			: Part	: VchNarration			: Local				: Field	: EIValueTotal	: Border	: Grey Right
+	Local			: Field	: VChNarration			: Invisible			: Yes
+	Local			: Line	: VCH NarrPrompt		: Add				: Right Field	: At Beginning		 : SimpleField,VchBilledQtyTot,VchRateTot,VCH RateUnitTot,VchRateRebateDmy,ChrDiscPerDmy,ChrDiscPer2Dmy,VchDiscountTot,VchDiscountValueTot
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:VchRateTot		: Invisible	: No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:VCH RateUnitTot: Invisible	: No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:VchRateRebateDmy: Invisible	: No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:ChrDiscPerDmy	: Invisible	: No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:ChrDiscPer2Dmy	: Invisible	: No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:VchDiscountTot	: Invisible	: Yes
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:VchDiscountValueTot	: Invisible	: Yes;No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:VchBilledQtyTot: Invisible	: No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	:SimpleField	: Invisible	: No
+	
+	
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: Default		: Inactive	: No
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: DEfault		: Border	: Grey Right
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: VchRateTot	: Delete	: Border
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: SimpleField	: Set as	: " "
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: SimpleField	: Skip		: Yes
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: SimpleField	: Full Width: Yes
+	
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: VchBilledQtyTot	: Skip	: Yes
+	Local			: Line	: VCH NarrPrompt		: Local				: Field	: VchRateTot		: Skip	: Yes
+	Local			: Line	: VCH NarrPrompt		: Border			: Grey Left Right  Bottom
+;	Local			: Line	: VCH NarrPrompt		: Local 			: Field	: EIValueTotal		: On	: Accept	: Yes	: Field Accept;Delete			: Sub Form    	: VCHCST Allocation
+;	Local			: Line	: VCH NarrPrompt		: Local 			: Field	: EIValueTotal		: On	: Accept	: Yes	: Call	: CherryAlocateAutoCost
+
+
+
+[!Form:IsChrryPurchaseVouchers]
+	Width			: 100% Screen
+	Height			: 100% Screen
+	Horizontal Align: Centre
+	Vertical Align	: Centre
+	Space Left		: 1
+	Space Right		: 1
+	Local			: Part	: VCH Status			: Invisible			: Yes
+	Local			: Part	: VCH Title				: Invisible			: Yes
+	Local			: Part	: VCHTitle2				: Invisible			: Yes
+	Local			: Part	: VCH Optional			: Invisible			: Yes
+	Local			: Part	: EI BaseInfo			: Invisible			: Yes	
+;	Local			: Form	: Default				: Add 	: Background		: Stone Wash
+	Local			: Form	: Default				: Delete			: Part			: EI Details 
+;	Local			: Form	: Default				: Delete			: Part			: Vch Narration
+;	Local			: Part	: Vch Narration			: Invisible			: Yes
+	
+;	Local			: Field	: VchStockItem			: Delete			: Sub Form
+;	Local			: Field	: VCH NrmlRate			: Delete			: Set as		;: ""
+;	Local			: Field	: VchBilledQty			: Delete			: Set as
+	Local			: Field	: VchValue				: Read Only	: No 
+	
+	Option			: BottomNarrationChanges		: Yes
+	
+	Option			: IsBatchAllocRemovedform			: @@IsBatchAllocRemoved
+
+[*Part: EI Details]
+
+        Switch		: EI Details	: EI NrmlDetails    : NOT @@UseClassFmt
+        Switch		: EI Details	: EI ClassDetails   : @@UseClassFmt
+
+        Part        : EI Column
+        Vertical    : Yes
+        CommonBorder: Yes
+        Total       : VCHActualQty, VCHBilledQty
+	
+		Option		: EI DetailsCustomVch				: @@IsCustomVchEnabled
+[!Part:EI DetailsCustomVch]
+		Option		: IEDtls IsSalesVoucher 		: ((@@IsSales AND  ##InvoicingModeFlag) or @@IsSalesOrder OR @@IsCreditNote Or @@IsDelNote)
+		Option		: IEDtls IsPurchaseVch			: (@@ISPurchase OR @@IsDebitNote) AND ##InvoicingModeFlag
+	;	Background	: RED
+		
+[!Part:IEDtls IsSalesVoucher]
+	
+	Border			: Grey Box
+	Local			: Part				: EI Column 		: Border		: Grey Bottom
+	Local			: Part				: EI Column 		: Background	: Light Grey
+	Local			: Field				: Vch Value 		: Border		: Grey Left
+	Local			: Field				: VchBilledQty 		: Border		: grey Left Right
+	;Local			: Field				: Default			: Read Only		: No
+;	Local			: Field				: VchBilledQty		: Skip			: No
+;;	Local			: Field				: VCHRATE			: Background	: Red
+;	Local			: Field				: VCHRATE			: Skip			: $$IsEmpty:$BilledQty OR (NOT @@DoEditAll AND $$IsValidPriceLevel:$PriceLevel AND @@StdVchFldSkipCond)
+	Local			: Field				: VCHRATE			: Option		: RateCalculationForVch	: Yes; SEtas			: @Setval
+	Local			: Field				: VchValue			: Option		: AmtCalculationForVch	: Yes;
+	Local			: Field				: VCH Discount		: Option		: DiscountCalculateByAmt: Yes
+	Local			: Field				: VchDiscount		: Skip			: No
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: After	: VchDiscount	: VchDiscountValue
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: After	: VchDiscount	: VchDiscountValue
+
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: VchRateRebate
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: VchRateRebate
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer2
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer2	
+;	
+;	Local			: Line				: CI InvInfo		: Local			: Field	: Default		: Background	: Green
+
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: After	: VchDiscTitle	: VchDiscountValueTitle
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: Before: VchDiscTitle	: VchRateRebateTitle
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: Before: VchDiscTitle	: ChrDiscPerTitle
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: Before: VchDiscTitle	: ChrDiscPer2Title
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	:At Beginning			: CHVCHTTPEClass
+	Local			: Line				: EI ColumnOne		: Local			: Field 		: 		  VchDiscTitle	: Invisible	: Yes
+	Local			: Field				: VchDiscount		: Border		: Grey Left 	
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: After	: EIAccDisc		: VchDiscountDmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: After	: EIAccDisc		: VchDiscountDmy	
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: VchRateRebateDmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: VchRateRebateDmy
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPerDmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPerDmy
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPer2Dmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPer2Dmy
+	Local			: Field				: EIAccDisc			: Invisible		: Yes
+	
+	Local			: Line				: CI InvInfo		: Add			: Right Field	: At Beginning			: VchGodownSelect 
+	Local			: Line				: EI InvInfo		: Add			: Right Field	: At Beginning			: VchGodownSelect 
+	Local			: Line				: EI ColumnOne		: Add			: Right Field	: At Beginning			: VchGodownSelectTitle 
+
+	Local			: Line				: CI InvInfo		: Add			: Right Field	: CherryGodownBatchAlloc
+	Local			: Line				: EI InvInfo		: Add			: Right Field	: CherryGodownBatchAlloc
+	
+	Local			: Line				: CI InvInfo		: Add			: Field			: At Beginning			: VchChrLineNo
+	Local			: Line				: EI InvInfo		: Add			: Field			: At Beginning			: VchChrLineNo
+
+	Option			: IfBatchAllocationRemoved			: @@IsBatchAllocRemoved
+[!Part:IfBatchAllocationRemoved]
+	
+	Local			: Field				: VchBilledQty		: Skip			: No
+;	Local			: Field				: VCHRATE			: Background	: Red
+	Local			: Field				: VCHRATE			: Skip			: $$IsEmpty:$BilledQty OR (NOT @@DoEditAll AND $$IsValidPriceLevel:$PriceLevel AND @@StdVchFldSkipCond)
+[!Part:IEDtls IsPurchaseVch]
+
+	Border			: Grey Box
+	Local			: Part				: EI Column 		: Border		: Grey Bottom
+	Local			: Part				: EI Column 		: Background	: Light Grey
+	Local			: Field				: Vch Value 		: Border		: Grey Left
+	Local			: Field				: VchBilledQty 		: Border		: grey Left Right
+	;Local			: Field				: Default			: Read Only		: No
+;	Local			: Field				: VchBilledQty		: Skip			: No
+;;	Local			: Field				: VCHRATE			: Background	: Red
+;	Local			: Field				: VCHRATE			: Skip			: $$IsEmpty:$BilledQty OR (NOT @@DoEditAll AND $$IsValidPriceLevel:$PriceLevel AND @@StdVchFldSkipCond)
+	Local			: Field				: VCHRATE			: Option		: RateCalculationForVch	: Yes; SEtas			: @Setval
+	Local			: Field				: VchValue			: Option		: AmtCalculationForVch	: Yes
+	Local			: Field				: VCH Discount		: Option		: DiscountCalculateByAmt: Yes
+	Local			: Field				: VchDiscount		: Skip			: No
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: After	: VchDiscount	: VchDiscountValue
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: After	: VchDiscount	: VchDiscountValue
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: VchRateRebate
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: VchRateRebate
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer
+	Local			: Line				: EI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer2
+	Local			: Line				: CI InvInfo		: Add			: Right Field 	: Before: VchDiscount	: ChrDiscPer2
+	Local			: Line				: EI ColumnOne		: Local			: Field 		: 		  VchDiscTitle	: Invisible	: Yes
+;	Local			: Line				: CI InvInfo		: Local			: Field	: Default		: Background	: Green
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: After	: VchDiscTitle	: VchDiscountValueTitle
+	Local			: Field				: VchDiscount		: Border		: Grey Left 	
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: After	: EIAccDisc		: VchDiscountDmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: After	: EIAccDisc		: VchDiscountDmy
+	Local			: Field				: EIAccDisc			: Invisible		: Yes
+	Local			: Line				: CI InvInfo		: Add			: Right Field	: At Beginning			: VchGodownSelect 
+	Local			: Line				: EI InvInfo		: Add			: Right Field	: At Beginning			: VchGodownSelect 
+	Local			: Line				: EI ColumnOne		: Add			: Right Field	: At Beginning			: VchGodownSelectTitle 
+	
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: Before: VchDiscTitle	: VchRateRebateTitle
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: Before: VchDiscTitle	: ChrDiscPerTitle
+	Local			: Line				: EI ColumnOne		: Add			: Right Field 	: Before: VchDiscTitle	: ChrDiscPer2Title
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: VchRateRebateDmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: VchRateRebateDmy
+
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPerDmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPerDmy
+	Local			: Line				: CIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPer2Dmy
+	Local			: Line				: EIAccInfo			: Add			: Right Field	: Before: EIAccDisc		: ChrDiscPer2Dmy
+	
+	Local			: Line				: CI InvInfo		: Add			: Right Field	: CherryGodownBatchAlloc
+	Local			: Line				: EI InvInfo		: Add			: Right Field	: CherryGodownBatchAlloc
+
+;	Local			: Field				: VchStockItem		: Background
+	Option			: IfBatchAllocationRemoved			: @@IsBatchAllocRemoved
+
+[#Form: Export Invoice]
+	
+	Option			: Export InvoiceCustomVch				: @@IsCustomVchEnabled
+
+[!Form:Export InvoiceCustomVch]	
+	Option			: Export Invoice OPT 	: ((@@IsSales AND  ##InvoicingModeFlag) or @@IsSalesOrder OR @@IsCreditNote Or @@IsDelNote)
+	Option			: Export Purchase OPT	: (@@ISPurchase OR @@IsDebitNote) AND ##InvoicingModeFlag
+
+[!Form:Export Invoice OPT]	
+	Add				: Top Parts	: After	 	: EI BaseInfo	: CHVCHTTPE, CHVCHTop
+	Add				: Bottom Part			: VCH CSTFormIssuedvchs, CHVCHBottom ;;CHVCHInvoiceBtm, 
+[!Form:Export Purchase OPT]	
+	Add				: Top Parts	: After	 	: EI BaseInfo	: CHVCHTTPE, CHVCHTopPurchase
+	Add				: Bottom Part			: VCH CSTFormIssuedvchs, CHVCHBottom	;; CHVCHInvoiceBtm, 
+		
+
+
+	
+;	Part			: CHVCHTTPE,CHVCHTopPurchase, EI DetailsCustomPurchase,CHVCHInvoiceBtm, CHVCHBottom
+[#Form:SalesColor]
+	Option			: SalesColorCustomVch				: @@IsCustomVchEnabled 
+	
+[!Form:SalesColorCustomVch]		
+	
+	Option			: SalesColorCustomVchSales			: Not  $ISChrServiceVoucher:VoucherType:##SVvoucherType
+	Option			: SalesColorCustomVchService		: $ISChrServiceVoucher:VoucherType:##SVvoucherType
+[!Form:SalesColorCustomVchSales]
+	Background		: StoneWash
+[!Form:SalesColorCustomVchService]
+	Background		: Light Orange
+	
+	
+[#Form:PurchaseColor]
+	Background		: Light Lily Yellow;@@SV_PURCHASEVOUCHER
+	
+
+[Function:InsertCostCentreForSales]
+	Parameter				: ISAlterMode		: Logical		: ;No	
+	Parameter				: Location			: String		: ;"Ranebennur"
+	Parameter				: SalesMan			: String		: ;"YPR"
+	Parameter				: Division			: String		: ;"REtail"	
+	Variable				: IsdeemedPositive	: Logical		
+	Variable				: FreightAmt		: Amount
+	
+	Variable				: AmtVar			: Amount
+
+	AB01 : Set				: FreightAmt		: $$GetcherryFrightAmt
+	
+	000 : Log		: ##Location + " -- " + ##SalesMan +" -- " + ##Division
+	010 : Walk Collection	: ALLINVENTORYENTRIES		
+	020 : Log		: $STOCKITEMNAME		+ $$String:$Amount 
+	030 : Walk Collection	: ACCOUNTINGALLOCATIONS 
+;	040 : Log		: "__"+$LEDGERNAME + " -- " + $$String:$Amount
+	045 : Set		: IsdeemedPositive			: $IsdeemedPositive
+;	050 : Walk Collection	: CATEGORYALLOCATIONS
+;;	060 : Log		: "____"+$Category 
+;	070 : Walk Collection	: COSTCENTREALLOCATIONS
+;;	080 : Log		: "______"+$Name + " -- " + $$string:$Amount
+;	090 : End Walk
+;	100 : End Walk
+	
+	B01 : If		: ##FreightAmt	> 0 And $$IsPurchase:##SVVoucherType
+	B10 : Set		: AmtVar				: $Amount + ##FreightAmt
+	B20 : Else		
+	B30 : Set		: AmtVar				: $Amount
+	B40	: End If
+	
+	110 : Call		: DeleteCategoryCollection
+;	115 : Log		: "Deleted Cost.."
+	120 : Set Target
+	M20 : Call		: CherryCategoryAllocations:"Location":##IsdeemedPositive:##Location:##AmtVar;$Amount
+	M30 : Do If		:(Not ($$IsPurchase:##SVVoucherType Or @@IsDivSmDisabled))	  : Call		: CherryCategoryAllocations:"Sales Man":##IsdeemedPositive:##SalesMan:##AmtVar;$Amount
+	M40 : Do If		:(Not ($$IsPurchase:##SVVoucherType or @@IsDivSmDisabled))	  : Call		: CherryCategoryAllocations:"Division":##IsdeemedPositive:##Division:##AmtVar;$Amount
+	M50 : Set Target: ..
+;	M60 : Log	: "_____________Inserted..___"		
+	190 : End Walk	
+	200 : End Walk
+;	205 :  Alter Target
+	
+	
+	210 : Do If		: ##ISAlterMode	: Alter Target
+	222 : Log		: $$LastResult
+	
+
+[Function:GetcherryFrightAmt]
+	
+	010 : Walk Collection	: LEDGERENTRIES
+;	020 : Log		: "----------->"+$LedgerNAme	 + " -- " + $$String:$Amount
+	
+	050 : If		: $LedgerName Contains "Freight" 
+	060 : Return	: $Amount
+	070 : End If
+	
+	030 : End Walk
+
+[Function:DeleteCategoryCollection]
+	
+	A10 : Walk Collection			: CATEGORYALLOCATIONS
+	A15 : Set Target
+	A30 : While			: $$NumItems:COSTCENTREALLOCATIONS !=0
+	A40 : Delete Collection Object	: COSTCENTREALLOCATIONS: 0 : Yes 
+;	A45 : Log			: "!!---DELETED--LIST---"
+	A50 : End While		 
+	A60 : End Walk 
+	
+;	205 : Log			: $$NumItems:CATEGORYALLOCATIONS
+	210 : Set Target	
+	212 : While			: $$NumItems:CATEGORYALLOCATIONS != 0
+	220 :  Delete Collection Object				: CATEGORYALLOCATIONS : 1 : Yes 
+;	222 : Log			: "---DELETED--LIST---"
+	225 : End While
+	
+
+[Function:CherryCategoryAllocations]
+	Parameter		: Category				: String
+	Parameter		: ISDEEMEDPOSITIVE		: Logical
+	Parameter		: NAME					: String
+	Parameter		: AMOUNT				: Amount
+	
+;	N10 : Set Target
+	N10 : Insert Collection Object			: CATEGORYALLOCATIONS
+	N20 : Set Value	: CATEGORY				: ##CATEGORY
+	N30 : Set Value	: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	N40 : Insert Collection Object			: COSTCENTREALLOCATIONS
+	N50 : Set Value	: NAME					: ##NAME
+	N60 : Set Value	: AMOUNT				: ##AMOUNT
+	N70 : Set Target: ..
+	N80 : Set Target: ..
+	N90 : Log		: "Category Insertion.." + ##Category + " -- " + ##NAME + " -- " + $$String:##AMOUNT
+	
+[#Field:CIVALUE]
+	Option			: CHRCIVALUEoption		: @@IsCustomVchEnabled
+	
+[!Field:CHRCIVALUEoption]
+	Delete			: Sub Form				: VCHCST Allocation
+	On:Accept		: Yes					: Field Accept
+	On:Accept		: Yes					: Call : CostAllocationOnVchLed:($$Value):$IsdeemedPositive:#CHVCHTopCenLocation:#CHVCHTopCenSalesMan:#CHVCHTopCendIVISION
+	Skip			: No
+;	Read Only		: Yes;Not $$IsPurchase:##SVVoucherType
+[#Field:EIVALUE]
+	Option			: CHREIVALUEoPTION			: @@IsCustomVchEnabled
+	
+[!Field:CHREIVALUEoPTION]
+	Delete			: Sub Form				: VCHCST Allocation
+	On:Accept		: Yes					: Field Accept
+	On:Accept		: Yes					: Call : CostAllocationOnVchLed:($$Value):$IsdeemedPositive:#CHVCHTopCenLocation:#CHVCHTopCenSalesMan:#CHVCHTopCendIVISION
+	Delete			: Skip
+[Function:CostAllocationOnVchLed]
+	Parameter		: Amount			: Amount
+	Parameter		: IsdeemedPositive	: Logical		
+	Parameter		: Location			: String		;: "Ranebennur"
+	Parameter		: SalesMan			: String		;: "YPR"
+	Parameter		: Division			: String		;: "REtail"	
+	
+	0000 : Log		: "---LEDGER---"+$LEDGERNAME + " -- " + $$string:##IsdeemedPositive
+	010 : Call		: DeleteCategoryCollection
+	
+	M20 : Call		: CherryCategoryAllocations:"Location":##IsdeemedPositive:##Location:##Amount
+	M30 : Do If		:(Not ($$IsPurchase:##SVVoucherType Or @@IsDivSmDisabled)): Call		: CherryCategoryAllocations:"Sales Man":##IsdeemedPositive:##SalesMan:##Amount
+	M40 : Do If		:(Not ($$IsPurchase:##SVVoucherType Or @@IsDivSmDisabled)): Call		: CherryCategoryAllocations:"Division":##IsdeemedPositive:##Division:##Amount 
+	
+	
+[#Field:EIVALUETOTAL]
+	Option			: ChrEIVALUETOTALOption	: @@IsCustomVchEnabled
+[!Field:ChrEIVALUETOTALOption]
+;	Background		: White
+	Delete			: Sub Form				: VCHCST Allocation
+	On:Accept		: Yes					: Field Accept
+	On:Accept		: Yes					: Call : CostAllocationOnVchLed:($$Value):$IsdeemedPositive:#CHVCHTopCenLocation:#CHVCHTopCenSalesMan:#CHVCHTopCendIVISION
+	On:Accept		: @ControlCondi			: Call : ESugamNotification:@ControlCondi	
+	IsOrderMandtry	: $IsOrderMandtrySales:VOUCHERTYPE:##SVVoucherType and @@IsSales
+	
+	
+;	ControlCond		: ($BasicPurchaseOrderNo = $$SysName:EndOfList ) 
+;	
+	Control			: OrderNotSelected	: IF (@IsOrderMandtry) then $$IsCherryOrderSelected  else  NO
+	
+	Validate		: IF (@IsOrderMandtry) then Not $$IsCherryOrderSelected  else  Yes
+	
+;	Control			: ESugamNotificationTxt	: $$ESugamNotification:@ControlCondi
+	Notify			: ESugamNotificationTxt	: @ISEsugamEnabled and $$Value >= @ESugamAmount 
+	ControlCondi	: @ISEsugamEnabled and $$Value >= @ESugamAmount 
+	ISEsugamEnabled	: $ChrNotifyESugam:VOUCHERTYPE:##SVVoucherType
+	ESugamAmount	: $ChrNotifyAmount:VOUCHERTYPE:##SVVoucherType
+
+[#Field:VchNarration]
+	On:Accept:@InInvtVch AND @ControlCondi :Field Accept
+	On:Accept:@InInvtVch AND @ControlCondi :Call	: ESugamNotification:@ControlCondi
+	
+	InInvtVch		: $$IsInventoryVch:##SVVoucherType
+	ControlCondi	: @ISEsugamEnabled and  #VchValueTotal>= @ESugamAmount 
+	ISEsugamEnabled	: $ChrNotifyESugam:VOUCHERTYPE:##SVVoucherType
+	ESugamAmount	: $ChrNotifyAmount:VOUCHERTYPE:##SVVoucherType
+;	Option			: VchNarrationOptionInventory	: $$IsInventoryVch:##SVVoucherType
+	Set Always		: Yes
+
+
+[Function:ESugamNotification]
+	Parameter		: FlagVar		: Logical
+	
+;	000 : Log		: @@ESugamNotificationTxt
+	010 : Msg Box	: "Warning !" : @@ESugamNotificationTxt
+
+
+	
+	
+[#Field:EI AccAllocAmt]
+	Option			: ChrEIAccAllocAmtOpt	: @@IsCustomVchEnabled
+[!Field:ChrEIAccAllocAmtOpt]
+	Delete			: Sub Form				: VCHCST Allocation
+	
+[#Field:VCHBATCH OrderDue]		
+	Option			: VchBatchOrderIsCustom	: @@IsCustomVchEnabled 
+[#Field:VchBatchTrack]
+	Option			: VchBatchOrderIsCustom	: @@IsCustomVchEnabled	
+	Set as			: @Value
+	
+
+ Value		      : If $$Line =  2  then $$SysName:EndofList else +
+				    if ($$Line = 1 and $$IsEmpty:$$Value) then $$SysName:NotApplicable else +
+					if ($$line >= 1) then $$Value else +
+                  if NOT $$IsEmpty:$$BaseOwner:$BasicShipDeliveryNote then $$BaseOwner:$BasicShipDeliveryNote else +
+                  if ((@@IsOutward AND NOT $$IsEmpty:$VoucherNumber) OR (@@IsInward AND $$IsEmpty:$Reference)) then $VoucherNumber else +
+                  if ((@@IsInward AND NOT $$IsEmpty:$Reference) OR (@@IsOutward AND $$IsEmpty:$VoucherNumber)) then $Reference else $$Value
+
+[#Field:VchBatchOrder]
+	Option			: VchBatchOrderIsCustom	: @@IsCustomVchEnabled	
+[!Field:VchBatchOrderIsCustom]	
+	On:Focus:Yes	: Call		: AddDefaultGodown
+;	On:Focus:Yes	: Call		: UpdateRateDetails
+
+[Function:AddDefaultGodown]
+;	030 : If		:  $$IsEmpty:$GodownName
+	040 : Log		: $...ChrVchGodown
+	045 : Set Value	: GodownName		: $...ChrVchGodown
+	;050 : Do If		: (Not $$IsSalesOrder:##SVVoucherType)	: Set Value	: GodownName		: $...ChrVchGodown
+	;060 : Do If		: ($$IsSalesOrder:##SVVoucherType)		: Set Value	: GodownName		: $$SysName:ANY
+;	060 : Log		: " ___ "+ $$TgtObject:$GodownName
+;	070 : End If
+		
+
+;=======================================================================================================================
+						; PAYMENT / CONTRA / RECEIPT / JOURNAL
+;=======================================================================================================================
+[#Field: VCH CostClassPrompt]
+	Invisible		: @@VchsCostAlloc AND  @@IsCustomVchEnabled
+[#Field: VCH CostClass]
+	Invisible		: @@VchsCostAlloc AND  @@IsCustomVchEnabled
+[#Part: VCHTitle2Left]
+	Option			: AddLocationCostAllcs			: @@VchsCostAlloc AND @@IsCustomVchEnabled 
+[!Part:AddLocationCostAllcs]
+	Add				: Line		: At End			: CherryVchLocation 
+	
+
+	
+[Line:CherryVchLocation]
+	Field			: Short Prompt,CherryVchLocation, ChrDivisionPrompt, CherryVchDivision, ChrSalesManPrompt , CherryVchSalesman 
+	Local			: Field	: Short Prompt			: Info	: "Location" 
+	Local			: Field	: Short Prompt			: Style	: Small Bold
+	Local			: Field	: Short Prompt			: Width	: 16	
+	Local			: Field	: Short Prompt			: Color	: DeepCobaltBlue
+[Field:CherryVchLocation]
+	Use				: XName Field
+	Table			: CherryVchLocationTable 
+	Show Table		: On Empty
+	Storage			: VchCherryLocation
+
+[Field:ChrDivisionPrompt]
+	Align			: Prompt	
+	Info			: "Division"
+	Color			: DeepCobaltBlue
+	Space Left		: 2
+	
+[Field:CherryVchDivision]
+	Use				: XName Field
+	Table			: CCDivisionTAble
+	Show Table		: On Empty
+	Storage			: CCDivisionName
+	
+[Field:ChrSalesManPrompt]
+	Align			: Prompt
+	Info			: "Sales Man"
+	Color			: DeepCobaltBlue
+	Space Left		: 2
+[Field:CherryVchSalesman] 
+	Use				: XName Field
+	Table			: CCSalesManTAble
+	Storage			: CCSalesManName
+	Show Table		: On Empty
+
+[#Line: VCHACC Info] 
+	
+;	Local			: Field		: Default 			: Background	: White 
+;	Add				: Explode	:  VCHACC Info CostAlloc  : Not $$ISEmpty:#VchParticulars
+
+[#Line: ACLSInfo]
+;	Local			: Field		: Default 			: Background	: White 
+;	Add				: Explode	:  VCHACC Info CostAlloc  : Not $$ISEmpty:#ACLSLed
+
+[Part:VCHACC Info CostAlloc]
+	Line			: VCHACC Info CostAlloc
+	Repeat			: VCHACC Info CostAlloc			: ChrCostAllocAggr 
+	Scroll			: Vertical
+	Break On		: ($$IsEndOfList:$CCDivisionName AND $$IsEndOfList:$CCSalesManName) OR +
+					  ($$IsEndOfList:$CCDivisionName AND $$IsEmpty:#VCHACCInfoSaleManCC) Or +
+					  ($$IsEndOfList:$CCSalesManName AND $$ISEmpty:#VCHACCInfoCCDiv)
+	Totals			: VCHACC Info CCDivAmt, VCHACC Info SaleManCCAmt				  
+
+[Line:VCHACC Info CostAlloc]
+	Field			: CherryVCHParticulars, VCHACC Info DivisionAlloc,Simple Field, VCHACC Info SalesmanAlloc
+;	Local			: Field	: Default					: Skip		: $$Line = 1
+	Local			: Field	: CherryVCHParticulars		: Skip		: Yes
+;	Option			: VCHACC Info CostAllocLine1		: $$Line = 1	
+	Local			: Field	: Simple Field				: Info		: ""
+	Local			: Field	: Simple Field				: Width		: 3
+	
+[!Line:VCHACC Info CostAllocLine1]
+	Local			: Field	: VCHACC Info DivisionAlloc	: Indent	: 0.5
+	Local			: Field	: Default					: Color		: DeepCobaltBlue
+
+[Field:CherryVCHParticulars]
+	Width			: 30
+	Skip			: Yes
+
+[Field:VCHACC Info DivisionAlloc]
+;	Background		: Green
+	Field			: VCHACC Info CCDiv, VCHACC Info CCDivAmt
+[Field:VCHACC Info CCDiv]
+	Use				: XName Field
+	Width			: 14
+	Set Always		: Yes
+	Set as			: If ($$Line = 1) Then "Division" Else $$Value
+	Storage			: CCDivisionName
+	Table			: CCDivisionTAble, EndOfList		: $$Line > 2
+	Table			: CCDivisionTAble					: $$Line = 2
+	Show Table		: On Empty
+	Skip			: IF ($$Line =1) Then Yes Else ($$Line > 2) AND ($$PrevLineField = $$SysName:EndOfList OR $$IsEmpty:$$PrevLineField) 
+	Unique			: Yes
+	Color			: If($$Line = 1) Then  "DeepCobaltBlue" Else "Black"
+	
+	Validate		: If($$IsEndOfList:$CCDivisionName) Then @AmountVal = @TotalAmt Else YEs
+	Control			: DivTotalsDoNotMatch:If($$IsEndOfList:$CCDivisionName) Then @AmountVal != @TotalAmt Else No
+	
+	AmountVal		: $..Amount
+	TotalAmt		: $$Total:VCHACCInfoCCDivAmt
+	
+[Field:VCHACC Info CCDivAmt]
+	Use				: XAmount Field
+	Width			: 10
+;	Background		: White
+	Storage			: CCDivisionAmt
+	Inactive		: $$IsEndOfList:$CCDivisionName Or $$IsEmpty:$CCDivisionName
+	Validate		: Not $$IsEmpty:$$Value
+;	Set Always		: Yes
+	Skip			: $$Line	= 1
+;	Validate		: If($$IsEmpty:$$Value) Then No Else @AmountVal >= @TotalAmt 
+;	Control			: DivTotalsDoNotMatch:If($$Isempty:$$Value) Then Yes Else @AmountVal < @TotalAmt 
+	
+	AmountVal		: $..Amount
+	TotalAmt		: $$Total:VCHACCInfoCCDivAmt
+	Set as			: if ($$Line = 2) then  @AmountVal Else ""
+	
+	
+;;---------
+[Field:VCHACC Info SalesmanAlloc]
+;	Background		: YELLOW
+	Field			: VCHACC Info SaleManCC, VCHACC Info SaleManCCAmt 
+	
+[Field:VCHACC Info SaleManCC]
+	Use				: XName Field
+	Width			: 14
+	Storage			: CCSalesManName
+	Table			: CCSalesManTAble,	EndOfList		: $$Line > 2
+	Table			: CCSalesManTAble,	NotApplicable	: $$Line = 2
+	Show Table		: On Empty
+	Skip			: IF ($$Line =1) Then Yes Else ($$Line > 2) AND ($$PrevLineField = $$SysName:EndOfList OR $$PrevLineField = $$SysName:NotApplicable OR $$IsEmpty:$$PrevLineField) 
+	Unique			: Yes
+	Set as			: IF ($$Line = 1) Then "Sales Man" Else  if ($$InCreateMode ANd $$line =2) then $ChrLedgerCostCentre:LEDGER:$LedgerNAme Else 	$$Value
+	Color			: If($$Line = 1) Then  "DeepCobaltBlue" Else "Black"
+	AmountVal		: $..Amount
+	TotalAmt		: $$Total:VCHACCInfoSaleManCCAmt
+	Validate		: If($$IsEndOfList:$CCSalesManName) Then @AmountVal = @TotalAmt Else YEs
+	Control			: SleMnTotalsDoNotMatch:If($$IsEndOfList:$CCSalesManName) Then @AmountVal != @TotalAmt Else No
+;	Set as			: if ($$Line=2) then $ChrLedgerCostCentre:LEDGER:$LedgerNAme Else ""
+	
+	
+[Field:VCHACC Info SaleManCCAmt]
+	Use				: XAMount Field
+	Width			: 10
+;	Background		: White
+	Storage			: CCSalesManAmt
+	Inactive		: $$IsEndOfList:$CCSalesManName Or $$IsEmpty:$CCSalesManName Or $$IsNotApplicable:$CCSalesManName
+	Validate		: Not $$IsEmpty:$$Value
+	Skip			: $$Line = 1
+;	Set Always		: Yes 	
+
+;	Validate		: If($$IsEmpty:$$Value) Then No Else @AmountVal >= @TotalAmt 
+;	Control			: SleMnTotalsDoNotMatch:If($$Isempty:$$Value) Then Yes Else @AmountVal < @TotalAmt 
+	AmountVal		: $..Amount
+	TotalAmt		: $$Total:VCHACCInfoSaleManCCAmt
+
+	Set as			: if ($$Line = 2) then  @AmountVal Else ""
+
+;;=================
+
+[Collection:CCDivisionTAble]
+	Title			: "Division"
+	Type			: CostCentre
+	Fetch			: Name,Category
+	Format			: $NAme
+	Filter			: FilterCCDivision,FilterByApplicableCC
+	Alias			: Centre
+	
+[Collection:CCSalesManTAble]
+	Title			: "SalesMan"
+	Type			: CostCentre
+	Fetch			: Name,Category
+	Format			: $NAme
+	Filter			: FilterCCSalesMan,FilterByApplicableCC
+	Alias			: Centre
+	
+[Collection:CherryVchLocationTable]
+	Title			: "Location"
+	Type			: Cost Centre
+	Fetch			: Name,Category
+	Format			: $NAme
+	Filter			: FilterCCLocation,FilterByApplicableCC
+	Alias			: Centre
+
+	
+[System:Formulas]
+	FilterCCDivision		: $Category		= "Division"
+	FilterCCSalesMan		: $Category		= "SalesMan"
+	FilterCCLocation		: $Category		= "Location" 
+	VchsCostAlloc			: @@ISPayment OR @@IsContra Or @@ISReceipt Or @@IsJournal
+	VchsCostAllocCreate		: @@VchsCostAlloc AND $$InCreateMode
+	DivTotalsDoNotMatch		: "Division totals \n\n Do not matched"
+	SleMnTotalsDoNotMatch	: "Salesman totals \n\n Do not matched"
+	
+	
+	
+;[#Field:VchParticulars]	
+;;	Background		: White
+;;	Option			: AddAutoCostIfNextLine	: Yes;$$Line > 1
+;	Set Always		: Yes
+;	
+[#Report:Voucher]
+	Variable		: IsCostInserted
+[#Report:AccountingVoucher]	
+	Variable		: IsCostInserted
+	
+[Variable:IsCostInserted]
+	Type			: Logical
+;[!Field:AddAutoCostIfNextLine]
+;	
+;;	Background		: Light Grey   
+;	On				: Accept: Yes						: Field Accept
+;;	On				: Accept: Yes						: Call			: CherryDeleteCollObj
+;	On				: Accept: @IsPrevmisMatch			: Call			: AddAutoCostIfNextLine:$$Line:$$Value
+;;	On				: Accept: @IsPrevmisMatch			: Call			: TEST F
+;	IsPrevmisMatch	: $$PrevLine:#VCHToBy != #VCHToBy
+
+
+;[#Field:AclsTotal]
+;;	Background		: White
+;	On:Accept: Yes	: Field Accept
+;	On:Accept: Yes	: Call			: AddAutoCostIfNextLine:$$Line:$LedgerName
+;	
+[Function:TEST F]
+	010 : Log		: "1212 TEST "
+[Collection:ChrVchSourcColl]
+	Source Collection		: ..
+	Walk				: LedgerEntries
+	Compute				: LedgerName	: $LedgerName
+	Fetch				: ChrCostAllocAggr.*
+	
+[Variable:ChrCCList]
+	Variable			: KeyVar			: Number
+	Variable			: LedName			: String
+	Variable			: CCDivisionName	: String
+	Variable			: CCDivisionAmt		: Amount
+	Variable			: CCSalesManName	: String
+	Variable			: CCSalesManAmt		: Amount
+
+[Variable:ChrCCListAggr]
+	Variable			: KeyVar			: Number
+	Variable			: LedName			: String
+	Variable			: CCDivisionName	: String
+	Variable			: CCDivisionAmt		: Amount
+	Variable			: CCSalesManName	: String
+	Variable			: CCSalesManAmt		: Amount
+
+[Collection:ChrCCListAggr]
+	Data Source			: Variable			: ChrCCListAggr
+
+
+[Collection:ChrCCList]
+	Data Source			: Variable			: ChrCCList
+	
+[Collection:ChrCCListAggrDiv]
+	Source Collection		: ChrCCList
+	By					: DivisionName		: $CCDivisionName
+	Aggr Compute		: DivisionAmt		: Sum	: $CCDivisionAmt
+
+[Collection:ChrCCListAggrSLeMn]	
+	Source Collection	: 	ChrCCList
+	By					: SalesManName		: $CCSalesManName
+	Aggr Compute		: SalesManAmt		: Sum	: $CCSalesManAmt	
+	
+
+[Collection:ChrCCListAggrSort]
+	
+	Source Collection	: ChrCCListAggr
+	Compute				: DivisionName		: $DivisionName
+	Compute				: SalesManName		: $SalesManName
+	Compute				: DivisionAmt		: $DivisionAmt
+	Compute				: SalesManAmt		: $SalesManAmt
+	
+	Sort				: @@default			: -$DivisionName,-$SalesManName
+
+[System:Variables]
+	ListVariable		: ChrCCList	
+	ListVariable		: ChrCCListAggr
+[Function:AddChrCCList]
+	Parameter			: KeyVar			: Number
+	Parameter			: LedName			: String
+	Parameter			: CCDivisionName	: String
+	Parameter			: CCDivisionAmt		: Amount
+	Parameter			: CCSalesManName	: String
+	Parameter			: CCSalesManAmt		: Amount
+	Variable			: IndexVar			: Number
+	010 : List Add		: ChrCCList			: ##KeyVar
+	020 : Set			: IndexVar			: $$ListIndex:ChrCCList:##KeyVar
+	
+	025 : Set			: ChrCCList[##IndexVar].LedName				: ##LedName
+	030 : Set			: ChrCCList[##IndexVar].CCDivisionName		: ##CCDivisionName
+	040 : Set			: ChrCCList[##IndexVar].CCDivisionAmt		: ##CCDivisionAmt
+	050 : Set			: ChrCCList[##IndexVar].CCSalesManName		: ##CCSalesManName
+	060 : Set			: ChrCCList[##IndexVar].CCSalesManAmt		: ##CCSalesManAmt
+	070 : Set			: ChrCCList[##IndexVar].KeyVar				: ##KeyVar
+	
+	090 : Log			: "LIST---"+##LedName+" -- "+##CCDivisionName + " - " +$$string:##CCDivisionAmt + " - "+ ##CCSalesManName + " - " +$$string:##CCSalesManAmt	
+
+[Function:AddChrCCListAggr]
+	Parameter			: KeyVar			: Number
+	Parameter			: LedName			: String
+	Parameter			: CCDivisionName	: String
+	Parameter			: CCDivisionAmt		: Amount
+	Parameter			: CCSalesManName	: String
+	Parameter			: CCSalesManAmt		: Amount
+	Variable			: IndexVar			: Number
+	010 : List Add		: ChrCCListAggr			: ##KeyVar
+	020 : Set			: IndexVar			: $$ListIndex:ChrCCListAggr:##KeyVar
+	
+	025 : Set			: ChrCCListAggr[##IndexVar].LedName				: ##LedName
+	030 : Do If			:(Not $$IsEmpty:##CCDivisionName)	:Set			: ChrCCListAggr[##IndexVar].CCDivisionName		: ##CCDivisionName
+	040 : Do If			:(Not $$IsEmpty:##CCDivisionName)	:Set			: ChrCCListAggr[##IndexVar].CCDivisionAmt		: ##CCDivisionAmt
+	050 : Do If			:(Not $$IsEmpty:##CCSalesManName)	:Set			: ChrCCListAggr[##IndexVar].CCSalesManName		: ##CCSalesManName
+	060 : Do If			:(Not $$IsEmpty:##CCSalesManName)	:Set			: ChrCCListAggr[##IndexVar].CCSalesManAmt		: ##CCSalesManAmt
+	070 : Set			: ChrCCListAggr[##IndexVar].KeyVar				: ##KeyVar
+	
+	090 : Log			: "LIST---"+##LedName+" -- "+##CCDivisionName + " - " +$$string:##CCDivisionAmt + " - "+ ##CCSalesManName + " - " +$$string:##CCSalesManAmt	
+
+
+[Function:AddAutoCostIfNextLine]
+	Parameter			: LineNo			: Number
+	Parameter			: LedgerName		: String
+	Variable			: LineCtr			: Number
+	Variable			: CostCntr			: Number
+	Variable			: CCDivisionName	: String
+	Variable			: CCDivisionAmt		: Amount
+	Variable			: CCSalesManName	: String
+	Variable			: CCSalesManAmt		: Amount
+	Variable			: KVar				: Number
+
+;	Variable			: IsCostInserted
+	D11 : Log			: "TES -- "+$$String:##LineNo
+	
+	L10 : List Delete	: ChrCCList
+	L15 : List Delete	: ChrCCListAggr
+	
+	Y10 : If:$$IsEmpty:$ChrCostAllocAggr[2].CCDivisionName
+
+;	Log : Log			: "_______________" + $$string:##IsCostInserted
+;	D05 : If			: ##LineNo > 1	 AND NOT ##IsCostInserted AND $$InCreateMode
+;	011 : Log			: "--------------------"
+	010 : Walk Collection					: ChrVchSourcColl 
+;	015 : Increment		: LineCtr
+;;	016 : If 			: ##LineCtr = 1
+;	020 : Log			: $LedgerName
+	L20 : If			: ##LedgerName != $LedgerName
+	030 : Walk Collection					: ChrCostAllocAggr
+	031 : Increment		: KVar
+	032 : Log			: "---"+$$String:##KVar
+;;	035 : Increment		: CostCntr
+;;	036 : If			: ##CostCntr > 1
+;	040 : Log			: $CCDivisionName + " - " +$$string:$CCDivisionAmt + " - "+ $CCSalesManName + " - " +$$string:$CCSalesManAmt
+	
+	N10 : If			: $CCDivisionName != "Division" AND $CCSalesManName != "SalesMan"
+	N50 : Call			: AddChrCCList:##KVar:$..LedgerName:$CCDivisionName:$CCDivisionAmt:$CCSalesManName:$CCSalesManAmt
+
+	N90 : End If
+	
+;;	
+;	042 : Set			: CCDivisionName		: $CCDivisionName
+;	043	: Set			: CCDivisionAmt			: $CCDivisionAmt
+;	044 : Set			: CCSalesManName		: $CCSalesManName
+;	045 : Set			: CCSalesManAmt			: $CCSalesManAmt
+;	
+;;	050 : Set Object
+;;	055 : Set Target
+;;	060 : Insert Collection Object	: ChrCostAllocAggr
+;;	070 : Set Value		: CCDivisionName		: ##CCDivisionName
+;;	072 : Set Value		: CCDivisionAmt			: ##CCDivisionAmt
+;;	074 : Set Value		: CCSalesManName		: ##CCSalesManName	
+;;	076 : Set Value		: CCSalesManAmt			: ##CCSalesManAmt
+;;	085 : Set Target: ..	
+;;	086 : Set			: IsCostInserted		: Yes
+;;	088 : Log			: ##IsCostInserted
+;;	087 : End If
+	090 : End Walk
+	
+	L50 : End If
+	
+	100 : End Walk
+	
+;	M00 : Log		: "======================"
+	
+;	M01 : Log		: ##ChrCCList[2].CCDivisionName
+
+	Q10 : Walk Collection		: ChrCCListAggrSLeMn
+	Q20 : Log			:  "__"+$SalesManName + " - " +$$string:$SalesManAmt
+	Q25 : Increment		: LineCtr
+	Q26 : Call			: AddChrCCListAggr:##LineCtr:"":"":"":$SalesManName:$SalesManAmt
+	Q70 : End Walk
+	
+;	Q00	: Log			: "------------------------"
+	M09 : Set			: LineCtr	: 0
+	M10 : Walk Collection		: ChrCCListAggrDiv;ChrCCListAggrSort
+	Q18 : Increment		: LineCtr
+;	M20 : Log			: $DivisionName + " - " +$$string:$DivisionAmt 
+	M26 : Call			: AddChrCCListAggr:##LineCtr:"":$DivisionName:$DivisionAmt:"":""
+	M70 : End Walk
+	
+
+	
+	X10 : Walk Collection	: ChrCCListAggr
+;	X20 : Log			: " ARI--"+$CCDivisionName + " - " +$$string:$CCDivisionAmt + " - "+ $CCSalesManName + " - " +$$string:$CCSalesManAmt
+	
+	
+;	M40 : Log			: " AR--"+$CCDivisionName + " - " +$$string:$CCDivisionAmt + " - "+ $CCSalesManName + " - " +$$string:$CCSalesManAmt
+
+	042 : Set			: CCDivisionName		: $CCDivisionName
+	043	: Set			: CCDivisionAmt			: $CCDivisionAmt
+	044 : Set			: CCSalesManName		: $CCSalesManName
+	045 : Set			: CCSalesManAmt			: $CCSalesManAmt
+	
+	P50 : Set Object
+	P55 : Set Target
+	P60 : Insert Collection Object	: ChrCostAllocAggr
+	P70 : Set Value		: CCDivisionName		: ##CCDivisionName
+	P72 : Set Value		: CCDivisionAmt			: ##CCDivisionAmt
+	P74 : Set Value		: CCSalesManName		: ##CCSalesManName	
+	P76 : Set Value		: CCSalesManAmt			: ##CCSalesManAmt
+	P85 : Set Target: ..	
+	P86 : Set			: IsCostInserted		: Yes
+;	P88 : Log			: ##IsCostInserted
+	
+	
+
+	X30 : End Walk
+	Z40 : End If
+	
+;	
+;	110 : Log		: "----X----"
+;	D01 : Set Target 
+;	D00 : Log			: $$NumItems:ChrCostAllocAggr
+;	D10 : If			: Yes;$$NumItems:ChrCostAllocAggr > 1
+;	
+;	D30 : Delete Collection Object			: ChrCostAllocAggr : 1  :YEs 
+;;	D50 : Set Target	: ..
+;	D40 : End If
+;	105 : End If
+	
+
+[Collection:ChrCostAllocCollScr]
+	Source Collection		: ChrVchSourcColl
+;'	Walk					: ChrCostAllocAggr
+	Compute					: LedgerName			: $LedgerName
+	Compute					: DivisionName			: $CCDivisionName
+	Compute					: DivisionAmt			: $CCDivisionAmt	
+	
+[Collection:ChrCostAllocCollSMScr]
+;	Source Collection		: ....
+	Walk					: ChrCostAllocAggr
+	
+	By						: SalesManName			: $CCSalesManName
+	Aggr Compute			: SalesManAmt			: Sum	: $CCSalesManAmt	
+	
+
+
+[Function:CherryDeleteCollObj]
+	Variable			: DelCntr			: Number
+	002 : Set Target
+	010 : Set			: DelCntr			: $$NumItems:ChrCostAllocAggr 
+	020 : If			: ##DelCntr	> 1
+	030 : While			: ##DelCntr != 2
+	040 : Decrement		: DelCntr
+;	060 : Log			: ##DelCntr
+	070 : Delete Collection Object			: ChrCostAllocAggr 	: 1 : Yes
+	075 : Set Target	..
+	080 : End While
+	090 : End If
+;	100 : Log			: "----------------"	
+	
+
+	
+;[#Field:VCHNarration]
+;;	Background			: White
+;;	On		: Accept	: Yes		: Field Accept
+;;	On		: Accept	: Yes		: Call			: CherryCostCategoryAllocation	
+;	
+[#Form:Voucher]
+
+;	On:Form Accept		: @@VchsCostAlloc	: Call			 :  CherryCostCategoryAllocation
+	
+
+	
+[Function:CherryCostCategoryAllocation]
+		
+	Variable			: CCDivisionName	: String
+	Variable			: CCDivisionAmt		: Amount
+	Variable			: CCSalesManName	: String
+	Variable			: CCSalesManAmt		: Amount
+	Variable			: ISDEEMEDPOSITIVE	: Logical 
+	Variable			: IndexVar			: Number
+	Variable			: LineVar			: Number
+	Variable			: LocationVar		: String
+	Variable			: AmtVar			: Amount
+	
+	Local Formula		: CCSalesManAmt		: IF (##SVSingleEntry) then  $CCSalesManAmt Else If ($$IsReceipt:##SVVoucherType Or $$IsContra:##SVVoucherType)then @CCSalesManAmtVar Else @CCSalesManAmtVar * (-1)
+	Local Formula		: CCDivisionAmt		: IF (##SVSingleEntry) then  $CCDivisionAmt Else If ($$IsReceipt:##SVVoucherType Or $$IsContra:##SVVoucherType)then @CCDivisionAmtVar Else @CCDivisionAmtVar * (-1)
+	Local Formula		: CCSalesManAmtVar	: IF(##ISDEEMEDPOSITIVE) then  $$Negative:$CCSalesManAmt Else $CCSalesManAmt
+	Local Formula		: CCDivisionAmtVar	: IF(##ISDEEMEDPOSITIVE) then  $$Negative:$CCDivisionAmt Else $CCDivisionAmt 
+	010 : Set			: LocationVar		: $VchCherryLocation
+
+		
+	020 : Walk Collection						: ALLLEDGERENTRIES
+	022 : Set			: AmtVar				: $Amount 
+	025 : List Delete	: CostAllocList
+	026 : Set			: LineVar	: 0
+;	030 : Log			: $LedgerName + " -- " + $$String:$Amount + $$String:$ISDEEMEDPOSITIVE
+	035 : Set			: ISDEEMEDPOSITIVE		: $ISDEEMEDPOSITIVE
+	040 : Walk Collection			: ChrCostAllocAggr
+;	050 : Log			: $CCDivisionName + " - " +$$string:$CCDivisionAmt + " - "+ $CCSalesManName + " - " +$$string:$CCSalesManAmt
+	055 : Increment		: LineVar
+	056 : If			: ##LineVar > 1
+	060 : List Add		: CostAllocList			: ##LineVar
+	070 : Set			: IndexVar	: $$ListIndex:CostAllocList:##LineVar
+	080 : Set			: CostAllocList[##IndexVar].CCDivisionName		 : $CCDivisionName
+	090 : Set			: CostAllocList[##IndexVar].CCDivisionAmt		 : $CCDivisionAmt
+	100 : Set			: CostAllocList[##IndexVar].CCSalesManName		 : $CCSalesManName
+	110 : Set			: CostAllocList[##IndexVar].CCSalesManAmt		 : $CCSalesManAmt
+	115 : End If
+	120 : End Walk	
+
+
+	A10 : Walk Collection			: CATEGORYALLOCATIONS
+	A15 : Set Target
+;	A20 : Log			: $$NumItems:COSTCENTREALLOCATIONS
+	A30 : While			: $$NumItems:COSTCENTREALLOCATIONS !=0
+	A40 : Delete Collection Object	: COSTCENTREALLOCATIONS: 0 : Yes 
+;	A45 : Log			: "!!---DELETED--LIST---"
+	A50 : End While		 
+	A60 : End Walk 
+	
+;	205 : Log			: $$NumItems:CATEGORYALLOCATIONS
+	210 : Set Target	
+	212 : While			: $$NumItems:CATEGORYALLOCATIONS != 0
+	220 :  Delete Collection Object				: CATEGORYALLOCATIONS : 1 : Yes 
+;	222 : Log			: "---DELETED--LIST---"
+	225 : End While
+
+	330 : Set Target
+	
+	340 : Insert Collection Object				: CATEGORYALLOCATIONS
+	350 : Set Value		: Category				: "Division"
+	360 : Set Value		: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	
+	365 : Walk Collection						: CostAllocList
+	370 : Insert Collection Object				: COSTCENTREALLOCATIONS
+	380 : Set Value		: NAME					: $CCDivisionName
+	390 : Set Value		: AMOUNT				: @CCDivisionAmt 
+	
+;	123213 : Log	: "__Division--"+$CCDivisionName + " -- " + $$String:@CCDivisionAmt + " -- " + $$string:##ISDEEMEDPOSITIVE
+	114412: Log	: $$IsDr:@CCDivisionAmt
+	  
+	400 : Set Target	: ..
+	410 : End Walk
+	420 : Set Target	: ..
+	
+	440 : Insert Collection Object				: CATEGORYALLOCATIONS
+	450 : Set Value		: Category				: "Sales Man"
+	460 : Set Value		: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	
+	465 : Walk Collection						: CostAllocList
+	470 : Insert Collection Object				: COSTCENTREALLOCATIONS
+	480 : Set Value		: NAME					: $CCSalesManName
+	490 : Set Value		: AMOUNT				: @CCSalesManAmt;IF(##ISDEEMEDPOSITIVE) then  $CCSalesManAmt  Else $CCSalesManAmt ;@CCSalesManAmt
+	
+;	102939: Log	: "__SalesMan---"+ $CCSalesManName + " -- " + $$String:@CCSalesManAmt	+ " -- " + $$string:##ISDEEMEDPOSITIVE
+;	1144123: Log	: $$IsDr:@CCSalesManAmt
+	
+	500 : Set Target	: ..
+	510 : End Walk
+	520 : Set Target	: ..
+	
+	640 : Insert Collection Object				: CATEGORYALLOCATIONS
+	650 : Set Value		: Category				: "Location"
+	660 : Set Value		: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	
+	670 : Insert Collection Object				: COSTCENTREALLOCATIONS
+	680 : Set Value		: NAME					: ##LocationVar
+	690 : Set Value		: AMOUNT				: ##AmtVar
+	700 : Set Target	: ..
+	720 : Set Target	: ..
+	
+	
+;	780 : Walk Collection			: CATEGORYALLOCATIONS
+;	790 : Log			: "_____"+$Category
+;	800 : Walk Collection			: COSTCENTREALLOCATIONS
+;	810 : Log			: "_____"+$Name + " -- " + $$string:$Amount
+;	820 : End Walk
+;	830 : End Walk
+	
+	900 : End Walk
+	
+[Collection:CostAllocList]
+	Data Source			: Variable			: CostAllocList 
+[System:Variables]
+	ListVariable		: CostAllocList
+[Variable:CostAllocList]
+	Variable			: LineKey			: Number
+	Variable			: CCDivisionName	: String
+	Variable			: CCDivisionAmt		: Amount
+	Variable			: CCSalesManName	: String
+	Variable			: CCSalesManAmt		: Amount	
+		
+
+;;===============
+[#Field:VchDrAmt]
+;	Delete				: Sub Form    		: VCHCST Allocation  	
+;	Add					: Sub Form			: VCHCherCstAlloc	: $$IsVCHCSTAllocSubForm:@VCHCSTAllocExpl
+[#Field:VchCrAmt]
+;	Delete				: Sub Form    		: VCHCST Allocation  	
+;	Add					: Sub Form			: VCHCherCstAlloc	: $$IsVCHCSTAllocSubForm:@VCHCSTAllocExpl
+	
+
+[Report:VCHCherCstAlloc]
+	Title				: "Cost Allocations" 
+	Form				: VCHCherCstAlloc
+	
+[Form:VCHCherCstAlloc]
+	Part				: VCHCherCstAllocTop, VCHCherCstAlloc
+	Space Left			: 1
+	Space Right			: 1
+	Vertical Alignment	: Top
+	Horizontal Alignment: Left 
+	Width				: 50
+	Height				: 25
+	
+	
+[Part:VCHCherCstAllocTop]
+	Line				: Empty
+	
+[Part:VCHCherCstAlloc]
+	Line				: VCHCherCstCatAlloc 
+	Repeat				: VCHCherCstCatAlloc		: CATEGORYALLOCATIONS
+	Scroll				: Vertical
+	Break After			: $$IsEndOfList:$Category
+
+[Line:VCHCherCstCatAlloc]	
+	Field				: VCHCherCstCatISDmPos, VCHCherCstCatAlloc
+	Explode				: VCHCherCstCentreAlloc		: Not $$IsEndOfList:$Category
+	
+[Field:VCHCherCstCatAlloc]
+	Storage				: Category
+	Background			: Green
+	Width				: 20
+	Set as				: IF ($$Line = 1 ) then "Division" Else If ($$Line=2) then "SalesMan" Else If ($$Line=3) then "Location" Else $$SysName:EndOfList 
+	Set Always			: Yes
+[Field:VCHCherCstCatISDmPos]
+	Use					: Logical Field
+	Type				: Logical
+	Storage				: IsDeemedPositive 
+	Set as				: $..IsDeemedPositive 
+	
+;;===================
+
+[Part:VCHCherCstCentreAlloc]
+	Line				: VCHCherCstCentreAlloc
+	Repeat				: VCHCherCstCentreAlloc		: COSTCENTREALLOCATIONS
+	Scroll				: Vertical
+
+[Line:VCHCherCstCentreAlloc]
+	Field				: VCHCherCstCentreName
+	Right Field			: VCHCherCstCentreAmt
+
+[Field:VCHCherCstCentreName]
+	Use					: XNAme Field
+	
+[Field:VCHCherCstCentreAmt]
+	Use					: XAmountField
+
+
+;=====================================================COST CENTRE ALLOCATION DEFAULT============================================================
+[#Field:VchParticulars]	
+;	Background		: White
+	Option			: AddAutoCostIfNextLine	: @@IsCustomVchEnabled;$$Line > 1
+	Set Always		: Yes
+
+[#Field:AclsTotal]
+;	Background		: White
+;	On:Accept: Yes	: Field Accept
+;	On:Accept: Yes	: Call			: AddAutoCostIfNextLine:$$Line:$LedgerName
+		
+
+
+[!Field:AddAutoCostIfNextLine]
+	
+;	Background		: Light Grey   
+	On				: Accept	: Yes						: Field Accept
+	On				: Accept	: @IsPrevmisMatch			: Call		: AutoAddCostCentreNextLine : $$Value  
+	On				: Accept	: @IsPrevmisMatch			: Call		: InsertCCForVouchers : $$Value
+
+	IsPrevmisMatch	: $$PrevLine:#VCHToBy != #VCHToBy ;AND @@VchsCostAllocCreate
+
+
+[Collection:CHRCostCentScr]
+	Source Collection	: ..
+	Walk			: ALLLEDGERENTRIES,CATEGORYALLOCATIONS,COSTCENTREALLOCATIONS
+	Compute			: LEdNAme			: $...LedgerName
+	Compute			: CostNAme			: $Name
+	Compute			: Category			: $..Category
+	Compute			: Amount			: $Amount 
+	Filter			: FilterByCostLedger,FilterRefreshColl
+
+[Collection:CHRCostCentCol]
+	Source Collection	: CHRCostCentScr
+	By				: CostNAme			: $CostNAme
+	Aggr Compute	: TotAmt			: Sum	: $Amount
+	Compute			: CategoryName		: $Category
+	Filter			: FilterByParentCategory
+	
+
+[Collection:ChrCostCategoryCol]
+	Source Collection	: CHRCostCentScr
+	By				: CategoryName		: $Category
+
+[Variable:CostUnderCateg]
+	Type			: String
+
+[Function:AutoAddCostCentreNextLine]
+	
+	Parameter		: LEDNAMEVar		: String
+	Variable		: CostUnderCateg
+;	010 : Log		: ##LEDNAMEVar		
+	020 : Set Object	
+	030 : Set Target
+
+;	110 : Log		: $$IsEmpty:$CATEGORYALLOCATIONS[1].Category
+	
+	
+	A10 : Walk Collection			: CATEGORYALLOCATIONS
+	A15 : Set Target
+;	A20 : Log			: $$NumItems:COSTCENTREALLOCATIONS
+	A30 : While			: $$NumItems:COSTCENTREALLOCATIONS !=0
+	A40 : Delete Collection Object	: COSTCENTREALLOCATIONS: 0 : Yes 
+;	A45 : Log			: "!!---DELETED--LIST---" 
+	A50 : End While		 
+	A60 : End Walk 
+	
+;	L205 : Log			: $$NumItems:CATEGORYALLOCATIONS
+	L210 : Set Target	
+	L212 : While		: $$NumItems:CATEGORYALLOCATIONS != 0
+	L220 :  Delete Collection Object				: CATEGORYALLOCATIONS : 1 : Yes 
+;	L222 : Log			: "---DELETED--LIST--- " 
+	L225 : End While
+
+
+;	120 : If		: $$IsEmpty:$CATEGORYALLOCATIONS[1].Category
+
+[Function:InsertCCForVouchers]	
+	Parameter		: LEDNAMEVar		: String
+	Variable		: CostUnderCateg
+	
+	050 : Walk Collection			: ChrCostCategoryCol
+;	060 : Log		: $CategoryName
+	070 : Set		: CostUnderCateg: $CategoryName
+	
+	150 : Insert Collection Object	: CATEGORYALLOCATIONS
+	160 : Set Value	: Category		: $CategoryName
+	165 : Set Value	: IsChCatUpdtd 	: Yes  	
+
+	130 : Walk Collection			: CHRCostCentCol;CHRCostCentScr
+	140 : Log		:  "___"+$CostNAme + " -- " + $CategoryName + " -- " + $$String:$TotAmt
+	
+
+	170 : Insert Collection Object	: COSTCENTREALLOCATIONS
+	180 : Set Value	: Name			: $CostNAme
+	190 : Set Value	: Amount		: $TotAmt
+	200 : Set Target: ..
+
+	250 : End Walk
+	210 : Set Target: ..	
+	
+	251 : End Walk
+;	255 : End If
+	260 : Log		: "-------" 
+		
+
+[#Form:Voucher]
+;	On:Form Accept		: @@VchsCostAlloc	: Call			 :  CherryCostCateAlloc
+
+[System:Formulas]
+	FilterByCostLedger		: ##LEDNAMEVar != $LEdNAme
+	FilterByParentCategory	: ##CostUnderCateg = $CategoryName
+
+
+[Function:CherryCostCateAlloc]
+	
+	Variable		: LocationVar		: String		 
+	Variable		: AmtVar			: Amount
+	Variable		: IsDemPos			: Logical	
+;	010 : Log		:   " ---------" + ##LocationVar
+	
+	020 : Set Object
+	
+;	A10 : Log		: $VchCherryLocation
+	A20 : Set		: LocationVar		: $VchCherryLocation
+
+	030 : Walk Collection				: ALLLEDGERENTRIES 		
+	035 : Set		: AmtVar			: $Amount
+	038 : Set		: IsDemPos			: $IsDeemedPositive
+;	036 : Log		: $LedgerName + " -- " + $$String:$Amount + "--"+$$String:$IsDeemedPositive + " -- " + ##LocationVar
+	037 : Set Target
+	040 : Insert Collection Object		: CATEGORYALLOCATIONS
+	050 : Set Value	: Category			: "Location"
+	060 : Set Value	: IsDeemedPositive	: ##IsDemPos
+	070 : Insert Collection Object		: COSTCENTREALLOCATIONS
+	080 : Set Value	: Name				: ##LocationVar
+	090 : Set Value	: Amount			: ##AmtVar
+	100 : Set Target: ...
+	
+
+	120 : End Walk
+	
+;	140 : Alter Target
+;
+[#Field:AclsTotal]
+	Delete			: Skip
+;	Background		: White
+;	On:Accept: Yes	: Field Accept
+	On:Focus		: @@ISChrPymtRcptJrnl	: Call			: AutoAddCostCentreNextLine:$LedgerName
+	On:Focus		: @@ISChrPymtRcptJrnl	: Call			: InsertCCForVouchers:$LedgerName
+	Add:Sub Form	: VchCstAllocation		: @@ISChrPymtRcptJrnl
+	
+
+[#Field: VCHCSTCAT Name]
+	Read Only	: $$Value = "SalesMan" or $$value = "Location" or $$Value = "Division"
+	
+	Option		: DeleteCategoryTablesPymtJrnl 	 	: $Category = "SalesMan" or $Category = "Location" or $Category = "Division"
+	
+[!Field:DeleteCategoryTablesPymtJrnl]
+	Delete		: Table
+	
+[#Field:VchDrAmt]
+	Option		: VchDrAmtCustomVch :@@IsCustomVchEnabled
+[!Field:VchDrAmtCustomVch]	
+	On:Focus	: @@VchsCostAllocCreate	: Call		: ChrAddLocationFirstEntry:#cherryVchLocation:#CherryVchDivision:#CherryVchSalesman
+
+[#Field:VchCrAmt]
+	Option		: VchCrAmtCustomVch :@@IsCustomVchEnabled
+[!Field:VchCrAmtCustomVch]
+	On:Focus	: @@VchsCostAllocCreate	: Call		: ChrAddLocationFirstEntry:#cherryVchLocation:#CherryVchDivision:#CherryVchSalesman
+
+[#Field:AclsAmt]
+	Option		: VchCrAmtCustomVch :@@IsCustomVchEnabled
+	
+
+[Function:ChrAddLocationFirstEntry]
+	Parameter		: LocationVar		: String
+	Parameter		: DivisionVar			: String
+	Parameter		: SalesManVar			: String
+	
+	Variable		: ChkVar			: Logical
+	
+	M20 : Set		: ChkVar			: ($$IsEmpty:$CATEGORYALLOCATIONS[1].Category Or  $CATEGORYALLOCATIONS[1].Category != "Location" ) AND NOT $CATEGORYALLOCATIONS[1].IsChCatUpdtd
+	
+	L10 : If			: ##ChkVar
+	
+	A10 : Walk Collection			: CATEGORYALLOCATIONS
+	A15 : Set Target
+;	A20 : Log			: $$NumItems:COSTCENTREALLOCATIONS
+	A30 : While			: $$NumItems:COSTCENTREALLOCATIONS !=0
+	A40 : Delete Collection Object	: COSTCENTREALLOCATIONS: 0 : Yes 
+;	A45 : Log			: "!!---DELETED--LIST---" 
+	A50 : End While		 
+	A60 : End Walk 
+	
+;	L205 : Log			: $$NumItems:CATEGORYALLOCATIONS
+	L210 : Set Target	
+	L212 : While		: $$NumItems:CATEGORYALLOCATIONS != 0
+	L220 :  Delete Collection Object				: CATEGORYALLOCATIONS : 1 : Yes 
+;	L222 : Log			: "---DELETED--LIST--- " 
+	L225 : End While
+	
+	
+;	000 : Log		: "Inserting Default Location"
+	040 : Insert Collection Object		: CATEGORYALLOCATIONS
+	050 : Set Value	: Category			: "Location"
+	070 : Insert Collection Object		: COSTCENTREALLOCATIONS
+	080 : Set Value	: Name				: ##LocationVar
+	090 : Set Value	: Amount			: $Amount
+	100 : Set Target: ...
+	
+	200 : Insert Collection Object		: CATEGORYALLOCATIONS
+	210 : Set Value	: CATEGORY			: "Division"
+	212 : Insert Collection Object		: COSTCENTREALLOCATIONS
+	215 : Set Value	: Name				: ##DivisionVar
+	220 : Set Target: ...
+	
+	230 : Insert Collection Object		: CATEGORYALLOCATIONS
+	240 : Set Value	: CATEGORY			: "Sales Man"
+	242 : Insert Collection Object		: COSTCENTREALLOCATIONS
+	245 : Set Value	: Name				: ##SalesManVar
+	250 : Set Target: ...
+	
+	260 : End If
+	
+;CCDivisionNameCCSalesManName
+
+
+;;===============================Voucher Batch Allocation=================================
+
+[#Line: STKVCH Batch2]
+;	Local		: Field	: Default			: Background	: Green
+	Add			: Right Field	: After		: VCHBATCH RateUnits	: STKVCHChrRebate,STKVCHChrDiscount,STKVCHChrRebate2
+	
+
+[Field:STKVCHChrRebate]
+;	Use			: CAmount Field
+;	Width		: 10
+	Use				: XAmountField
+	Width			: 7	
+	Set Always		: Yes
+	Storage			: VchRebateValue
+	
+	CalRebate		: Not $$ISEmpty:$$Value
+	On:Accept		: Yes				: Field Accept	
+	On:Accept		: Yes				: Call			: CalCulateDiscountPer2:$$Value;ChrRebateFieldCalculate : $$Value
+	
+	Inactive    	: @@NoBaseUnits OR @@BatchAllocBreak;$$IsEnd:$TrackingNumber OR @@NoBaseUnits OR NOT (@@IsInvoice OR @@RejInvoice); OR (NOT $$IsDiscountsOn AND NOT $HasDiscounts)
+
+;	Value			: if($$InAlterMode and $$IsEmpty:$$Value) then $..VchRebateValue else $$Value
+	Value			: If($$IsEmpty:$$Value AND Not $$IsEmpty:$..VchRebateValue) then $..VchRebateValue Else $$Value
+	Set as			: @Value	
+
+
+[Field:STKVCHChrDiscount]
+;	Use			: CNumber Field
+;	Width		: 7
+	Use				: Number Field
+	Width			: 5
+	Style			: Small Bold
+	Format			: "Symbol,Percentage,NoZero"
+	Storage			: VchDiscountPer
+	Align			: Centre
+
+	On:Accept:Yes	: Field Accept
+	On:Accept:Yes	: Call				: CalCulateDiscountPer2:$$Value
+	Inactive    	: @@NoBaseUnits OR @@BatchAllocBreak;$$IsEnd:$TrackingNumber OR @@NoBaseUnits OR NOT (@@IsInvoice OR @@RejInvoice) OR (NOT $$IsDiscountsOn AND NOT $HasDiscounts)
+;	Value			: if($$InAlterMode and $$IsEmpty:$$Value) then $..VchDiscountPer else $$Value
+	Value			: If($$IsEmpty:$$Value AND Not $$IsEmpty:$..VchDiscountPer) then $..VchDiscountPer Else $$Value
+	Set as			: @Value	
+
+[Field:STKVCHChrRebate2]
+;	Use			: CNumber Field
+;	Width		: 6
+	Use				: Number Field
+	Width			: 9
+	Style			: Small Bold
+	Format			: "Symbol,Percentage,NoZero"
+	Storage			: VchDiscountPer2
+	Align			: Centre
+	On:Accept:Yes	: Field Accept
+	On:Accept:Yes	: Call				: CalCulateDiscountPer2:$$Value
+	Inactive    	: @@NoBaseUnits OR @@BatchAllocBreak;$$IsEnd:$TrackingNumber OR @@NoBaseUnits OR NOT (@@IsInvoice OR @@RejInvoice) OR (NOT $$IsDiscountsOn AND NOT $HasDiscounts)
+
+;	Value			: if($$InAlterMode and $$IsEmpty:$$Value) then $..VchDiscountPer2 else $$Value
+	Value			: If($$IsEmpty:$$Value AND Not $$IsEmpty:$..VchDiscountPer2) then $..VchDiscountPer2 Else $$Value
+	Set as			: @Value
+
+[#Line: VCHBATCH ColumnOne]	
+
+	Add	: Right Field	: After		: VCH RateUnitsTitle : VchRateRebateTitle,CHRDiscPERTitle,CHRDiscPER2Title
+	
+
+;;-----------------E-Sugam-Notification---------------------------------------------------------------

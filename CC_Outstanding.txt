@@ -1,0 +1,575 @@
+[Button:ChrAgewiseButton]
+	Title			: "Agewise" 	
+	Key				: F6
+	Action			: Alter	 : Company Ageing 
+
+
+[Report:CC Outstanding Report]
+	Title			: "Costcentre Outstanding"
+	Form			: CC Outstanding Report
+	Variable		: CherryDispObj, SVFromDAte, SVToDate
+	Set				: SVToDate			: ##SVCurrentDate;$$SystemPeriodTo
+[Form:CC Outstanding Report]
+	Part			: CCOutstdRep Top,CCOutstdRep Body
+	Bottom Part		: CCOutstdRep Totals
+	Buttons			: Print Button,Export Button, F2ChangePeriod, MailButton   ;, ChrAgewiseButton 
+
+[Part:CCOutstdRep Top]
+	Line			: CCOutstdRep Top
+	Space Top		: 0.3
+	Space Bottom	: 0.5
+	
+[Line:CCOutstdRep Top]
+	Field			: CCOutstdRep ObjName,
+	Right Field		: CCOutstdRep Periods
+	
+[Field:CCOutstdRep ObjName]
+	Use				: Name Field
+	Set as			: ##CherryDispObj
+[Field:CCOutstdRep Periods]
+	Style			: Small Bold
+	Align			: Right
+	Width			: 25
+	Set as			: $$String:##SVFromDate+" to "+$$string:##SVToDate
+	Space Right		: 1.5
+	Set Always		: Yes
+[Part:CCOutstdRep Body]
+	Line			: CCOutstdRep BodyTitle,CCOutstdRep Body
+	Repeat			: CCOutstdRep Body		: CherryCOSTCategoryColl
+	Scroll			: Vertical
+	Common Border	: Yes
+	Totals			: CCOutstdRepBody DrAmt, CCOutstdRepBody CrAmt, ChrLEDOuts ClBal, ChrLEDOuts OpBal
+[Line:CCOutstdRep BodyTitle]
+	Use				: CCOutstdRep Body
+	Border			: Thin Top Bottom
+	Local			: Field	: CCOutstdRepBodyCat		: Info	: "Particulars"
+	Local			: Field	: CCOutstdRepBody DrAmt		: Info	: "Debit"
+	Local			: Field	: CCOutstdRepBody CrAmt		: Info	: "Credit"
+	Local			: Field	: Default					: Align	: Center
+	Local			: Field	: CCOutstdRepBodyCat		: Align	: Left
+
+[Line:CCOutstdRep Body]
+	Field			: CCOutstdRepBodyCat, TESTField
+	Right Field		: CCOutstdRepBody DrAmt, CCOutstdRepBody CrAmt
+[Field:CCOutstdRepBodyCat]
+	Use				: XNAme Field
+	Set as			: $Name
+	Display			: CCOutstdRepDrill
+	Variable		: CherryDispObj
+	Width			: 40
+[Field:TESTField]
+	Use				: XName Field
+	Set as			: ##CherryDispObj
+	Background		: White
+	Invisible		: Yes
+
+[Field:CCOutstdRepBody DrAmt]
+	Use				: XAmount Field
+	Border			: Thin Left
+	Set as			: If($$IsCostCentre:$Name)then @CostCentreTotal Else @CostCategoryToal
+;	CostCategoryToal: $$FilterAmtTotal:CostCentreAmtColl:FilterAmtByCostCategory:$DrBillValue
+;	CostCentreTotal	: $$FilterAmtTotal:CostCentreAmtColl:FilterAmtByCostCentre:$DrBillValue
+	CostCategoryToal: $$FilterAmtTotal:CostCentreLedBillAggr:FilterAmtByCostCategory:$DrBillValue
+	CostCentreTotal	: $$FilterAmtTotal:CostCentreLedBillAggr:FilterAmtByCostCentre:$DrBillValue
+	
+	
+[Field:CCOutstdRepBody CrAmt]
+	Use				: XAmount Field
+	Border			: Thin Left
+	Set as			: If($$IsCostCentre:$Name)then @CostCentreTotal Else @CostCategoryToal
+;	CostCategoryToal: $$FilterAmtTotal:CostCentreAmtColl:FilterAmtByCostCategory:$CrBillValue	
+;	CostCentreTotal	: $$FilterAmtTotal:CostCentreAmtColl:FilterAmtByCostCentre:$CrBillValue
+	CostCategoryToal: $$FilterAmtTotal:CostCentreLedBillAggr:FilterAmtByCostCategory:$CrBillValue	
+	CostCentreTotal	: $$FilterAmtTotal:CostCentreLedBillAggr:FilterAmtByCostCentre:$CrBillValue
+;;
+[Part:CCOutstdRep Totals]
+	Line			: CCOutstdRep Totals
+[Line:CCOutstdRep Totals]
+	Border			: Totals
+	Right Field		: CCOutstdRep DRTot, CCOutstdRep CRTot
+	
+[Field:CCOutstdRep DRTot]
+	Use				: XAmount Field
+	Border			: Thin Left
+	CostTotal		: $$Total:CCOutstdRepBodyDrAmt
+	LedAmt			: IF (Not $$IsEmpty:##CherryDispObj) then $$CollAmtTotal:CherryLedUnderCostColl:$DrBillValue Else $$AsAmount:"0.00"
+	Set as			: @Value
+	Set Always		: Yes
+	Type			: String
+	Value			: If ($$IsEmpty:@CostTotal)then @LedAmt Else If ($$IsEmpty:@LedAmt) then @CostTotal Else @LedAmt + @CostTotal 
+[Field:CCOutstdRep CRTot]
+	Use				: XAmount Field
+	Border			: Thin Left
+	Set as			: @Value
+	CostTotal		: $$Total:CCOutstdRepBodyCrAmt
+	LedAmt			: IF (Not $$IsEmpty:##CherryDispObj) then $$CollAmtTotal:CherryLedUnderCostColl:$CrBillValue Else $$AsAmount:"0.00"
+	Value			: If ($$IsEmpty:@CostTotal)then @LedAmt Else If ($$IsEmpty:@LedAmt) then @CostTotal Else @LedAmt + @CostTotal 
+	
+;--------------------------------------------------------
+[Report:CCOutstdRepDrill]
+	Title			: "Sales Man"
+	Variable		: CherryDispObj
+	Use				: CC Outstanding Report
+	Local			: Part		: CCOutstdRep Body		: Delete	: Repeat
+	Local			: Part		: CCOutstdRep Body		: Add		: Repeat	: CCOutstdRep Body		: CherryCOSTCentreColl
+	Local			: Field		: CCOutstdRepBodyCat	: Delete	: Display
+	Local			: Field		: CCOutstdRepBodyCat	: Add		: Display	: CCOutstdRepDrillChild
+	Local			: Line		: CCOutstdRep Body		: Remove if		: $$IsEmpty:#CCOutstdRepBodyDrAmt	AND $$ISEmpty:#CCOutstdRepBodyCrAmt
+
+
+
+;;------------------------------------------------------	
+[Report:CCOutstdRepDrillChild]
+	Title			: "Sales Man"	
+	Use				: CC Outstanding Report
+	Local			: Part		: CCOutstdRep Body		: Delete	: Repeat
+	Local			: Part		: CCOutstdRep Body		: Add		: Repeat	: CCOutstdRep Body		: CherryCOSTCentreChildColl
+	
+;	Local			: Field		: CCOutstdRepBodyCat	: Delete	: Display
+;	Local			: Field		: CCOutstdRepBodyCat	: Add		: Display	: CCOutstdRepDrillChild : $$NumItems:CherryCOSTCentreChildColl != 0
+;	Local			: Field		: CCOutstdRepBodyCat	: Add		: Display	: AgewiseReportDemo : $$NumItems:CherryCOSTCentreChildColl = 0
+	Local			: Line		: CCOutstdRep Body		: Explode	: Ledgers UnderCostPriCenter		: $$IsLastLine
+;	Local			: Line		: CCOutstdRep Body		: Explode	: SalesManUnderSalesMan				: Yes
+;	Local			: Line		: CCOutstdRep Body		: Explode	: Ledgers UnderSalesManExpl			: Yes
+;	Local			: Form		: DEFAULT				: Option	: IsLastChildReport				: $$NumItems:CherryCOSTCentreChildColl = 0
+;	Local			: Form		: DEFAULT				: Option	: IsLastChildReportNotZero		:  $$NumItems:CherryCOSTCentreChildColl != 0
+;	Option	: IsLastChildReport	: $$NumItems:CherryCOSTCentreChildColl = 0
+;	Local			: Line		: Ledgers UnderCostPriCenter		: Remove if		: $$IsEmpty:#ChrLEDOutsClBal	AND $$ISEmpty:#ChrLEDOutsOpBal
+	Local			: Field		: CCOutstdRepBodyCat	: Option	: CCOutstdRepBodyCatOption			: Yes
+	
+;[!Form:IsLastChildReport]
+;;	Replace			: Part		: CCOutstdRep Body		: Ledgers UnderCostPriCenter
+;;	Local			: Part		: Ledgers UnderCostPriCenter		: Add	: Line		: At Beginning	: CCOutstdRep BodyTitle,CCOutstdRep BillDetails
+;;	Local			: Line		: CCOutstdRep BodyTitle	: Border	: Thin Top
+;	Background		: green
+;	Local			: Field	: CCOutstdRepBodyCat 		: Delete	: Display
+;	Local			: Field	: CCOutstdRepBodyCat		: Add		: Display	: AgewiseReportDemo
+;[!Form:IsLastChildReportNotZero]
+;	Local			: Field		: CCOutstdRepBodyCat 	: Delete	: Display
+;	Local			: Field		: CCOutstdRepBodyCat	: Add		: Display	: CCOutstdRepDrillChild 
+;	Background		: Lily Yellow
+;;	Local			: Field		: CCOutstdRepBodyCat	: Add		: Display	: AgewiseReportDemo		;: $$NumItems:CherryCOSTCentreChildColl = 0
+
+[!Field:CCOutstdRepBodyCatOption]
+	Delete			: Display	
+	Add				: Display		: CCOutstdRepDrillChild			: $$NumItems:CherryCOSTCenChildCl != 0
+	Add				: Display		: AgewiseReportDemo				: $$NumItems:CherryCOSTCenChildCl = 0
+[Line:CCOutstdRep BillDetails]
+	Use				: LedgerBillWiseReportLed
+	Local			: Field	: Default					: Type	: String
+	Local			: Field	: ChrBillWiseRefDate		: Info	: "Date"
+	Local			: Field	: ChrBillWiseRefNo			: Info	: "Ref No."
+	Local			: Field	: ChrBillWiseRefDocType		: Info	: "Doc Type"
+	Local			: Field	: ChrBillWiseRefOPbl		: Info	: "Debit"
+	Local			: Field	: ChrBillWiseRefClBal  		: Info	: "Credit"
+	Local			: Field	: ChrBillWiseRefDueOn		: Info	: "Due On"
+	Local			: Field	: ChrBillWiseRefOverDueDays	: Info	: "Overdue Days"
+	Local			: Field	: DEfault					: Align	: Centre
+	Border			: Thin Bottom
+
+[Part:SalesManUnderSalesMan]
+	Line			: SalesManUnderSalesMan
+	Repeat			: SalesManUnderSalesMan				: ChrSalesmanUnderSalesManColl;;: SalesManUnderSalesMan
+	
+[Line:SalesManUnderSalesMan]
+	
+	Field			: CCOutstdRepBodyCat,CCOutstdRepBodyCatParent, TESTField
+	Right Field		: CCOutstdRepBody DrAmt, CCOutstdRepBody CrAmt
+	Indent			: 2.5
+	
+
+[Field:CCOutstdRepBodyCatParent]
+	Set as			: $$Owner:$Name
+;;-------------------
+[Part:Ledgers UnderSalesManExpl]
+	Line			: Ledgers UnderSalesManExpl
+	Repeat			: Ledgers UnderSalesManExpl		: CherryLedUnderSalesManColl
+	
+[Line:Ledgers UnderSalesManExpl]
+	Field			: CherryLedgerUndercost
+	Right Field		: ChrLEDOuts ClBal,ChrLEDOuts OpBal   
+	Local			: Field	: DEfault			: Background	: Lily Yellow
+	Local			: Field	: Default			: Style			: Small Italic
+	Indent			: 5
+;;----------------------------------------------------------
+
+
+[Part:Ledgers UnderCostPriCenter]
+	Line			: Ledgers UnderCostPriCenter
+	Repeat			: Ledgers UnderCostPriCenter		: CherryLedUnderCostColl
+	Scroll			: Vertical
+	Common Border	: Yes
+	Totals			: ChrLEDOuts ClBal, ChrLEDOuts OpBal
+;	Line			: ChryLEDTOTALSLines
+[Line:Ledgers UnderCostPriCenter]
+	Field			: CherryLedgerUndercost
+	Right Field		: ChrLEDOuts ClBal,ChrLEDOuts OpBal   
+	Explode			: LedgerBillWiseReport				: Yes 
+	
+	
+[Field:CherryLedgerUndercost]
+	Use				: XName Field
+	Set as			: $Name
+	Style			: Small Bold
+	Width			: 40
+	Variable		: LedgerName
+	Display			: CherryLEdgerOutstandings
+	
+	
+[Field:ChrLEDOuts ClBal]
+	Use				: XAmount Field
+	Set as			: $DrBillValue;$ClosingBalance
+	Border			: Thin Left
+[Field:ChrLEDOuts OpBal]
+	Use				: XAmountField
+	Set as			: $CrBillValue;$OpeningBalance
+;	Invisible   	: NOT ##IsBillWiseReport AND ($$NumSets > 1) AND (##AgeFrom < 0)
+	Border			: Thin Left
+	
+[Line:ChryLEDTOTALSLines]
+	Right Field		: ChryLEDTOTALSAMTDR,ChryLEDTOTALSAMTCr
+	
+[Field:ChryLEDTOTALSAMTDR]
+	Width			: 12
+	Background		: White
+	Set as			: $$Total:ChrLEDOutsClBal
+[Field:ChryLEDTOTALSAMTCr]
+	Width			: 12
+	Background		: White
+	Set as			: $$Total:ChrLEDOutsOpBal
+	
+;;==============================EXPLODED==================
+[Part:LedgerBillWiseReport]
+	Line			: LedgerBillWiseReportLed   
+	Repeat			: LedgerBillWiseReportLed				: LedgerBillWiseReportLedColl 
+
+[Line:LedgerBillWiseReportLed]
+	Indent			: 5
+	Field			: ChrBillWiseRefDate, ChrBillWiseRefNo, ChrBillWiseRefDocType,ChrBillWiseRefOPbl, ChrBillWiseRefClBal  , ChrBillWiseRefDueOn, ChrBillWiseRefOverDueDays
+;	Local			: Field	: Default		: Background	: White
+	Local			: Field	: Default		: Style			: Small Italic
+[Field:ChrBillWiseRefDate]
+	Use				: Uni DAte Field
+	Set as			: $BillDate
+[Field:ChrBillWiseRefNo]
+	Width			: 15
+	Setas			: $Name
+[Field:ChrBillWiseRefDocType]
+	Width			: 10
+	Set as			: if ($$IsEmpty:$VchUdfDocType) then $LEdgerEntries[1].VchUdfDocType Else 	$VchUdfDocType;$VchUdfDocType 	
+[Field:ChrBillWiseRefOPbl]
+	Use				: Amount Field
+	Width			: 12
+	Set as			: If ($$IsDr:$ClosingBalance) then $ClosingBalance Else "";$OpeningBalance
+[Field:ChrBillWiseRefClBal]
+	Use				: Amount Field
+	Width			: 12
+	Set as			: If ($$IsDr:$ClosingBalance) then "" Else $ClosingBalance 
+	
+[Field:ChrBillWiseRefDueOn]
+	Width			: 10
+	Set as			: $$String:$BillCreditPeriod;$$String:@@CreditPeriod:UniversalDate
+;	Use         	: UniDateField
+[Field:ChrBillWiseRefOverDueDays]
+	
+	Width			: 10
+	Set as          : @OverDueDays;if ##ShowDaysByBillDate then @DaysByBillDate else @DaysByDueDate
+    DaysByBillDate  : $$String:@BillDays
+	DaysByDueDate   : if @@DSPToDate >= @@CreditPeriod then $$String:@OverDueDays else ""
+	OverDueDays     : @@DSPToDate - @@CreditPeriod
+	BillDays        : @@DSPToDate - $BillDate
+	Align			: Centre
+
+[Collection:LedgerBillWiseReportLedColl]
+	Type			: Bills		
+	Child Of		: #CherryLedgerUndercost
+	Fetch			: BilDate, BillId, Name 
+
+;=========================================================================
+[Collection:CherryCOSTCategoryColl]
+	Type			: Cost Category
+	Fetch			: Name
+	Filter			: FilterCatBySalesMan
+	
+[Collection:CherryCOSTCentreColl]
+	Type			: Cost Centre
+	Fetch			: Name, Parent, Category
+	Filter			: FilterByCheryyCategory, FltByCCPrimary
+		
+[Collection:CherryCOSTCentreSingColl]
+	Type			: Cost Centre
+	Fetch			: Name, Parent, Category
+	Filter			: FilterBySElectedSalesMan
+;	Filter			: FilterByCheryyCategory, FltByCCPrimary
+	
+
+[Collection:CherryCOSTCentreChildColl]
+	Type			: Cost Centre
+	Fetch			: Name, Parent, Category
+	Child Of		: ##CherryDispObj
+	Belongs To		: No
+
+[Collection:CherryCOSTCenChildCl]
+	Type			: Cost Centre
+	Fetch			: Name, Parent, Category
+	Child Of		: #CCOutstdRepBodyCat
+	Belongs To		: No
+
+
+[Collection:ChrSalesmanUnderSalesManColl]
+	Type			: Cost Centre
+	Fetch			: Name, Parent, Category
+	Child Of		: #CCOutstdRepBodyCat;#CCOutstdRepBodyCatParent;$$ExplodeOwner:#CCOutstdRepBodyCat;##CherryDispObj
+	Belongs To		: No
+
+
+[Collection:CherryLedUnderCostColl]
+	Type			: Ledger
+	Child Of		: $$GroupSundryDebtors
+	Belongs To		: Yes
+	Filter			: FilterByCostCentre, ChrRemoveZeroEntries
+
+	Fetch			: Name
+	Fetch			: LedgerContact, LedgerPhone ;; For Contact Details in F12: Configure
+	Fetch			: Address, Closing Balance, Opening Balance ;; For Range Values, Sorting
+	
+	Fetch			: SortPosition
+
+	Compute			: Alias				: $$Alias
+
+	Compute			: DrBillValue		: $$BillValue:Yes:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	Compute			: CrBillValue		: $$BillValue:No:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+
+	Compute			: IsLedgerProfit	: $$IsLedgerProfit
+	Compute			: NumChildren		: $$NumChildren
+	
+	Compute			: Type				: $$Type
+	
+
+[Collection:CherryLedUnderSalesManColl]
+	
+	Type			: Ledger
+	Child Of		: $$GroupSundryDebtors
+	Belongs To		: Yes
+	Filter			: FilterByLedOsSalesMan, ChrRemoveZeroEntries
+
+	Fetch			: Name
+	Fetch			: LedgerContact, LedgerPhone ;; For Contact Details in F12: Configure
+	Fetch			: Address, Closing Balance, Opening Balance ;; For Range Values, Sorting
+	
+	Fetch			: SortPosition
+
+	Compute			: Alias				: $$Alias
+
+	Compute			: DrBillValue		: $$BillValue:Yes:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	Compute			: CrBillValue		: $$BillValue:No:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+
+	Compute			: IsLedgerProfit	: $$IsLedgerProfit
+	Compute			: NumChildren		: $$NumChildren
+	
+	Compute			: Type				: $$Type
+
+[Collection:CostCentreAmtColl]
+	Type			: Ledger
+	Child Of		: $$GroupSundryDebtors
+	Belongs To		: Yes
+;	Filter			: FilterByCostCentre, ChrRemoveZeroEntries
+	Fetch			: Name, ChrLedgerCostCentre
+	Fetch			: LedgerContact, LedgerPhone ;; For Contact Details in F12: Configure
+	Fetch			: Address, Closing Balance, Opening Balance ;; For Range Values, Sorting
+	Fetch			: SortPosition
+	
+	Compute			: Alias				: $$Alias
+	Compute			: DrBillValue		: $$BillValue:Yes:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	Compute			: CrBillValue		: $$BillValue:No:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	Compute			: IsLedgerProfit	: $$IsLedgerProfit
+	Compute			: NumChildren		: $$NumChildren
+	Compute			: Type				: $$Type
+;	Keep Source		: ().
+	
+
+	
+[Collection:CostCentreAmtCalc]
+	Source Collection	: CostCentreAmtColl
+	By				: CCName			: $ChrLedgerCostCentre
+	Aggr Compute	: DrBillValue		: Sum 	: $DrBillValue
+	Aggr Compute	: CrBillValue		: Sum	: $CrBillValue 
+	
+[Function:IsObjectBelongsToCostCat]
+	Parameter		: CategoryName		: String	: "SalesMan"
+	Parameter		: CCNameChild		: String	: "Sunil"
+	Return			: Logical
+	000 : Set Object: (CostCentre,##CCNameChild).
+;	020 : Log		: $$IsChildOfCategory:##CategoryName
+	050 : Return	: $$IsChildOfCategory:##CategoryName
+	
+	
+
+[Collection:CherryLedgerBillesOuts]
+	
+	ParmVar				: pvParent			: String	: $Parent
+	Type    			: Bills
+	Filter  			: BillsOfLedCostName, DueBillsFilter, AgeFilter, BillTypeFilter
+
+	Compute				: Name				: $$Name
+	Compute				: PartyName			: $$FuncDSPAccName:$Parent   ;;$DSPAccName:Ledger:$Parent
+	Compute				: DSPNameStyle		: ##DSPNameStyle  
+	Compute				: CreditPeriod		: @@CreditPeriod
+
+	Switch	  			: RemoteBills		: RemoteBills	: $$IsRemoteCompany
+
+
+[Variable:CherryDispObj]
+[System:Formulas]
+	FilterByCheryyCategory	: $Category = ##CherryDispObj
+	FltByCCPrimary			: $Parent	= $$SysName:Primary
+	FilterByCostCentre		: $ChrLedgerCostCentre	= ##CherryDispObj
+	BillsOfLedCostName		: $ChrLedgerCostCentre:LEDGER:$Parent = ##CherryDispObj
+	ChrRemoveZeroEntries	: ($$Number:@@ChDrBillValue>0) Or ($$Number:@@ChCrBillValue > 0)
+	ChDrBillValue			: $$BillValue:Yes:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	ChCrBillValue			: $$BillValue:No:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	FilterAmtByCostCentre	: $$IsObjectBelongsTo:CostCentre:$SalesManName:#CCOutstdRepBodyCat;$ChrLedgerCostCentre = #CCOutstdRepBodyCat;##CherryDispObj
+	FilterAmtByCostCategory	: $$IsObjectBelongsToCostCat:#CCOutstdRepBodyCat:$SalesManName;$$IsBelongsToCategory:"SalesMan";#CCOutstdRepBodyCat
+	FilterBySElectedSalesMan: ##CherryDispObj = $Name
+	FilterByLedOsSalesMan	: $ChrLedgerCostCentre	= #CCOutstdRepBodyCat;##CherryDispObj
+;-----------------------------------
+;------------------------------------
+
+[Report:CherryLEdgerOutstandings]
+	Use					: LEdgerOutstandings
+	Form				: LEdgerOutstandings
+	Local				: Field				: BillDAte			: Style		: Small Bold
+	Local				: Field				: Billdate			: Width		: 8.5	
+	Local				: Part				: LEDBILLTitle		: Local		: Field	: Default		: Style	: Small Bold
+	Local				: Part				: LEDBILL Column	: Local		: Field	: Default		: Style	: Small; Bold
+	Local				: Field				: BillCl			: Style		: Small Bold
+
+
+[Function:FilterCatBySalesMan]
+	
+	Variable			: CostVar			: String	: "AABC"
+	
+	010 : Log			: $SalesManName:LEDGER:##CostVar
+	030 : Log			: $ParentSalesMan:LEDGER:##CostVar
+	040 : Log			: $MstParentSalesMan:LEDGER:##CostVar
+	
+	100 : Walk Collection	: LedgersUnderCosrCentre
+	110 : Log			: "------"+$Name 
+	120 : End Walk
+	
+[Function:GetSalesManMstParent]	
+	
+	Parameter			: CostVar			: String	;: "d"
+	Variable			: CCParentVar		: String
+	Variable			: RetVar			: String
+	
+	040 : Set		: CCParentVar		: ##CostVar
+	050 : Set		: RetVar			: ##CostVar
+	090 : If		: $Parent:CostCentre:##CostVar != $$SysName:Primary
+	100 : While		: ##CCParentVar	!= $$SysName:Primary	
+	110 : Set		: CCParentVar		: $Parent:COSTCENTRE:##CCParentVar
+	120 : Do If		: (##CCParentVar	!= $$SysName:Primary):Set	: RetVar	: ##CCParentVar
+	140 : End While
+	150 : Else		
+	155 : Set		: RetVar	: $$SysName:Primary
+	160 : End If
+	170 : Return	: ##RetVar
+	
+	
+	
+
+[#Object:LEdger]
+	SalesManName		: $ChrLedgerCostCentre
+	ParentSalesMan		: $Parent:CostCentre:$ChrLedgerCostCentre
+	MstParentSalesMan	: $$GetSalesManMstParent:$ChrLedgerCostCentre
+	
+;================================================================
+	
+[Collection:LedgersUnderCosrCentre]
+	
+	Type			: Ledger
+	Child Of		: $$GroupSundryDebtors
+	Fetch			: Name, ChrLedgerCostCentre, SalesManName
+;	Filter			: FilterLedgBySalesName
+	Belongs To		: Yes
+
+	Compute			: Alias				: $$Alias
+	Compute			: DrBillValue		: $$BillValue:Yes:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	Compute			: CrBillValue		: $$BillValue:No:@@ShowOverDue:##AgeFrom:##AgeTo:##DSPAgeByDueDate
+	Compute			: IsLedgerProfit	: $$IsLedgerProfit
+	Compute			: NumChildren		: $$NumChildren
+	Compute			: Type				: $$Type
+	Filter			: NotIsEmptySalesMAn,FilterByAsplSalesMan
+
+
+[Collection:CostCentreLedBillAggr]
+	
+	Source Collection	: LedgersUnderCosrCentre
+	By				: SalesManName		: $SalesManName
+	Aggr Compute	: DrBillValue		: Sum 	: $DrBillValue
+	Aggr Compute	: CrBillValue		: Sum	: $CrBillValue
+	Keep Source		: ().
+	
+;=======================================================	
+
+
+	
+[Report:CC Outstanding Report Single]
+	Title			: "Cost Centre"
+	Form			: CC Outstanding Report Single
+	Variable		: CherryDispObj
+	
+[Form:CC Outstanding Report Single]
+	Full Width		: No
+	Space Left		: 1
+	Space Right		: 1
+	Part			: CC Outstanding Report Single
+	Vertical Align	: Top
+	No Confirm		: Yes
+	On: Form Accept	: Yes 	: Form Accept
+	On: Form Accept	: Yes	: Display		: CCOutstdRepSingleDrill
+	On: Form Accept	: Yes	: Alter			: CC Outstanding Report Single
+	
+	
+[Part:CC Outstanding Report Single]
+	
+	Part			: Form Subtitle, CCOutstdRepSingle
+	Local			: Field	:	Form Subtitle		: Info	: "Sales Man"
+	Vertical		: Yes
+	Space Left		: 1
+	Space Right		: 1
+	Space Bottom	: 1.7
+	Border			: Grey Box
+[Part:CCOutstdRepSingle]
+	Line			: CCOutstdRepSingle
+[Line:CCOutstdRepSingle]
+	Field			: CCOutstdRepSingle
+[Field:CCOutstdRepSingle]
+	Use				: XNAme Field
+	Table			: CherrySalesManCentreTable
+	Show Table		: Always
+	Full Width		: Yes
+	Modifies		: CherryDispObj
+;;---------------
+[Collection:CherrySalesManCentreTable]
+	Title			: "Sales Man"
+	Type			: CostCentre
+	Fetch			: NAme, Parent
+	Format			: $Name
+	Format			: if ($Parent = $$SysName:Primary) then "" Else $Category
+	Filter			: FilterCategoryBySalesMan ,
+	Align			: Centre
+	Full Height		: Yes
+	
+	
+	
+[Report:CCOutstdRepSingleDrill]
+	Title			: "Sales Man121313"
+	Variable		: CherryDispObj
+	Use				: CC Outstanding Report
+	Local			: Part		: CCOutstdRep Body		: Delete	: Repeat
+	Local			: Part		: CCOutstdRep Body		: Add		: Repeat	: CCOutstdRep Body		: CherryCOSTCentreSingColl
+	Local			: Field		: CCOutstdRepBodyCat	: Delete	: Display
+	Local			: Field		: CCOutstdRepBodyCat	: Add		: Display	: CCOutstdRepDrillChild
+	Local			: Line		: CCOutstdRep Body		: Remove if	: $$IsEmpty:#CCOutstdRepBodyDrAmt	AND $$ISEmpty:#CCOutstdRepBodyCrAmt
+	

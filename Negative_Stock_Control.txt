@@ -1,0 +1,105 @@
+[#Field: VCH NrmlActualQty]
+	Delete				: Notify
+	Control      		: NegativeStock :  @@CherryNegStkChkMode AND $$IsNegative:@@FinalStockTotal AND NOT @IsNewManuf AND Not @IsGogownNegAllowed
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#ChrVchGodown
+	
+[#Field: VCH NrmlBilledQty]
+	Option				: VCH NrmlBilledQtyOpt	: Not $$IsOrderVch:##SVVoucherType AND Not $$IsPurchase:##SVVoucherType AND Not $$IsCreditNote:##SVVoucherType
+[!Field:VCH NrmlBilledQtyOpt]
+	Delete				: Notify
+	Control      		: NegativeStockBal : @@CherryNegStkChkMode AND $$Number:@GododownNegStock < 0  And   Not @IsNewManuf AND Not @IsGogownNegAllowed  ;AND @@IsOutwardType
+	Control      		: NegativeStockBalAlter : $$InAlterMode AND ($$Number:@GododownNegStock + @CurrQtyInAlterMode) < 0  And   Not @IsNewManuf AND Not @IsGogownNegAllowed
+	
+	FinalStockTotal		: If @@HasBatchWise then @@BatchGdnStockTotal else +
+    					  if $$IsMultiGodownOn AND NOT $$IsSysNameEqual:Any:$Godownname then @@GdnStockTotal else +
+    					  @@StockTotal
+	GododownStock		: $$Table:VchStockItem:$StkClBalance
+	GododownStockVal	: If($$IsEmpty:@GododownStock)then 0 Else @GododownStock
+	
+	GododownNegStock	: @GododownStockVal - $$value
+	GododownNegStockNeg	: (@GododownStockVal - $$value) - 1
+	Set Always			: Yes		
+	
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#ChrVchGodown
+	
+;	Background			: White
+	
+	CurrQtyInAlterMode	: $$CurrQtyInAlterMode:$$Line:$StockItemName 
+;	Background		: Green
+	
+ [#Field: VCH JrnlBilledQty]
+	Delete				: Notify
+	Option				: VCH JrnlBilledQtyOPT		: Not $$IsOrderVch:##SVVoucherType AND Not $$IsPurchase:##SVVoucherType
+
+	
+	
+[!Field:VCH JrnlBilledQtyOPT]
+;	Control      		: NegativeStock 			:   @@IsOutwardType AND @@InvoiceInCreate AND +
+;											$$IsNegative:@@FinalStockTotal AND NOT @IsNewManuf AND Not @IsGogownNegAllowed ANd Not $$IsOrderVch:##SVVoucherType
+;											
+	Control				: NegativeStock				: @@InvoiceInCreate AND @ISvchClassExists ANd $$IsNegative:@@FinalStockTotal AND NOT @IsNewManuf AND Not @IsGogownNegAllowed 
+	Control				: NegativeStockBalAlter1	: $$InAlterMode AND @ISvchClassExists ANd $$IsNegative:(@@FinalStockTotal + @CurrQtyInAlterMode) AND NOT @IsNewManuf AND Not @IsGogownNegAllowed 
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#VchGodown
+	ISvchClassExists	: $$IsStockJrnl:##SVVoucherType;Not $$IsEmpty:$(VoucherType,##SVVoucherType).VoucherClassList[1].ClassName	
+	CurrQtyInAlterMode	: $$CurrQtyInAlterMode:$$Line:$StockItemName 
+	
+ [#Field: VCHBATCH NrmlAQty]
+
+    Delete				: Notify
+	Control      		: NegativeStock : @@CherryNegStkChkMode AND $$IsNegative:@@FinalStockTotal AND NOT @IsNewManuf AND NOT @IsGogownNegAllowed AND Not $$IsOrderVch:##SVVoucherType AND Not $$IsPurchase:##SVVoucherType AND Not $$IsCreditNote:##SVVoucherType
+							
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#ChrVchGodown
+
+	
+ [#Field: VCHBATCH NrmlBQty]
+	 
+    Delete				: Notify
+	Control      		: NegativeStock : @@CherryNegStkChkMode AND $$IsNegative:@@FinalStockTotal AND NOT @IsNewManuf AND NOT @IsGogownNegAllowed and Not $$IsOrderVch:##SVVoucherType AND Not $$IsPurchase:##SVVoucherType AND Not $$IsCreditNote:##SVVoucherType
+	Control      		: NegativeStockBalAlter1 : $$InAlterMode AND $$IsNegative:(@@FinalStockTotal+@CurrQtyInAlterMode) AND NOT @IsNewManuf AND NOT @IsGogownNegAllowed and Not $$IsOrderVch:##SVVoucherType AND Not $$IsPurchase:##SVVoucherType AND Not $$IsCreditNote:##SVVoucherType
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#ChrVchGodown
+	
+	CurrQtyInAlterMode	: $$CurrQtyInAlterMode:$$Line:$StockItemName 
+	
+	
+ [#Field: VCHBATCH JrnlBQty]
+	
+    Delete				: Notify
+	Control      		: NegativeStock : @@CherryNegStkChkMode AND $$IsNegative:@@FinalStockTotal AND NOT @IsNewManuf AND Not @IsGogownNegAllowed
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#ChrVchGodown
+
+
+						  
+[#Field: VCHSTKJrnl BilledQty]
+	Delete				: Notify
+	Control      		: NegativeStock : @@CherryNegStkChkMode AND $$IsNegative:@@FinalStockTotal AND NOT @IsNewManuf AND Not @IsGogownNegAllowed
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#ChrVchGodown
+
+[#Field: VCH ExciseCN TrackActQty]
+	Delete				: Notify
+	Control      		: NegativeStock : @@CherryNegStkChkMode AND $$IsNegative:@@FinalStockTotal AND +
+								  ($$IsSysName:#VCHExciseCreditNo OR $$IsEmpty:#VCHExciseCreditNo) AND NOT @IsNewManuf AND @IsGogownNegAllowed
+	IsNewManuf			: $TreatSalesasManufactured:StockItem:$stockItemName
+	IsGogownNegAllowed	: $GodownAllowNegStk:GODOWN:#ChrVchGodown
+
+
+	
+[Function:CurrQtyInAlterMode]
+	Parameter			: LineNo 		: Number
+	Parameter			: ItemName		: String	
+	Variable			: IndexVar		: String
+	Return				: Number
+	010 : Log			: $$string:##lineNo  +  " -- " + ##ItemNAme 
+	020 : Set			: IndexVar		: $$ListIndex:ItemsCurQtyList:##ItemName;##LineNo
+	030 : If			: (##ItemsCurQtyList[##IndexVar].StkItemName) = ##ItemName
+	035 : Log			: "Qty--->"+##ItemsCurQtyList[##IndexVar].Quantity
+	040 : Return		: $$Number:##ItemsCurQtyList[##IndexVar].Quantity
+	050 : End If
+	
+	100 : Return		: 0

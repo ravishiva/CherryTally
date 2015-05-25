@@ -1,0 +1,426 @@
+
+[Report:SMWiseCollREportTrig]
+	Variable	: SVFromDate, SVTodate,VoucherID;, ExcelSheetName
+;	Set			: ExcelSheetName		: "Salesman Wise Collection"
+	Set			: SVFromDate	: ##SVCurrentDate;$$Date:"1-Apr-2015"
+	Set			: SVToDate		: ##SVCurrentDate;$$Date:"2-Apr-2015";##SVCurrentDate
+	Form		: SMWiseCollREportTrig
+;	On:Load:Yes	: List Delete	: MultiLedgerVar
+;	On:Load:Yes	: List Delete	: MultiStkItemList	
+	
+;	Local		: Part			: Pcr Tyres Trigger					: Local 		: Line		: PcrRep LedGroup					: Invisible		: Yes
+	Local		: Part			: Pcr Tyres Trigger					: Local			: Line		: PcrRep Ledger						: Invisible		: Yes
+	Local		: Part			: Pcr Tyres Trigger					: Local			: Line		: PcrRepItemGroup					: Invisible		: Yes
+	Local		: Part			: Pcr Tyres Trigger					: Local			: Line		: PcrRepItemName					: Invisible		: Yes
+	
+	
+
+[Form:SMWiseCollREportTrig]
+	Part		: Pcr Tyres TriggerOut
+	Space Left	: 1
+	Space Right	: 1
+	Full Width	: No
+	Background	: Lily Yellow
+	On			: Form Accept	: Yes								: Form Accept
+	On			: Form Accept	: (#PcrRepOutput = "Display")		: Display		: SMWiseCollREportAggr	; SalesManCollecDrill;
+	On			: Form Accept	: (#PcrRepOutput = "Export")		: Export		: SMWiseCollREportAggr	
+	On			: Form Accept	: Yes								: Alter			: SMWiseCollREportTrig					 
+	
+	Excel Sheet Name			: "CHERRY"	
+
+[Report:SMWiseCollREport]	
+	Title		: " Collection Report"	
+	Variable	: VoucherID
+	
+
+[Form:SMWiseCollREport]
+	Part		: SMWiseCollREportTop,SMWiseCollREport
+	Full Height	: Yes
+[Part:SMWiseCollREportTop]
+	Line		: Empty
+[Part:SMWiseCollREport]
+	Line		: SMWiseCollDtlsTitle,SMWiseCollDtls
+	Bottom Line	: SMWiseCollDtlsTotals
+	Repeat		: SMWiseCollDtls		: SalesmanWiseVouchers
+	Scroll		: Vertical
+	CommonBorder: Yes
+	Totals		: SMWiseCollDtls Bank, SMWiseCollDtlsCash, SMWiseCollDtls return, SMWiseCollDtlsNet 
+[Line:SMWiseCollDtlsTitle]
+	Use			: SMWiseCollDtls 
+	Local		: Field	: Default		: Type		: String
+	Local		: Field	: Default		: Style		: Small Bold
+	Local		: Field	: Default		: Align		: Centre
+	Border		: Thin Top Bottom
+	Local		: Field	: SMWiseCollDtls SalesMan	: Info		: "SalesMan"	
+	Local		: Field	: SMWiseCollDtls Date		: Info		: "Date"
+	Local		: Field	: SMWiseCollDtls VchNo		: Info		: "Bill No"
+	Local		: Field	: SMWiseCollDtls VchType	: Info		: "Vch Type"
+	Local		: Field	: SMWiseCollDtls ChqNo		: Info		: "Cheque No."
+	Local		: Field	: SMWiseCollDtls Ledg		: Info		: "Ledger"
+	Local		: Field	: SMWiseCollDtlsCash		: Info		: "Cash"
+	Local		: Field	: SMWiseCollDtls Bank		: Info		: "Bank"
+	Local		: Field	: SMWiseCollDtls return		: Info		: "Chq. Return"
+	Local		: Field	: SMWiseCollDtlsNet			: Info		: "Net"
+	
+	
+[Line:SMWiseCollDtls]
+	Field		: VCHMasterID,SMWiseCollDtls SalesMan, SMWiseCollDtls Date,SMWiseCollDtls VchNo ,SMWiseCollDtls VchType, SMWiseCollDtls ChqNo, SMWiseCollDtls Ledg, 
+	Right Field	: SMWiseCollDtlsCash, SMWiseCollDtls Bank,SMWiseCollDtls return, SMWiseCollDtlsNet
+	Local		: Field	: Default		: Border	: Thin Left
+;	Option		: Alter On Enter		: Yes
+	Option		: DisplayOnEnter		: Yes
+	
+;[Field:ChrCCVoucherID]
+;	Width		: 7
+;	SETAS		: $$sPrintf:"ID:%s":$MasterID
+;	Variable	: VoucherID
+[Field:SMWiseCollDtls SalesMan]
+	Width		: 14
+	Set as		: $LEDSalesMan
+;	Alter		: Voucher
+	Display		: ChrVchDisplay
+	Style		: Small Bold
+	
+	LedName		: $LEDGERENTRIES[1,@IsLedSndbtr].LEDGERNAME
+	IsLedSndbtr	: $$IsLedOfGrp:$ledgerName:$$GroupSundryDebtors
+[Field:SMWiseCollDtls Date]
+	Width		: 8
+	Set as		: $Date
+	Style		: Small
+
+[Field:SMWiseCollDtls VchNo]
+	Width		: 15
+	Set as		: @BillNo;$VoucherNumber
+	BillNo		: $LEDGERENTRIES[1,@IsLedSndbtr].BILLALLOCATIONS[1].Name
+	IsLedSndbtr	: $$IsLedOfGrp:$ledgerName:$$GroupSundryDebtors
+	Style		: Small Bold
+[Field:SMWiseCollDtls VchType]
+	Width		: 10
+	Set as		: $VoucherTypeNAme
+	Style		: Tiny
+;	Invisible	: Yes
+[Field:SMWiseCollDtls ChqNo]
+	Width		: 13
+	Set as		: @ChqNo
+	Style		: Small Bold
+	ChqNo		:  $ALLLEDGERENTRIES[1,@@ChrIsLedIsGroupBank].BANKALLOCATIONS[1].InstrumentNumber
+[Field:SMWiseCollDtls Ledg]
+	Width		: 34
+	Set as		: $LEDGERENTRIES[1,@IsLedSndbtr].LEDGERNAME
+	IsLedSndbtr	: $$IsLedOfGrp:$ledgerName:$$GroupSundryDebtors
+	
+[Field:SMWiseCollDtlsCash]
+	Use			: XAmount Field	
+	Set as		: @LEdAmount
+	LEdAmount	: $LEDGERENTRIES[1,@@IsLedChrSndbtrCashLeger].Amount
+	
+	
+	
+[Field:SMWiseCollDtls Bank]
+	Use			: XAmount Field
+	Set as		: if ($$IsReceipt:$VoucherTypeName) then  @LedAmount Else ""
+	LEdAmount	: $ALLLEDGERENTRIES[1,@@ChrIsLedIsGroupBank].Amount
+	
+	
+[Field:SMWiseCollDtls return]
+	Use			: XAmount Field
+	
+	Set as		: if ($$IsPayment:$VoucherTypeName) then  @LedAmount Else ""
+	LEdAmount	: $ALLLEDGERENTRIES[1,@@ChrIsLedIsGroupBank].Amount
+	
+[Field:SMWiseCollDtlsNet]
+	Use			: Amount Field
+	Set as		: $Amount
+
+
+;;========================================TOTALS=====================
+[Line:SMWiseCollDtlsTotals]
+	Use			: SMWiseCollDtls
+	Local		: Field			: Default				: Type		: String
+	Local		: Field			: SMWiseCollDtls Bank	: Set as 	: $$Total:SMWiseCollDtlsBank
+	Local		: Field			: SMWiseCollDtlsCash	: Set as	: $$Total:SMWiseCollDtlsCash
+	Local		: Field			: SMWiseCollDtls return	: Set as	: $$Total:SMWiseCollDtlsreturn
+	Local		: Field			: SMWiseCollDtlsNet 	: Set as	: $$Total:SMWiseCollDtlsNet
+	Border		: Totals		
+
+	
+[Collection:SalesmanWiseVouchers]
+	Type		: Vouchers	: Group
+	Child Of	: ##ProdRepGroup;$$GroupSundryDebtors
+	Belongs To	: Yes
+	Fetch		: Date,Amount,VoucherTYpename , ALLLEDGERENTRIES.*;LEDGERNAME, LEDGERENTRIES.AMOUNT,LEDGERENTRIES.
+	Filter		: FilterByCherryDeemed
+	Sort		: @@default				: $Name
+	Compute		: LEDSALESMAN			: @@CHRLEDGERSalesMan 
+	Compute		: LedAmount				: @@ChrLedgerSndbtSMAMT 
+	Compute		: SDLedName				: @@ChrLedgerSndbtSM
+	Compute		: LedCashAmount			: @@ChrLedgerSndbtCashAMT
+	Compute		: LedBankAmount			: @@ChrLedgerSndbtBankAMT
+	Compute		: LedreturnAmount		: @@ChrLedgerSndbtReturnAMT		
+	Filter		: FilterBySalesManCC
+
+	
+[Collection:CollReportSalesmans]
+	Source Collection		: SalesmanWiseVouchers
+	By			: LEDSALESMAN			: $LEDSALESMAN	
+	Aggr Compute: TotAmount				: Sum	: $LedAmount
+	Keep Source	: ().
+	
+
+[Collection:CollReportSalesManLedgers]
+	
+	Source Collection		: SalesmanWiseVouchers
+	By			: LEDSALESMAN			: $LEDSALESMAN	
+	By			: SDLedName				: $SDLedName
+	AggrCompute	: TotAmount				: Sum : $LedAmount 
+	Keep Source : ().	
+
+[Report:ChrVchDisplay]
+	Use			: VchDisplay
+	Form		: VchDisplay
+;	Object		: Voucher		: ##CHRVoucherID
+	Delete		: Object
+	Add			: Object		: Voucher
+     
+
+;;---------------------------------------------------------------------------------------------------------------------------------------
+;;---------------------------------------------------------------------------------------------------------------------------------------
+
+[Report:SMWiseCollREportAggr]
+	Form		: SMWiseCollREportAggr	
+;	Set			: ExcelSheetName		: "Salesman Wise Collection"
+[Form:SMWiseCollREportAggr]
+	Part		: SMWiseCollREportAggrTop,SMWiseCollREportAggr
+	Excel Sheet Name: "Salesman Wise Collection"
+	Button		: Export Button, Print Button
+	
+[Part:SMWiseCollREportAggrTop]
+	Part		: SMWiseCollREpLeft
+	Right Part	: SMWiseCollREpRight
+	
+[Part:SMWiseCollREpLeft]
+	Line		: SMWiseCollREpGroup,SMWiseCollREpSalesman
+	SpaceBottom	: 0.5 
+[Line:SMWiseCollREpGroup]
+	Field		: Short Prompt, SMWiseCollREpGroup
+	Local		: Field	: Short Prompt			: Info	: "Group"
+	
+[Field:SMWiseCollREpGroup]
+	Use			: Name Field
+	Set as		: ##ProdRepGroup
+	Style		: Small Bold
+
+[Line:SMWiseCollREpSalesman]
+	Field		: Short Prompt, SMWiseCollREpSalesman
+	Local		: Field	: Short Prompt			: Info	: "Salesman"
+	
+[Field:SMWiseCollREpSalesman]
+	Use			: Name Field
+	Set as		: ##ProdRepSalesMan
+	Style		: Small Bold
+	
+	
+[Part:SMWiseCollREpRight]
+	Line		: SMWiseCollREpDate
+[Line:SMWiseCollREpDate]
+	Field		: SMWiseCollREpDate
+[Field:SMWiseCollREpDate]
+	Width		: 19
+	Align		: Left
+	Set as		: $$string:##SVFromDAte + " To " + $$String:##SVTOdate 
+	Style		: Small Bold
+
+;;------------
+	
+[Part:SMWiseCollREportAggr]
+	Line		: SMWiseCollREportAggrTitle, SMWiseCollREportAggr
+	Bottom Line	: SMWiseCollREportAggrTot
+	Repeat		: SMWiseCollREportAggr	: CollReportSalesmans
+	Scroll		: Vertical
+	CommonBorder: Yes
+
+	Totals		: SMWiseCollAggrAmount, SMWiseCollAggrREturn, SMWiseCollAggrBank,SMWiseCollAggr Cash, SMWiseCollAggr LEdAmount
+[Line:SMWiseCollREportAggrTitle]
+	Lines		: SMWiseCollREportAggrT1, SMWiseCollREportAggrT2
+	
+[Line:SMWiseCollREportAggrT1]
+	Field		: SMWiseCollAggr CCName,SMWiseCollAggrCCSMName1
+	Right Field	: SMWiseCollAggr Amount
+	Local		: Field	: Default					: Type		: String
+	Local		: Field	: Default					: Style		: Small Bold
+	Local		: Field	: SMWiseCollAggr CCName		: Info		: "Salesman"
+	Local		: Field	: SMWiseCollAggr Amount		: Info		: "Amount"
+	Local		: Field	: SMWiseCollAggrCCSMName1 	: Cells		: 3
+	Local		: Field	: SMWiseCollAggrCCSMName1 	: Invisible: Not $$InExportMode 
+	Border		: Thin Top
+	
+[Line:SMWiseCollREportAggrT2]
+	Use			: ChrSalesManwseLEDGERS
+	Add			: Right Field						: Name Field
+	Local		: Field	: Default					: Type		: String
+	Local		: Field	: Default					: Style		: Small 
+	;Field		: SMWiseCollAggr LEdName, SMWiseCollAggrCCSMName, SMWiseCollAggr LedAmount 
+	Local		: Field	: SMWiseCollAggr LEdName	: Info		: "Sundry Debtors"
+	Local		: Field	: SMWiseCollAggr LedAmount	: Info		: "Amount"
+	Local		: Field	: SMWiseCollAggr Cash		: Info		: "Cash"
+	Local		: Field	: SMWiseCollAggrBank		: Info		: "Bank"
+	Local		: Field	: SMWiseCollAggrREturn 		: Info		: "Chq. Return"
+	Local		: Field	: Name Field				: Cells		: 2
+	Local		: Field	: Name Field				: Invisible	: Not $$InExportMode
+	Indent		: 4
+	Border		: Thin Bottom
+	
+[Line:SMWiseCollREportAggr]
+	Field		: SMWiseCollAggr CCName,SMWiseCollAggrCCSMName1
+	Right Field	: SMWiseCollAggr Amount
+	Explode		: ChrSalesManwseLEDGERS		 : Yes
+	Local		: Field		: SMWiseCollAggrCCSMName1 : Cells	: 3
+	Local		: Field		: SMWiseCollAggrCCSMName1 : Invisible: Not $$InExportMode 
+	
+
+[Field:SMWiseCollAggr CCName]
+	Use			: NAme Field
+	Set as		: $LEDSALESMAN
+	Style		: Small Bold
+	
+[Field:SMWiseCollAggrCCSMName1]
+	
+[Field:SMWiseCollAggr Amount]
+	Use			: AMount Field
+	Setas		: $TotAmount 
+	Style		: Small Bold
+	Format		: "Symbol,CRDR"
+	Color		: IF ($$IsDr:$TotAmount) then "Red" Else "Black"
+
+[Part:ChrSalesManwseLEDGERS]
+	Line		: ChrSalesManwseLEDGERS
+	Repeat		: ChrSalesManwseLEDGERS			: CherryCollRepLedgersColl
+	
+	
+[Line:ChrSalesManwseLEDGERS]
+	Indent		: 4
+;	Local		: Field	: Default				: Background	: White
+	
+	Field		: Simple Field,SMWiseCollAggr LEdName, SMWiseCollAggrCCSMName, SMWiseCollAggr Cash, SMWiseCollAggrBank, SMWiseCollAggrREturn , SMWiseCollAggr LedAmount
+;	Right Field	: SMWiseCollAggr LedAmount
+	Local		: Field	: Simple Field			: Invisible	: Not $$InExportMode
+	Local		: Field	: SMWiseCollAggrCCSMName: Invisible	: $$InExportMode
+[Field:SMWiseCollAggr LEdName]
+	Use			: Name Field
+	Set as		: $SDLedName
+	Style		: Small 
+	Width		: 33
+[Field:SMWiseCollAggrCCSMName]
+	Use			: Name Field
+	Set as		: #SMWiseCollAggrCCName
+	Inactive	: Yes
+	Width		: 5
+[Field:SMWiseCollAggr LEdAmount]
+	Use			: Amount Field
+	Set as		: $TotAmount
+	Style		: Small 
+	Format		: "Symbol,CrDr"
+	Color		: IF ($$IsDr:$TotAmount) then "Red" Else "Black"
+		
+
+[Field:SMWiseCollAggr Cash]
+	Width		: 12
+	Align		: Right
+	Set as		: $LedCashAmount
+	Type		: Amount
+;	Format		: "Symbol,CRDR"
+[Field:SMWiseCollAggrBank]
+	Width		: 12
+	Align		: Right
+	Set as		: $LedBankAmount
+	Type		: Amount
+;	Format		: "Symbol,CRDR"
+[Field:SMWiseCollAggrREturn]
+	Width		: 12
+	Align		: Right
+	Set as		: $LedreturnAmount
+	Type		: Amount
+;	Format		: "Symbol,CRDR"
+[Line:SMWiseCollREportAggrTot]
+	Local		: Field	: Default			: Type	: Amount
+	Field		: Simple Field,SMWiseCollAggr LEdName, SMWiseCollAggrCCSMName, SMWiseCollAggr Cash, SMWiseCollAggrBank, SMWiseCollAggrREturn , SMWiseCollAggr LEdAmount			
+	Right Field	:  SMWiseCollAggr Amount
+	Border		: Thin Top Bottom
+
+	Local		: Field	: SMWiseCollAggr Amount	: Set as		: $$Total:SMWiseCollAggrAmount
+	Local		: Field	: SMWiseCollAggr Amount	: Style			: Normal Bold
+	Local		: Field	: Simple Field			: Cells			: 4
+	Local		: Field	: Simple Field			: Invisible		: Not $$InExportMode
+
+	Local		: Field	: SMWiseCollAggrREturn	: Set as		: $$FilterAmtTotal:SalesmanWiseVouchers:FilterBySalesManCC:$LedreturnAmount
+	Local		: Field	:SMWiseCollAggrLEdAmount: Set as		: $$CollAmtTotal:SalesmanWiseVouchers:$LedAmount 
+	Local		: Field	: SMWiseCollAggrBank	: Set as		: $$CollAmtTotal:SalesmanWiseVouchers:$LedBankAmount * -1
+	Local		: Field	: SMWiseCollAggrCash	: Set as		: $$CollAmtTotal:SalesmanWiseVouchers:$LedCashAmount * -1
+
+	Local		: Field	: SMWiseCollAggrREturn	: Style			: Small Bold
+	Local		: Field	:SMWiseCollAggrLEdAmount: Style			: Small Bold
+	Local		: Field	: SMWiseCollAggrBank	: Style			: Small Bold
+	
+	
+	Local		: Field	: Simple Field			: Invisible	: Not $$InExportMode
+	Local		: Field	: SMWiseCollAggrCCSMName: Invisible	: $$InExportMode
+	Indent		: 4
+;;----------
+
+[Collection:CherryCollRepLedgersColl]
+	Source Collection		: SalesmanWiseVouchers
+	By			: LEDSALESMAN			: $LEDSALESMAN	
+	By			: SDLedName				: $SDLedName
+	AggrCompute	: TotAmount				: Sum 	: $LedAmount 
+	AggrCompute	: LedCashAmount			: SUM	: $LedCashAmount
+	AggrCompute : LedBankAmount			: Sum	: $LedBankAmount
+	AggrCompute : LedreturnAmount		: Sum	: $LedreturnAmount 
+	Keep Source : ().	
+	Filter		: FilterByExplodedSalesMan 
+	
+
+
+	
+;[Report:SalesManCollecDrill]
+;	Form		: SalesManCollecDrill
+;	Variable	: CherryDispObj
+;	
+;[Form:SalesManCollecDrill]
+;	Part		: SalesManCollecDrill
+;	Width		: 100% Screen
+;	
+;[Part:SalesManCollecDrill]
+;	Line		: SalesManCollecDrill
+;	Repeat		: SalesManCollecDrill	: SalesMandrillColl
+;	Scroll		: Vertical
+;	CommonBorder: Yes
+;	
+;[Line:SalesManCollecDrill]
+;	Field		: SalesManCollecDrillCCName
+;	
+;[Field:SalesManCollecDrillCCName]
+;	Use			: Name Field
+;	Set as		: $Name
+;	Style		: Small Bold
+;	Variable	: CherryDispObj
+;	Display		: SalesManDrillRepeat
+;	Background	: White
+;
+;[Report:SalesManDrillRepeat]
+;	Variable	: CherryDispObj
+;	Form		: SalesManCollecDrill
+;	Local		: Part		: SalesManCollecDrill		: Delete	: Repeat
+;	Local		: Part		: SalesManCollecDrill		: Add		: Repeat	: SalesManCollecDrill : SalesManDrillRepeatColl
+	
+
+;;===============================
+[Collection:SalesMandrillColl]
+	Type		: CostCentre
+	Child Of	: "SalesMan"
+	Fetch		: Name , Parent
+	Belongs To	: No
+[Collection:SalesManDrillRepeatColl]
+	Type		: CostCentre
+	Child Of	: ##CherryDispObj
+	Fetch		: Name, Parent
+	Belongs To	: No

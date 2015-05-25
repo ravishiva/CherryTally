@@ -1,0 +1,55 @@
+[Field:XNameField]
+	Use			: Name Field
+	Style		: Small Bold
+	
+[Field:XAmountField]
+	Use			: Amount Field
+	Style		: Small Bold
+	
+[Field:XNumberField]
+	Use			: Number Field
+	Style		: Small Bold
+	
+[Field:XUniDateField]
+	Use			: UniDateField
+	Style		: Small Bold
+	Width		: 8.5
+	
+[Border:GreyBox]
+	Use			: Thin Box
+	Color		: Deep Grey
+	
+[Border:GreyLeft]
+	Use			: Thin Left
+	Color		: Deep Grey
+	
+[Border:Grey Right]
+	Use			: Thin Right
+	Color		: Deep Grey
+
+[Border:Grey Left Right]
+	Use			: Thin Left Right
+	Color		: Deep Grey	
+	
+[Border:GreyTopBottom]
+	Use			: Thin Top Bottom
+	Color		: Deep Grey
+[Border:Grey Bottom]
+	Use			: Thin Bottom
+	Color		: Deep Grey
+	
+[Border:Grey Left Right  Bottom]
+	Use			: Thin Left Right  Bottom
+	Color		: DeepGrey
+[Border:DeepGreyBox]
+	Use		:Thin Box
+	Color	: DeepGrey
+	
+[Border:DeepGrey Top]
+	Use		: Thin Top
+	Color	: DeepGrey
+
+[Border:DeepGreyLeft]
+	Use		: Thin Left
+	Color	: Deep Grey
+	

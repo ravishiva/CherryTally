@@ -1,0 +1,60 @@
+[#Menu:Configuration]
+	Add			: Key Item	:Before	: @@LocQuit	: SMS Configuration : S : Alter	: CherySMSConfig
+	Add			: Key Item	:Before	: @@LocQuit	: Blank
+
+[Report:CherySMSConfig]
+	Title		: "Configuration"
+	Form			: CherySMSConfig
+	Object		: Company		: ##SVCurrentCompany
+[Form:CherySMSConfig]	
+	Width		: 50
+	Part			: Form Subtitle, CherySMSConfig
+	Local		: Field	: Form Subtitle				: Info	: "Configuration"
+	Space Left	: 1
+	Space Right	: 1
+	Space Bottom	: 2
+	Background	: Light Grey
+[Part:CherySMSConfig]
+	
+	Lines		: CherySMSConfig Enable , CherySMSConfig API Password, CherySMSConfig SenderID
+	Local		: Line	: Default						: Space Bottom	: 0.2
+	Local		: Field	: Medium Prompt				: Width	: 17
+	Local		: Field	: Medium Prompt				: Style	: Small 
+;;--	
+[Line:CherySMSConfig Enable]
+	
+	Field		: Medium Prompt,CherySMSConfig Enable
+	Local		: Field	: Medium Prompt				: Info	: "Enable SMS"
+[Field:CherySMSConfig Enable]	
+	Use			: Logical Field
+	Storage		: CherryEnableSMS
+;;--
+[Line:CherySMSConfig API Password]
+	Fields		: Medium Prompt, CherySMSConfig API Password
+	Local		: Field	: Medium Prompt				: Info	: "API Key"
+	
+[Field:CherySMSConfig API Password]
+	
+	Use			: Name Field
+	Style		: Small Bold
+	Full Width	: Yes
+	Storage		: CherryApiKey
+;;--
+	
+[Line:CherySMSConfig SenderID]
+	
+	Field		: Medium Prompt, CherySMSConfig SenderID
+	Local		: Field	: MEdium Prompt				: Info	: "SenderID" 
+	
+[Field:CherySMSConfig SenderID]
+	
+	Use			: NAme Field
+	Width		: 10
+	Storage		: CherrySenderId
+	
+[System:Udf]
+	
+	CherrySenderId		: String		: 7059
+	CherryApiKey		: String		: 7060
+	CherryEnableSMS	: Logical		: 7061
+	

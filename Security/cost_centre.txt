@@ -1,0 +1,135 @@
+[#Menu:GatewayOfTally]
+;	Add		: Item		: TEST	: Call	: ApplicableCCByUser
+[Function:ApplicableCCByUser]
+	Parameter				: CostCentreName		: String	
+	Variable				: CmpUserName			: String	: $$CmpUserName
+;	010 : Log				: ##CmpUserName
+	020 : Set Object		: (Company,##SVCurrentCompany).
+	030 : Walk Collection	: USER LIST
+;	040 : Log				: $Name
+	050 : If				: $Name = 	##CmpUserName
+;	060 : Log				: "---"+$Name
+	055 : Do If				: ($$IsEmpty:$AccissibleCostCentre Or $AccissibleCostCentre = $$SysName:AllItems )		: Return	: Yes 
+	070 : Walk Collection	: AccissibleCostCentre
+;	080 : Log				: $AccissibleCostCentre
+	085 : Do If				: ($$IsBelongsToChrCostCentre:##CostCentreName:$AccissibleCostCentre) : Return	: Yes	 
+	090 : End Walk			
+	100 : End If
+	250 : End Walk
+;;	260 : Log				: "----"
+	
+[Function:IsBelongsToChrCostCentre]
+	Parameter	: ChildCCVar			: String
+	Parameter	: ParentCCVar			: String
+	030 : Set Object:(CostCentre,##ChildCCVar).
+;	040 : Log	: "_._"+$NAme
+	050 : Return	: $$IsBelongsTo:##ParentCCVar
+	
+[System:Formulas]
+	
+	FilterByApplicableCC	: If($$IsCmpOwner ) Then Yes Else $$ApplicableCCByUser:$Name 
+	FilterByAsplSalesMan	: If($$IsCmpOwner ) Then Yes Else $$ApplicableCCByUser:$SalesManName
+
+[#Collection:CherrySalesManCentreTable]
+Filter		:FilterByApplicableCC
+[#Collection:CherryCOSTCentreSingColl]
+Filter		:FilterByApplicableCC
+[#Collection:CherryCOSTCentreColl]
+Filter		:FilterByApplicableCC	
+[#Collection:CherryCOSTCategoryColl]
+Filter		:FilterByApplicableCC	
+
+	
+;;-------------------------------
+	
+[#Collection: AllCostCentreVchExtractServer]
+Filter		: FilterByApplicableCC	
+[#Collection: CostCentreVchExtractServer]
+Filter		: FilterByApplicableCC	
+[#Collection: Cost Centre VchSRC]
+Filter		: FilterByApplicableCC	
+[#Collection: Cost Centres]
+Filter		: FilterByApplicableCC	
+[#Collection: List of Cost Centres]
+Filter		: FilterByApplicableCC	
+[#Collection: All Cost Centre]
+Filter		: FilterByApplicableCC
+[#Collection: Cost Centre]
+Filter		: FilterByApplicableCC
+;[Collection: All Employee Groups]
+;
+;[Collection : All Employees]
+;
+;[Collection : List of All Employees]
+;
+;[Collection: Payslip Employees]
+;
+;[Collection: Employees]
+;
+;[Collection: Employee Groups for Parent]
+;
+;[Collection: Employee Groups]
+;
+;[Collection : Auto Vch Employees Under Category]
+;
+;[Collection : Manual Vch Employees Under Category]
+;
+;[Collection : Employees Under Category]
+;
+;[Collection : Employees Under Category]
+;
+;[Collection : Attd Employees Under Category]
+;
+;[Collection: Payroll CostCentres]
+;
+;[Collection: Payroll Employees]
+
+[#Collection : CostCentrewithSameCat]
+Filter		: FilterByApplicableCC
+[#Collection : IsCostCentreAvbl]
+Filter		: FilterByApplicableCC
+[#Collection : VerifyCostCentre]
+Filter		: FilterByApplicableCC
+;[Collection: EmployeeSalaryCategory]
+;
+;[Collection: Multi Employee] 
+;	
+;[Collection: List of All Employee Group]
+;	
+;[Collection: Multi Employee Group]   
+;	
+;[Collection: Multi Employee Group] 
+;	
+;[Collection: Employee Salary Structure]	
+;	
+;[Collection: Employee Pay Structure]
+;
+;[Collection: SalaryEmployeesColl]
+;
+;[Collection: SelectedEmpSalarySRCColl]
+;
+;[Collection: SelectedEmpGrpSalarySRCColl]
+;
+;[Collection: EmpParentSource]
+;
+;[Collection: Admin AutoFil Employees]
+;
+
+[#Collection: PrimaryCostCentreOfCategory]
+Filter		: FilterByApplicableCC
+[#Collection: CostCentreChildOfCCName]
+
+;[Collection: EmployeeChildOfCCName]
+;	
+;[Collection: EmployeeOfCategory]
+
+[#Collection: Cost Centre BreakUp]
+Filter		: FilterByApplicableCC	
+;[Collection: EmployeeOfCategory]
+	
+[#Collection: ListCostCentreChildOfCCName]
+Filter		: FilterByApplicableCC
+[#Collection: CostCentreChildOfCostCategory]
+Filter		: FilterByApplicableCC
+[#Collection: Job Cost Centres]
+Filter		: FilterByApplicableCC	

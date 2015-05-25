@@ -1,0 +1,306 @@
+
+[Function:CHRSLEVOucher]
+	
+	Variable				: TotalAmt				: Amount
+	Variable				: TotalTaxAmt			: Amount
+	Variable				: SalesAccount			: String
+	Local Formula			: InvTotal				: $$CollAmtTotal:CHVCHINVLIST:$Amount	
+	Local Formula			: DefaultGodown			: $VCHDefaultGodown:VOUCHERTYPE:##SVVOUCHERTYPE
+	Local Formula			: TOTAL_AMOUNT			: (##TotalAmt + ##TotalTaxAmt)* (-1) 
+	
+	
+
+	030 : New Object		: Voucher
+	040 : Set				: SVViewName			: $$SysName:INVVCHVIEW
+	050 : Set Value			: VoucherTypeName		: "BTM SALES"
+	060 : Set Value			: DATE					: ##SVCURRENTDATE
+	070 : Set Value			: PERSISTEDVIEW			: ##SVViewName
+	075 : Set Value			: ISINVOICE				: Yes
+;	080 : Set Value			: BASICDATETIMEOFINVOICE: ""
+;	090 : Set Value			: BASICDATETIMEOFREMOVAL: ""
+	100 : Set				: TotalAmt				: @InvTotal 
+	120 : Log				: ##CHPartyName + " -- " + ##CHVCHNumber + " -- " + ##CHvchreRef + " -- " + $$string:##CHVchDate  + " -- "+ @DefaultGodown 	 + " -- "+ $$String:##TotalAmt
+
+	191	: ListDelete		: SLORDVatDtlsList
+	a191: Walk Collection	: CHVCHINVLIST
+	a192: IF				: $$Number:$Quantity > 0
+	a193: Set: SalesAccount	: $SLELedger
+	a194: Call				: CalcVatDetails	: ##SalesAccount:$Amount
+	c192: EnDif
+	a195: End Walk
+	a196: Call				: CalculateVatTax
+	a197: Set				: TotalTaxAmt		: $$CollAmtTotal:SLORDVatDtlsList:$TaxAmt
+	a198: Log				: "TotalTaxAmt-"+$$string:##TotalTaxAmt + " -- " + $$String:@TOTAL_AMOUNT
+	
+	
+	130 : Call				: InsertLEDGERENTRIES	: ##CHPartyName:"YES":"YES":@TOTAL_AMOUNT;##TotalAmt
+;	140 : Call				: InsertTaxLEDGERENTRIES: "Output Vat 14.5%":"1450.00":"10000.00":"Counter Cash Sale Account-BTM":"2"
+	
+	b10 : Walk Collection	: SLORDVatDtlsList
+	b20 : Log				: $ClassName + " -- "+ $DutyLedger+" -- "+$$string:$TaxAmt + " -- "+$$string:$Percentage+"-- "+$$string:$TotalAmt
+	b30 : Insert Collection Object					: LEDGERENTRIES
+	b40 : Set Value			: LEDGERNAME			: $DutyLedger
+	b50 : Set Value			: TAXCLASSIFICATIONNAME	: $ClassName
+	b60 : Set Value			: ISDEEMEDPOSITIVE		: No
+	b70 : Set Value			: ISPARTYLEDGER			: No
+	b80 : Set Value			: AMOUNT				: $TaxAmt
+	b90 : Set Value			: VATASSESSABLEVALUE	: $TotalAmt
+	b91 : Set Target		: ..
+	b92	: End Walk
+
+
+
+	150 : Walk Collection	: CHVCHINVLIST
+	155 : If				: $$Number:$Quantity > 0
+	160 : Log				: $STKItemName + " -- "+ $$string:$Quantity +" -- "+ $$string:$Rate + " -- "+$$string:$Amount + "--" + $SLELedger
+	170 : Call				: InsertALLINVENTORYENTRIES	: $STKItemName:$Rate:$Quantity:$Amount:@DefaultGodown:$SLELedger;"Sales 5.5%"
+	175 : End If
+	190 : End Walk
+	
+	210 : Walk Collection		: BuyerAddr
+	215 : Log	: "Buyer--"+$Address
+	220 : Insert Collection Object	: ADDRESS
+	230 : Set Value			: Address	: $Address
+	240 : Set Target		: ..
+	250 : End Walk
+	
+	260 : Walk Collection		: ConsigneeAddr
+	265 : Log	: "ConsAdd--"+$Address
+	270 : Insert Collection Object	: BASICBUYERADDRESS
+	280 : Set Value			: BASICBUYERADDRESS	: $Address
+	290 : Set Target		: ..
+	300 : End Walk
+	
+	310 : Set Value			: ChrVCHBranch			: ##ChrVCHBranch
+	320 : Set Value			: ChrVCHGodown			: ##ChrVCHGodown
+	330 : Set Value			: ChrVCHBillingPerson	: ##ChrVCHBillingPerson
+	340 : Set Value			: ChrVCHJobCardNo		: ##ChrVCHJobCardNo
+	350 : Set Value			: ChrVCHKMREADING		: ##ChrVCHKMREADING
+	360 : Set Value			: ChrVCHAlignmentDue	: ##ChrVCHAlignmentDue
+	370 : Set Value			: ChrVCHChqNo			: ##ChrVCHChqNo
+	380 : Set Value			: ChrVCHChqDt			: ##ChrVCHChqDt
+	390 : Set Value			: ChrVCHDob				: ##ChrVCHDobV
+	
+	410 : Set Value			: CONSIGNEECSTNUMBER	: ##SLEConsTin
+	420 : Set Value			: BUYERSCSTNUMBER		: ##SLEByrTin
+	430 : Set Value			: BASICSHIPPEDBY		: ##SleConsName
+	440 : Set Value			: BASICBUYERNAME		: ##SleByrName
+;	450 : Set Value			: BASICBUYERSSALESTAXNO	: 
+	460 : Set Value			: VATForm49No			: ##ChrVCHVehicleNo
+;	470 : Set Value			: TraderConsVATTINNo	: 
+	480 : Set Value			: EICheckPost			: ##ChrVCHBillingPerson
+	490 : Set Value			: BASICSHIPDOCUMENTNO	: ##ChrVCHVehicleType
+	
+	500 : Set Value			: SLEConsPhone			: ##SLEConsPhone
+	510 : Set Value			: SLEConsMobNo			: ##SLEConsMobNo
+	520 : Set Value			: SLEConsPinCode		: ##SLEConsPinCode 
+	530 : Set Value			: SLEConsState			: ##SLEConsState
+	540 : Set Value			: SLEConsCity			: ##SLEConsCity
+		
+	550 : Set Value			: SLEByrPhone			: ##SLEByrPhone
+	560 : Set Value			: SLEByrMobNo			: ##SLEByrMobNo
+	570 : Set Value			: SLEByrPinCode			: ##SLEByrPinCode
+	580 : Set Value			: SLEByrState			: ##SLEByrState
+	590 : Set Value			: SLEByrCity			: ##SLEByrCity
+
+	
+	810 : Create Target
+	820 : Log		: $$LastResult
+	650 : List Delete		: CHVCHINVLIST 
+	
+[Function:InsertALLINVENTORYENTRIES]
+	Parameter				: STOCKITEMNAME			: String
+	Parameter				: RATE					: String
+	Parameter				: QUANTITY				: String
+	Parameter				: AMOUNT				: Amount
+	Parameter				: GODOWNNAME			: String
+	Parameter				: LEDGERNAME			: String
+	Variable				: CostAmt				: Amount
+	Local Formula			: TAxCLassNAme			: $TAXCLASSIFICATIONNAME:LEDGER:##LEDGERNAME
+;	Local Formula			: RateVal				: 
+	
+	010 : Insert Collection Object					: ALLINVENTORYENTRIES
+	020 : Set Value			: STOCKITEMNAME			: ##STOCKITEMNAME
+	030 : Set Value			: ISDEEMEDPOSITIVE		: No
+	040 : Set Value			: RATE					: $$TgtObject:($$AsRate:##RATE)
+	050 : Set Value			: ACTUALQTY				: $$TgtObject:($$AsQty:##QUANTITY)*(-1)
+	060 : Set Value			: BILLEDQTY				: $$TgtObject:($$AsQty:##QUANTITY)*(-1)
+	070 : Set Value			: AMOUNT				: ##AMOUNT
+	080 : Insert Collection Object					: BATCHALLOCATIONS
+	090 : Set Value			: GODOWNNAME			: ##GODOWNNAME
+	100 : Set Value			: BATCHNAME				: "Primary Batch"
+	110 : Set Value			: DESTINATIONGODOWNNAME	: ##GODOWNNAME
+	120 : Set Value			: AMOUNT				: ##AMOUNT
+	130 : Set Value			: ACTUALQTY				: $$TgtObject:($$AsQty:##QUANTITY)*(-1)
+	140 : Set Value			: BILLEDQTY				: $$TgtObject:($$AsQty:##QUANTITY)*(-1)
+	150 : Set Target		: ..
+	160 : Insert Collection Object					: ACCOUNTINGALLOCATIONS
+	170 : Set Value			: TAXCLASSIFICATIONNAME	: @TAxCLassNAme
+	180 : Set Value			: LEDGERNAME			: ##LEDGERNAME
+	190 : Set Value			: ISDEEMEDPOSITIVE		: No
+	200 : Set Value			: AMOUNT				: ##AMOUNT
+	
+
+	210 : Walk Collection	: VchCostCollection
+	220 : Set 				: CostAmt				: ##AMOUNT*$Percent/100
+	230 : Call				: InsertCostCentre		: $Category:$CCentre:##CostAmt	
+	240 : End Walk
+	
+;	205 : Call				: InsertCostCentre		: "Sales Man":"BTM":##AMOUNT	
+;	210 : Call				: InsertCostCentre		: "Location":"Bangalore":##AMOUNT
+;	220 : Call				: InsertCostCentre		: "Division":"Retail":##AMOUNT
+	
+	250 : Set Target		: ....
+	
+	
+	
+[Function:InsertCostCentre]
+	Parameter				: CATEGORY				: String
+	Parameter				: NAME					: String
+	Parameter				: AMOUNT				: Amount
+	
+	210 : Insert Collection Object					: CATEGORYALLOCATIONS
+	220 : Set Value			: CATEGORY				: ##CATEGORY
+	230 : Set Value			: ISDEEMEDPOSITIVE		: No
+	240 : Insert Collection Object					: COSTCENTREALLOCATIONS
+	250 : Set Value			: NAME					: ##NAME
+	260 : Set Value			: AMOUNT				: ##AMOUNT
+	270 : Set Target		: ...
+
+[Function:InsertTaxLEDGERENTRIES]
+	Parameter				: LEDGERNAME			: String
+	Parameter				: AMOUNT				: Amount
+	Parameter				: VATASSESSABLEVALUE	: Amount
+	Parameter				: PARTYLEDGER			: String
+	Parameter				: TAXNAME				: String
+	
+	
+	010 : Insert Collection Object					: LEDGERENTRIES
+	020 : Set Value			: BASICRATEOFINVOICETAX	: $$Number:"14.50"
+	030 : Set Value			: TAXCLASSIFICATIONNAME	: "Output VAT @ 14.5%"
+	040 : Set Value			: LEDGERNAME			: ##LEDGERNAME
+	050 : Set Value			: ISDEEMEDPOSITIVE		: "No"
+	060 : Set Value			: AMOUNT				: ##AMOUNT
+	070 : Set Value			: VATASSESSABLEVALUE	: ##VATASSESSABLEVALUE
+	080 : Insert Collection Object					: TAXOBJECTALLOCATIONS
+	090 : Set Value			: CATEGORY				: "Output VAT @ 14.5%"
+	100 : Set Value			: TAXTYPE				: "VAT"
+	110 : Set Value			: TAXNAME				: ##TAXNAME
+	120 : Set Value			: PARTYLEDGER			: ##PARTYLEDGER
+	130 : Set Value			: REFTYPE				: "New Ref"
+	140 : Set Target		: ...	
+	
+[Function:InsertLEDGERENTRIES]
+	Parameter				: LEDGERNAME			: String
+	Parameter				: ISDEEMEDPOSITIVE		: Logical
+	Parameter				: ISPARTYLEDGER			: Logical
+	Parameter				: AMOUNT				: String
+	
+	
+	020 : Insert Collection Object					: LEDGERENTRIES
+	030 : Set Value			: LEDGERNAME			: ##LEDGERNAME
+	040 : Set Value			: ISDEEMEDPOSITIVE		: ##ISDEEMEDPOSITIVE
+	050 : Set Value			: ISPARTYLEDGER			: ##ISPARTYLEDGER
+	060 : Set Value			: AMOUNT				: $$AsAmount:##AMOUNT * (-1)
+	070 : Insert Collection Object					: BILLALLOCATIONS
+	080 : Set Value			: NAME					: $$TgtObject:$VoucherNumber
+	090 : Set Value			: BILLTYPE				: "New Ref"
+	100 : Set Value			: AMOUNT				: $$AsAmount:##AMOUNT * (-1)
+	110 : Set Target		: ...
+	
+
+[Function:ShoTestCstCen]
+	010 : Walk Collection	: VchCostCollection
+	020 : Log	: $Category	+ " -- " + $CCentre + " -- " + $$String:$Percent
+	050 : End Walk
+	
+[Collection:VchCostCollectionType]
+	Object		: VoucherType	: ##SVVoucherType
+	Fetch		: Name, VCHCostCategoryAlloc.*
+;	Type		: VoucherType	
+;	Child Of	: $$VchTypeSales
+;	
+[Collection:VchCostCollection]
+	Source Collection		: VchCostCollectionType
+	Walk		: VCHCostCategoryAlloc, VchCostCentreAlloc
+	Compute		: Category	: $..VchCostCatName
+	Compute		: CCentre	: $VchCostCentreName
+	Compute		: Percent	: $VchCostPercentage
+	
+
+	
+[System:Variables]
+	LIST VARIABLE	: SLORDVatDtlsList
+	
+[Variable:SLORDVatDtlsList]
+
+	Variable	: ClassName				: String
+	Variable	: SLELEDGName			: String
+	Variable	: TotalAmt				: Amount
+	Variable	: Percentage			: Number
+	Variable	: DutyLedger			: String
+	Variable	: TaxAmt				: Amount 
+
+[Collection:SLORDVatDtlsList]
+	Data Source	: Variable				: SLORDVatDtlsList
+	
+
+[Function:CalcVatDetails]
+	Parameter	: SalesLedger			: String
+	Parameter	: LedAmount				: String
+	Variable	: IndexVar				: Number
+	Variable	: ClassNAme				: String
+	Variable	: IVar					: Number
+	Variable	: TAmt					: Amount
+	
+		
+	Local Formula	: LedAmt			: $$Number:##LedAmount
+	Local Formula	: LedAmount			: $$AsAmount:@LedAmt 
+	Local Formula	: TgtAMT			: If($$Number:##SLORDVatDtlsList[##IndexVar].TotalAmt > 0) then ##SLORDVatDtlsList[##IndexVar].TotalAmt Else $$AsAmount:"0.00" 
+	Local Formula	: TgtAmount			: $$Number:##SLORDVatDtlsList[##IndexVar].TotalAmt 
+	
+	000 : Set 	: ClassNAme				: $TAXClassificationName:LEDGER:##SalesLedger
+;	010 : Log	: "______" + ##SalesLedger + " -- " + $$String:@LedAmount  + " -- " + $$String:@LedAmt
+	
+	020 : If		: Not $$IsEmpty:##ClassNAme	
+			
+	030 : List Add	: SLORDVatDtlsList				: ##ClassNAme
+	040 : Set		: IndexVar						: $$ListIndex:SLORDVatDtlsList:##ClassNAme
+	050 : Set		: SLORDVatDtlsList[##IndexVar].ClassName		: ##ClassName
+	;055 : Log		: "TgtAmt--"+$$string:@TgtAmount 
+	060 : Set		: SLORDVatDtlsList[##IndexVar].TotalAmt			: @LedAmount + @TgtAmount;$$AsAmount:##SLORDVatDtlsList[##IndexVar].TotalAmt 
+	080 : Log		: "__TAX--- "+##SLORDVatDtlsList[##IndexVar].ClassName + " -- " + $$String:##SLORDVatDtlsList[##IndexVar].TotalAmt	 
+	210 : End If 
+	
+	
+
+[Function:CalculateVatTax]
+	Variable		: TaxRate			: Number
+	Variable		: TaxAmount			: Amount
+	Variable		: IndexVar			: Number
+	
+	010 : For In	: KeyVar			: SLORDVatDtlsList
+	020 : Set		: IndexVar			: $$ListIndex:SLORDVatDtlsList:##KeyVar
+	
+	090	: Walk Collection				:  DutiesLedgerCollec
+	100 : If		: $TaxClassificationName = ##SLORDVatDtlsList[##IndexVar].ClassName
+	105 : Set		: TaxRate			: $$VatExtractRate:$TaxClassificationName
+	106 : Set		: TaxAmount			: ##SLORDVatDtlsList[##IndexVar].TotalAmt*##TaxRate/100
+	110 : Log		: "__TAX LEDGER NAME - " + $NAme + " -- " + $$String:##TaxRate + " -- " + $$String:##TaxAmount
+	120 : Set		: SLORDVatDtlsList[##IndexVar].DutyLedger		: $NAme
+	130 : Set		: SLORDVatDtlsList[##IndexVar].Percentage		: ##TaxRate
+	135 : Set		: SLORDVatDtlsList[##IndexVar].TaxAmt			: ##TaxAmount
+
+	140 : End If
+	160 : End Walk
+	
+	170 : End For
+	
+	
+	
+[Collection:DutiesLedgerCollec]
+	Type			: LEDGERS
+	Fetch			: Name,Parent,TaxClassificationName
+	Child Of		: $$GroupDuties
+	Belongs To		: Yes
+	

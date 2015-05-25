@@ -1,0 +1,31 @@
+
+[#Form: Ledger]
+	Add			: Part	: After	: MSTLED Initial	: DaysOfWeekField
+ 	
+[Part:DaysOfWeekField]
+	Lines		: DaysOfWeekField 
+	Space Top		: 0.15
+	Space Bottom	: 0.15
+
+[Line:DaysOfWeekField]
+	
+	Fields		: Long Prompt, DaysOfWeekField
+	Local		: Field	: Long Prompt		: Info	: "Route (daywise)" 
+
+[Field:DaysOfWeekField]
+	
+	Use			: Name Field
+	Table		: DaysOfWeekColl,None
+	Show Table	: On Empty
+	Storage		: LedDaysOfWeek
+	Set as		: if($$InAlterMode and $$IsEmpty:$$Value) then $$SysName:None Else $$Value
+	
+[System:Udf]
+	LedDaysOfWeek	: String	: 1907	 		 
+
+
+[Table:DaysOfWeekColl]
+	Title		: "Days"
+	List Name		: "SUN","MON","TUE","WED","THU","FRI","SAT","OUT"	
+	Format		: $Name, 7
+	

@@ -1,0 +1,53 @@
+;[#Form:Voucher]
+;	Delete		: Key	: BottomToolBarBtn4_Cancel, BottomToolBarBtn3_Delete 
+;	
+;[#Form:DayBook]
+;	Delete		: Key	: BottomToolBarBtn4_Cancel, BottomToolBarBtn3_Delete 
+	
+[!Key:IfLDEnabledOptInac]
+	Inactive		: Yes 
+[!Key:IfLDEnabledOptAct]
+	Delete		: Action 
+	
+	
+[#Key: BottomToolBarBtn4_Cancel]
+	Option		: IfLDEnabledOptAct		: nOT $$IsCmpOwner
+;	Delete		: Action 
+	
+[#Key: BottomToolBarBtn3_Delete]
+	Option		: IfLDEnabledOptAct		: nOT $$IsCmpOwner
+;	Delete		: Action 
+	
+[#Key: BottomToolBarBtn4]
+	Option		: IfLDEnabledOptInac		: nOT $$IsCmpOwner
+;	Inactive		: Yes 
+	
+[#Key:BottomToolBarBtn3]
+	Option		: IfLDEnabledOptInac		: nOT $$IsCmpOwner
+;	Inactive		: Yes
+	
+[#Key: Cancel Line Object]
+	Option		: IfLDEnabledOptAct		: nOT $$IsCmpOwner
+;	Delete		: Action 
+	
+
+;;=============================================
+[#Key   : Delete Line Object]
+;	Option		: IfLDEnabledOptAct		: nOT $$IsCmpOwner
+	Delete	: Action  
+[#Key   : Form Delete]
+;	Option		: IfLDEnabledOptAct		: nOT $$IsCmpOwner
+	Delete	: Action  
+[#Key :Bottomtoolbarbtn3_Delete]
+;	Option		: IfLDEnabledOptInac	: nOT $$IsCmpOwner
+   Inactive : Yes              
+[#Key :Bottomtoolbarbtn3]
+;	Option		: IfLDEnabledOptInac	: nOT $$IsCmpOwner
+      Inactive : Yes       
+[#Line: AccType Detail]
+;	Option		: AccType DetailOPT		: nOT $$IsCmpOwner
+;	
+;[!Line: AccType DetailOPT]	
+    Fields  : AccType Name, ATAlias, AccType Alias
+    Indent  : $$ExplodeLevel * 1.5
+    Keys    : Delete Line Object

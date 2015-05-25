@@ -1,0 +1,356 @@
+[System:UDF]
+	BRServiceVch		: String		: 7001
+	BRSalesVch			: String		: 7002
+	UDFContactPerson	: String		: 7003
+	UDFContactPhone		: String		: 7004
+	UDFUserOfBranch		: String		: 7005
+	UdfUserAccessType	: String		: 7006
+	VCHCostCategoryAlloc: Aggregate		: 7007
+	VchCostCentreAlloc	: Aggregate		: 7008
+	VchCostCatName		: String		: 7009
+	VchCostCentreName	: String		: 7010
+	VchCostPercentage	: Number		: 7011
+	VCHDefaultGodown	: String		: 7012
+	
+	ChrVCHBranch		: String		: 7013
+	ChrVCHGodown		: String		: 7014
+	ChrVCHBillingPerson	: String		: 7015
+	ChrVCHJobCardNo		: String		: 7016
+	ChrVCHKMREADING		: String		: 7017
+	ChrVCHAlignmentDue	: String		: 7018
+	ChrVCHChqNo			: String		: 7019
+	ChrVCHChqDt			: Date			: 7020
+	ChrVCHDob			: Date			: 7021
+	
+	SLEConsPhone		: String		: 7022
+	SLEConsMobNo		: String		: 7023
+	SLEConsPinCode		: String		: 7024
+	SLEConsState		: String		: 7025
+	SLEConsCity			: String		: 7026
+		
+	SLEByrPhone			: String		: 7027
+	SLEByrMobNo			: String		: 7028
+	SLEByrPinCode		: String		: 7029
+	SLEByrState			: String		: 7030
+	SLEByrCity			: String		: 7031
+	
+	ChrVchDivision		: String		: 7032
+	ChrVchSalesMan		: String		: 7033
+	ChrVchLocation		: String		: 7034
+	ChrVchCostAlloc		: String		: 7035
+	VchDiscountValue	: Amount		: 7036
+	ChrSalesVchType		: String		: 7037
+	CherryVchGodown		: String		: 7038
+	BilledSalesMan		: String		: 7039
+	ChrCostAllocAggr	: Aggregate		: 7040
+	
+	CCDivisionName		: String		: 7041
+	CCDivisionAmt		: Amount		: 7042
+	CCSalesManName		: String		: 7043
+	CCSalesManAmt		: Amount		: 7044 
+	VchCherryLocation	: String		: 7045
+	ChrLedgerCostCentre	: String		: 7046
+	
+	ChrVchDefLocation	: String		: 7047
+	ChrVchDefDivision	: String		: 7048
+	VchUdfDocType		: String		: 7049
+	VchRebateValue		: Amount		: 7050
+	KKNoOfBoxes			: String		: 7051
+	IsOrderMandtry		: Logical		: 7042
+	VchDiscountPer		: Number		: 7043
+	
+	ChrLRPAckedBy		: String		: 7053
+	ChrLRPaidType		: String		: 7054 
+	ChrLRClubBooking	: String		: 7055	
+	ChrLRFreightAmount	: Amount		: 7056
+	BasicF1inalDestination:String		: 7057
+	UdfLocalOutStation	: String		: 7058
+	IsChCatUpdtd		: Logical		: 7059
+	UDFTransactionType	: String		: 7060
+	ChrOrderDueDate		: Due Date		: 7061
+	UseTallyDefaultVoucher: Logical		: 7062
+	SLESkipLocation		: Logical		: 7063
+	SLESkipSalesMan		: Logical		: 7064
+	VchDiscountPer2		: Number		: 7065
+	EnableChrVchSMS		: Logical		: 7066
+	ISChrServiceVoucher	: Logical		: 7067 
+	UdfChrBranchName	: String		: 7068
+	ChrPurchaseInvDate	: Date			: 7069
+	ChrPurchaseInvNo	: String		: 7070
+	GodownAllowNegStk	: Logical		: 7071
+	IsOrderMandtrySales	: Logical		: 7072
+	SLEConsTin			: String		: 7073	
+	PtyCustomerName		: String		: 7074
+	UDFNoOfBundels		: String		: 7075
+	SLESkipDivision		: Logical		: 7076
+	ChrNotifyESugam		: Logical		: 7077
+	ChrNotifyAmount		: Amount		: 7078
+	HideFromGodownList	: Logical		: 7079
+	ChrApplicableTaxPer	: Number		: 7080
+	DisableGodownSec	: Logical		: 7081
+	DefCounterCashLedger: String		: 7082
+	PtyLedControlType	: String		: 7083 
+	IsDivSmDisabled		: Logical		: 7085
+	AddChrPurInvDate	: Logical		: 7086
+	
+
+;;-----------------STOCK IMPORT TCP--------------
+	
+	UdfCode 			: String		: 9001
+	UdfSIZE	 			: String		: 9002
+	UdfSystemID	 		: String		: 9003
+	UdfWidth		 	: String		: 9004
+	UdfAspectRatio	 	: String		: 9005
+	UdfInch	 			: String		: 9006
+	UdfPR		 		: String		: 9007
+	UdfPAttern	 		: String		: 9008
+	UdfSegment	 		: String		: 9009
+	UdfSubSegment		: String		: 9010	
+	IsItemClosingRate	: Logical		: 9011
+	
+;------------------SECURITY UDFS-----------------
+
+	AccissibleLedGroups	: String		: 1907
+	AccissibleCostCentre: String		: 1908
+	AccissibleGodown	: String		: 1909
+	
+	
+
+
+[System:VARIABLE]
+	CHVchDate			: ""
+	CHPartyName			: ""
+	CHVCHNumber			: ""
+	CHvchreRef			: ""
+	CHRSalesVoucher		: ""
+	CHRServiceVoucher	: ""
+	CHRReceiptVoucher	: ""
+	CHRPurchaseVoucher	: ""
+	ChrVCHDobV			: ""
+	
+	SleConsName			: ""
+	SLEConsTin			: ""
+	SLEConsPhone		: ""
+	SLEConsMobNo		: ""
+	SLEConsPinCode		: ""
+	SLEConsState		: ""
+	SLEConsCity			: ""
+	
+	SleByrName			: ""
+	SLEByrTin			: ""
+	SLEByrPhone			: ""
+	SLEByrMobNo			: ""
+	SLEByrPinCode		: ""
+	SLEByrState			: ""
+	SLEByrCity			: ""
+	
+	ChrVCHDob			: ""
+	ChrVCHBranch		: ""
+	ChrVCHGodown		: ""
+	ChrVCHBillingPerson	: ""
+	ChrVCHJobCardNo		: ""
+	ChrVCHVehicleNo		: ""
+	ChrVCHVehicleType	: ""
+	ChrVCHKMREADING		: ""
+	ChrVCHAlignmentDue	: ""
+	ChrVCHChqNo			: ""
+	ChrVCHChqDt			: ""
+	ChrNarrVar			: ""
+	ChrDetailedVar		: Yes
+	CherrySalesManVar	: ""
+	ListVariable		: ByrCnsAddrList
+	ListVariable		: MultiLedgerVar
+	ListVariable		: ItemsCurQtyList
+	ListVariable		: MultiStkItemList
+	
+
+
+	ProdRepDateFrom		: ""
+	ProdRepDateTo 		: ""
+	ProdRepGroup 		: ""
+	ProdRepLedger 		: ""
+	ProdRepSalesMan 	: ""
+	ProdRepItemGroup	: "" 	
+	ProdRepItemName		: ""
+	ProdRepOutPut		: ""
+	ISSmryRepMonthWise	: No
+	ISSmryRepDayWise	: No
+
+
+
+[Variable:ISSmryRepMonthWise]
+	Type				: String
+	Persistent			: Yes
+	
+[Variable:ISSmryRepDayWise]
+	Type				: String
+	Persistent			: Yes	 
+
+[Variable:ProdRepDateFrom]
+	Type			: Date
+[Variable:ProdRepDateTo]
+	Type			: Date
+[Variable:ProdRepGroup]
+[Variable:ProdRepLedger]
+[Variable:ProdRepSalesMan] 
+[Variable:ProdRepItemGroup]	 
+[Variable:ProdRepItemName]	
+[Variable:ProdRepOutPut]
+
+
+[Variable:ChrDetailedVar]
+	Type				: Logical
+	Persistent			: Yes
+[Variable:ChrVCHDob]
+	Type				: Date
+[Variable:ChrVCHDobV]
+	Type				: Date
+[Variable:ChrVCHBranch]
+[Variable:ChrVCHGodown]
+[Variable:ChrVCHBillingPerson]
+[Variable:ChrVCHJobCardNo]
+[Variable:ChrVCHVehicleNo]
+[Variable:ChrVCHVehicleType]
+[Variable:ChrVCHKMREADING]
+[Variable:ChrVCHAlignmentDue]
+[Variable:ChrVCHChqNo]
+[Variable:ChrVCHChqDt]
+	Type		: Date
+[Variable:ChrNarrVar]
+
+;;----
+[Variable:CHVchDate]
+	Type		: Date
+[Variable:CHPartyName]
+	Type		: String
+[Variable:CHVCHNumber]
+	Type		: String
+[Variable:CHvchreRef]
+	Type		: String
+	
+[Variable:SleConsName]
+[Variable:SLEConsTin] 
+[Variable:SLEConsPhone] 
+[Variable:SLEConsMobNo] 
+[Variable:SLEConsPinCode] 
+[Variable:SLEConsState] 
+[Variable:SLEConsCity] 
+	
+[Variable:SleByrName]
+[Variable:SLEByrTin] 
+[Variable:SLEByrPhone] 
+[Variable:SLEByrMobNo] 
+[Variable:SLEByrPinCode] 
+[Variable:SLEByrState] 
+[Variable:SLEByrCity] 
+	
+[Variable:CHRSalesVoucher]
+[Variable:CHRServiceVoucher]
+[Variable:CHRReceiptVoucher]	
+[Variable:CHRPurchaseVoucher]
+[Variable:CherrySalesManVar]
+	
+[Collection:ByrCnsAddrList]
+	Data Source:Variable			: ByrCnsAddrList
+	
+[Collection:BuyerAddr]
+	Use			: ByrCnsAddrList
+	Filter		: FltBuyerAddr
+[Collection:ConsigneeAddr]
+	Use			: ByrCnsAddrList
+	Filter		: FltConsigneeAddr
+	
+[System:Formulas]
+	FltConsigneeAddr				: $Type = "Consignee"
+	FltBuyerAddr					: $Type = "Buyer"
+	
+
+[Collection:MultiLedgerVar]
+	Data Source	: Variable			: MultiLedgerVar
+[Variable:MultiLedgerVar]
+	Type		: String
+	
+[Collection:MultiStkItemList]
+	Data Source	: Variable			: MultiStkItemList
+[Variable:MultiStkItemList]
+	Type		: String
+	
+[Variable:ItemsCurQtyList]
+	Variable	: LineNo			: Number
+	Variable	: StkItemNAme		: String
+	Variable	: Quantity			: String
+	
+	
+
+[Variable:ByrCnsAddrList]
+	Variable	: Line				: Number	
+	Variable	: Address			: String
+	Variable	: Type				: String
+	
+
+[Function:AddByrCnsAddrList]
+	Parameter	: Line				: Number
+	Parameter	: Address			: String
+	Parameter	: Type				: String
+	Variable	: IndexVar			: Number
+	
+	Variable	: KeyVar			: String
+	000 : Set	: Keyvar			: $$String:##Line + ##Type
+	010 : List Add		: ByrCnsAddrList				: ##KeyVar
+	015 : Set	: IndexVar			: $$ListIndex:ByrCnsAddrList:##KeyVar
+	020 : Set	: ByrCnsAddrList[##IndexVar].Line			: ##Line
+	030 : Set	: ByrCnsAddrList[##IndexVar].Address		: ##Address
+	040 : Set	: ByrCnsAddrList[##IndexVar].Type			: ##Type
+	050 : Log	: ##ByrCnsAddrList[##IndexVar].Address  + " -- " + ##ByrCnsAddrList[##IndexVar].Type	
+	
+	
+;=================================
+
+[System:Formulas]
+	NotPrimaryCat			: If($Name Contains  "Primary Cost" ) Then No Else yes
+	ByCostCategory			: #VchCostCategoryName = $Category
+	FilterBySalesMan		: $Category	= "SalesMan"
+
+;;========================================================
+[Report:InitializeCustomVariables]
+	
+	Set:CHVchDate			: ""
+	Set:CHPartyName			: ""
+	Set:CHVCHNumber			: ""
+	Set:CHvchreRef			: ""
+	Set:CHRSalesVoucher		: ""
+	Set:CHRServiceVoucher	: ""
+	Set:CHRReceiptVoucher	: ""
+	Set:ChrVCHDobV			: ""
+	
+	Set:SleConsName			: ""
+	Set:SLEConsTin			: ""
+	Set:SLEConsPhone		: ""
+	Set:SLEConsMobNo		: ""
+	Set:SLEConsPinCode		: ""
+	Set:SLEConsState		: ""
+	Set:SLEConsCity			: ""
+	
+	Set:SleByrName			: ""
+	Set:SLEByrTin			: ""
+	Set:SLEByrPhone			: ""
+	Set:SLEByrMobNo			: ""
+	Set:SLEByrPinCode		: ""
+	Set:SLEByrState			: ""
+	Set:SLEByrCity			: ""
+	
+	Set:ChrVCHDob			: ""
+	Set:ChrVCHBranch		: ""
+	Set:ChrVCHGodown		: ""
+	Set:ChrVCHBillingPerson	: ""
+	Set:ChrVCHJobCardNo		: ""
+	Set:ChrVCHVehicleNo		: ""
+	Set:ChrVCHVehicleType	: ""
+	Set:ChrVCHKMREADING		: ""
+	Set:ChrVCHAlignmentDue	: ""
+	Set:ChrVCHChqNo			: ""
+	Set:ChrVCHChqDt			: ""
+	Set:ChrNarrVar			: ""
+	
+	On:Load:Yes: List Delete:ByrCnsAddrList
+	

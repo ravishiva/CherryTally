@@ -1,0 +1,39 @@
+
+[Report:CherrySalesPersonName]
+	Title			: "Sales Person"
+	Use				: Ledger
+	Object			: Ledger		: ##CHRLEdNameVar
+	Form			: CherrySalesPersonName
+[Form:CherrySalesPersonName]
+	Use				: Ledger
+	Background		: White
+	Local			: Field	: MST PARENT		: Set as		: $$GroupSundryDebtors
+	Local			: Part	: Default			: Background	: White
+	
+;;====================================================
+
+[Collection:CherrySalesPersonName]
+	Title			: "Sales Person"
+	Type			: Ledger
+	Child Of		: $$GroupSundryDebtors
+	Belongs To		: Yes
+	Variable		: CHRLEdNameVar
+	Trigger			: CHRLEdNameVar
+	Report			: CherrySalesPersonName
+	Fetch			: NAme,PArent
+		
+
+[Variable:CHRLEdNameVar]
+	
+[Report:CHRLEdNameVar]
+	Title			: "Sales Person"
+	Use				: CollectionVariable
+	Local			: Line		: Collection Variable		: Field	: CHRLEdNameVar
+	Local			: Field		: MVTITLE					: Info	: "Sales Person"
+	
+[Field:CHRLEdNameVar]
+	Use				: NAme Field
+	Table			: CherrySalesPersonName
+	Show Table		: Always
+	Variable		: CHRLEdNameVar
+	Modifies		: CHRLEdNameVar

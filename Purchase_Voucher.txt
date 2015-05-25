@@ -1,0 +1,173 @@
+[Function:CherryPurchaseVoucher]
+	
+	Variable		: SVAutoCost
+	
+	020 : Set		: InvoicingModeFlag		: Yes
+	025 : Alter		: CHRVoucherClassList	
+	026 : If		: $$LastResult
+	040 : Set		: SVAutoCost			: $ChrVchCostAlloc:VoucherType:##SVVOUCHERTYPE
+	100 : Create	: CherryPurchaseVoucher
+	110 : End If 
+
+	
+[Report:CherryPurchaseVoucher]
+	Title			: "Purchase " + @@ModeName
+	Form			: CherryPurchaseVoucher
+	Use				: Voucher
+	Local			: Form	: Default				: Background		: Light Grey;Aquamarine; Satin Blue
+	Local			: Field	: VCH CostClass			: Set as			: $ChrVchCostAlloc:VoucherType:##SVVOUCHERTYPE
+
+	Local			: Part	: VCH Status			: Invisible			: Yes
+	Local			: Part	: VCH Title				: Invisible			: Yes
+	Local			: Part	: VCHTitle2				: Invisible			: Yes
+	Local			: Part	: VCH Optional			: Invisible			: Yes
+	Local			: Part	: EI BaseInfo			: Invisible			: Yes
+;	Local			: Part	: EI Details			: Background		: White
+;	Local			: Part	: EI Details			: Border			: Thin Box
+	Local			: Form	: Default				: Delete			: Part			: EI Details
+	Local			: Form	: Default				: Delete			: Part			: Vch Narration
+	Local			: Part	: Vch Narration			: Invisible			: Yes
+	
+	Local			: Field	: VchStockItem			: Delete			: Sub Form
+	Local			: Field	: VCH NrmlRate			: Delete			: Set as		;: ""
+	Local			: Field	: VchBilledQty			: Delete			: Set as
+	
+	Local			: Form	: Default				: Delete			: Buttons 
+	
+	Local			: Form	: Default				: Add				: Buttons         :  Change Voucher Date, Change Voucher Company, Blank Button
+    Local			: Form	: Default				: Add				: Bottom Buttons  : Second Blank Button, PostDated Button, Optional Button, Bottom Blank Button, Master Company Operations, Voucher Configuration
+    Local			: Form	: Default				: Add				: Buttons         : PrintButton, ExportButton, UploadButton, MailButton
+	Local			: Form	: Default				: Add				: Bottom Toolbar Buttons 				: BottomToolBarBtn1, BottomToolBarBtn2_Accept, BottomToolBarBtn3_Delete, BottomToolBarBtn4_Cancel
+	
+	
+[Form:CherryPurchaseVoucher]
+	Use				: Voucher
+	Part			: CherryPurchaseVoucher
+	Space Left		: 1
+	Space Right		: 1
+	
+[Part:CherryPurchaseVoucher]
+	Part			: CHVCHTTPE,CHVCHTopPurchase, EI DetailsCustomPurchase,CHVCHInvoiceBtm, CHVCHBottom
+	Local			: Line	: CHVCHInvoiceBtm	: Local			: Field	: Default		: Background	:  Lily Yellow
+	Vertical		: Yes
+	
+	
+[Part:EI DetailsCustomPurchase]
+	Use				: EI Details
+	Border			: Grey Box
+	Local			: Part	: EI Column 		: Border		: Grey Bottom
+	Local			: Part	: EI Column 		: Background	: Lily Yellow
+	Local			: Field	: Vch Value 		: Border		: Grey Left
+	Local			: Field	: VchBilledQty 		: Border		: grey Left Right
+	;Local			: Field	: Default			: Read Only		: No
+	Local			: Field	: VchBilledQty		: Skip			: No
+;	Local			: Field	: VCHRATE			: Background	: Red
+	Local			: Field	: VCHRATE			: Skip			: $$IsEmpty:$BilledQty OR (NOT @@DoEditAll AND $$IsValidPriceLevel:$PriceLevel AND @@StdVchFldSkipCond)
+	Local			: Field	: VCHRATE			: Option		: RateCalculationForVch	: Yes; SEtas			: @Setval
+	Local			: Field	: VchValue			: Option		: AmtCalculationForVch	: Yes
+	Local			: Field	: VCH Discount		: Option		: DiscountCalculateByAmt: Yes
+	Local			: Field	: VchDiscount		: Skip			: No
+	Local			: Line	: CI InvInfo		: Add			: Right Field 	: After	: VchDiscount	: VchDiscountValue
+	Local			: Line	: EI InvInfo		: Add			: Right Field 	: After	: VchDiscount	: VchDiscountValue
+;	Local			: Line	: CI InvInfo		: Local			: Field	: Default		: Background	: Green
+	Local			: Line	: EI ColumnOne		: Add			: Right Field 	: After	: VchDiscTitle	: VchDiscountValueTitle
+	Local			: Field	: VchDiscount		: Border		: Grey Left 	
+	Local			: Line	: CIAccInfo			: Add			: Right Field	: After	: EIAccDisc		: VchDiscountDmy
+	Local			: Line	: EIAccInfo			: Add			: Right Field	: After	: EIAccDisc		: VchDiscountDmy
+	
+	Local			: Line	: CI InvInfo		: Add			: Right Field	: At Beginning			: VchGodownSelect 
+	Local			: Line	: EI InvInfo		: Add			: Right Field	: At Beginning			: VchGodownSelect 
+	Local			: Line	: EI ColumnOne		: Add			: Right Field	: At Beginning			: VchGodownSelectTitle 
+	
+
+[Part:CHVCHTopPurchase]
+	Part			: CHpurVCHTopLeft, Empty,CHpurVCHTopCentre
+	Right Part		: CHpurVCHTopRight
+	Space Bottom	: 0.5
+	Local			: Line		: Default					: Space Bottom	: 0.2
+	Local			: Field		: Medium PRompt				: Style			: Small 
+	Local			: Part		: Empty 					: Local			: Field: Default		: Info	: ""
+	Local			: Part		: Empty						: Width			: 0.5
+
+
+;=====================LEFT=======================
+[Part:CHpurVCHTopLEFT]
+	Lines			: ChrVCH No, CHVCHPtyNamePUR, ChrVCHGodown,ChrVCHBillingPerson,
+	Border			: Grey Box
+	Space Top		: 0.2
+	Space Left		: 0.5
+	Space Right		: 0.5
+	Width			: 37.7% Screen
+	Local			: Field		: Medium Prompt				: Width			: 15
+	
+;=====================CENTRE=======================	
+[Part:CHpurVCHTopCentre]
+	Line			: CHVCHTopCen Location, CHVCHTopCen SalesMan, CHVCHTopCenDivision;, ChrVCHJobCardNo, ChrVCHChqNoDt 
+	Border			: Grey Box
+	Width			: 28.2% Screen
+	Local			: Field		: Short Prompt				: Width			: 14 
+;=====================RIGHT=======================
+[Part:CHpurVCHTopRight]
+	Line			: ChrVCH Date,ChrVCH PurInvNo, ChrVCH PurInvDate ;ChrVCH VehicleNo, ChrVCHVehicleType,  ChrVCHKMREADING, ChrVCHAlignmentDue, 
+	Border			: Grey Box
+	Space Top		: 0.2
+	Space Left		: 0.5
+	Space Right		: 0.5
+	Width			: 33% Screen
+	Local			: Field		: Medium Prompt				: Width			: 16
+
+[Line:CHVCHPtyNamePUR]
+	Field			: Medium Prompt, CHVCHPtyNamePUR
+	Local			: Field	: Medium Prompt					: Info	: "Supplier's A/c Name"
+	Local			: Field	: Medium Prompt					: Style	: Small
+	
+[Field:CHVCHPtyNamePUR]
+	Use				: EI Consignee
+	Use				: Name Field
+	Width			: 30
+	Show Table		: On First Key
+	Table      		: Party Cash Ledgers Extract       		: NOT @@UseClassFmt
+    Table       	: Invoice Ledgers Extract          		: @@UseClassFmt
+	Modifies		: CHPartyName
+	Style			: Small Bold
+	Full Width		: Yes
+	Delete			: Sub Form
+	Add				: Sub Form		: PurchaseBuyerConsDetails
+	Control			: CherryNoAccessAllowed	: if($$IsCmpOwner) Then No Else Not $$ApplicableGroupByUser:$$value
+
+[Line:ChrVCH PurInvNo]
+	Field			: Medium Prompt, ChrVCH PurInvNo, 	
+	Local			: Field	: MEdium Prompt					: Info	: "Purchase Inv. No."
+	Invisible		: Not $$IsPurchase:##SVVoucherType
+[Field:ChrVCH PurInvNo]
+	Use				: XNameField
+	Storage			: ChrPurchaseInvNo
+	Validate		: Not $$IsEmpty:$$Value
+;---------
+[Line:ChrVCH PurInvDate] 	
+	Field			: Medium Prompt, ChrVCH PurInvDate
+	Local			: Field	: MEdium Prompt					: Info	: "Purchase Inv. Date"
+	Invisible		: Not $$IsPurchase:##SVVoucherType
+[Field:ChrVch PurInvDate]
+	Use				: XUniDAteField
+	Storage			: ChrPurchaseInvDate
+	Validate		: Not $$IsEmpty:$$Value
+;;--------------------------------------
+[Report:PurchaseBuyerConsDetails]
+	Use				:  EI Supplementary
+	Delete			: Form
+	Add				: Form		: PurchaseBuyerConsDetails
+	
+[Form:PurchaseBuyerConsDetails]
+		
+	Use				: EI Supplementary
+	Vertical Align	: Center
+	Horizontal Align: Center
+	Local			: Field		: Medium Prompt		: Style		: Small 
+	Local			: Field		: Medium Prompt		: Width		: 15
+	Local			: Part		: Default			: Delete	: Border
+	Space Left		: 1
+	Space Right		: 1
+	Local			: Field		: EI PARTY LEDGER	: Width		: 30
+	Local			: Field		: EI PARTY LEDGER	: Style		: Small Bold
+	Local			: Field		: EI VATDEALERTYPE	: Width		: 30

@@ -1,0 +1,249 @@
+[Report:Pcr Tyres Trigger]
+	Title		: "Products"
+	Form		: Pcr Tyres Trigger
+	Variable	: SVCurrentDate, SVFromDate, SVToDate
+	Set			: SVFROMDATE		: ##SVCurrentDate
+	Set			: SVTODATE			: ##SVCurrentDate
+	On:Load:Yes	: List Delete		: MultiLedgerVar
+	On:Load:Yes	: List Delete		: MultiStkItemList
+[Form:Pcr Tyres Trigger]
+	Part		: Pcr Tyres TriggerOut
+	Space Left	: 1
+	Space Right	: 1
+	Full Width	: No
+	Background	: White
+	On			: Form Accept	: Yes								: Form Accept
+	On			: Form Accept	: (#PcrRepOutput = "Display")		: Display		: ProductSalesReports	
+	On			: Form Accept	: (#PcrRepOutput = "Export")		: Export		: ProductSalesReports	
+	On			: Form Accept	: Yes								: Alter			: Pcr Tyres Trigger
+	
+[Part:Pcr Tyres TriggerOut]
+	Part		: Form Subtitle, Pcr Tyres Trigger
+	Local		: Field			: Form Subtitle			: Info	: " " 
+	Vertical	: Yes
+	Space Left	: 1
+	Space Right	: 1
+	Space Bottom: 1.7
+	Border		: Grey Box 
+
+[Part:Pcr Tyres Trigger]
+	
+	Lines		: Report Date Form To, PcrRep LedGroup, PcrRep Ledger, PcrRep SalesMan, PcrRepItemGroup,PcrRepItemName, PcrRepOutput
+	Local		: Line	: Default						: Space Bottom	: 0.4
+	Local		: Field	: Short Prompt					: Style			: Small
+	Local		: Field	: SimplePrompt					: Style			: Small
+[Line:Report Date Form To]
+	Field		: Short Prompt, Report Date Form , Simple Prompt, Report Date To
+	Local		: Field	: Short Prompt					: Info			: "Date From "
+	Local		: Field	: Simple Prompt					: Info			: "To"
+	Local		: Field	: Simple Prompt					: Width			: 0
+	Local		: Field	: Simple Prompt					: Space Left	: 4
+
+[Field:Report Date Form]
+	Use			: XUniDateField
+	Modifies	:  SVFromDate;ProdRepDateFrom
+[Field:Report Date To]
+	Use			: XUniDateField
+	Modifies	:  SVToDate; ProdRepDateTo
+	Notify		: LongSElectedDate		: ($$Value - #ReportDateForm) > 32
+	
+;;---
+[Line:PcrRep LedGroup]
+	Field		: Short Prompt, PcrRep LedGroup 
+	Local		: Field	: Short Prompt					: Info	: "Group" 
+[Field:PcrRep LedGroup]
+	Use			: XName Field
+	Modifies	: ProdRepGroup
+	Table		: CherrySundryDbtrsGroup;, All Items
+	Show Table	: Always
+	
+;;--	
+[Line:PcrRep Ledger]
+	Field		: Short Prompt, PcrRep Ledger
+	Local		: Field	: Short Prompt					: Info	: "Ledger"
+
+[Field:PcrRep Ledger]
+	Use			: XName Field
+	Modifies	: ProdRepLedger
+	Table		: ChrLedgersUnderSelectedGroup, AllItems, Multi LedgersCherry
+	Show Table	: Always
+	Sub Form	: CherrySelMultiledgs		: $$Value Contains	"Multi Ledgers" 	
+	Set Always	: Yes
+	
+;;---
+[Line:PcrRep SalesMan]
+	Field		: Short Prompt, PcrRep SalesMan
+	Local		: Field	: Short Prompt					: Info	: "Sales Man"
+
+[Field:PcrRep SalesMan]
+	Use			: XNAme Field
+	Modifies	: ProdRepSalesMan
+	Table		: CherrySalesManColl, AllItems
+	Show Table	: Always
+;	Local		: Collection	: CherrySalesManTable	: Align	: Right
+[Line:PcrRepItemGroup]
+	Field		: Short Prompt, PcrRepItemGroup
+	Local		: Field	: Short PRompt					: Info	: "Item Group"
+
+[Field:PcrRepItemGroup]
+	Use			: XName Field 
+	Modifies	: ProdRepItemGroup	
+	Table		: ChrStockItemGroupTable, AllItems
+	Show Table	: Always
+
+[Line:PcrRepItemName]
+	Field		: Short Prompt, PcrRepItemName
+	Local		: Field	: Short Prompt					: Info	: "Stock Item"
+
+[Field:PcrRepItemName]
+	Use			: XName Field
+	Table		: PcrRepItemColl, AllItems,Multi StockItemsCherry
+	Sub Form	: Multi StockItemsCherry				: $$Value Contains "Multi Items" 
+	Show Table	: Always
+	Modifies	: ProdRepItemName
+
+[Line:PcrRepOutput]
+	Field		: Short Prompt ,PcrRepOutput
+	Local		: Field	: Short Prompt					: Info	: "Output"
+	Space Top	: 0.5
+[Field:PcrRepOutput]
+	Use			: Xname Field
+	Table		: DisplayExportTable
+	Show Table	: Always
+	Modifies	: ProdRepOutPut
+
+;;---	
+[Table:DisplayExportTable]
+	Title		: "Select"
+	List Name	: "Display" , "Export" 
+ 
+;;--
+[Collection:CherrySundryDbtrsGroup]
+	Title		: "Sundry Debtors"
+	Type		: Group
+	Child Of	: $$GroupSundryDebtors
+	Belongs To	: Yes
+	Format		: $Name,22
+	Full Height	: Yes
+	Align		: Right
+;;---	
+[Collection:ChrLedgersUnderSelectedGroup]
+	Title		: "Party Name"
+	Type		: Ledger
+	Belongs To	: Yes
+	Format		: $Name,30
+	Full Height	: Yes
+	Align		: Right 
+	
+	Child Of	: if (#PcrRepLedGroup = $$SysName:AllItems) then $$GroupSundryDebtors Else #PcrRepLedGroup
+	
+;;---
+[Collection:CherrySalesManColl]
+	Use			: CherrySalesManTAble
+	Align		: Right
+	Full Height	: Yes
+	Format		: $Name
+	Format		: $Parent
+;;--
+[Collection:ChrStockItemGroupTable]
+	Title		: "Item Group"
+	Type		: Stock Group
+	Fetch		: Name 
+	Format		: $Name
+	Format		: $Parent
+	Align		: Right
+	Full Height	: yes
+	
+[Collection:PcrRepItemColl]
+	Title		: "Items"
+	Type		: Stock Item
+	Child Of	: If (#PcrRepItemGroup = $$SysName:AllItems) then $$SysName:Primary Else #PcrRepItemGroup
+	Belongs To	: Yes
+	Format		: $Name, 33
+	Full Height	: Yes
+	Align		: Right
+	
+[Collection: Multi LedgersCherry]
+
+    List Name   : @@CherryMultiLedgers
+;    Fetch       : Name
+;    Compute     : ActualVoucherType : $$Name
+    Format      : $Name
+	ClientOnly	: Yes
+	
+[Collection:Multi StockItemsCherry]
+	List Name	: @@CherryMultiItems
+	Format		: $name
+	Client Only	: Yes
+	
+[System:Formulas]
+	CherryMultiLedgers	: $$NewLine+"Multi Ledgers"
+	CherryMultiItems	: $$NewLine+"Multi Items"	
+	
+
+[Report:CherrySelMultiledgs]
+	Title		: "Select"
+	Form		: CherrySelMultiledgs
+[Form:CherrySelMultiledgs]
+	Part		: Form Subtitle,CherrySelMultiledgs
+	Local		: Field	: Form Subtitle		: Info	: "Select Ledgers"
+	Space Left	: 1
+	Space Right	: 1
+	Full Width	: No
+	Full Height	: Yes
+
+[Part:CherrySelMultiledgs]
+	Line		: CherrySelMultiledgs
+	Repeat		: CherrySelMultiledgs		: MultiLedgerVar
+	Scroll		: Vertical
+	Break On	: #CherrySelMultiledgs = $$SysName:EndOfList
+	
+[Line:CherrySelMultiledgs]
+	Field		: CherrySelMultiledgs
+	
+[Field:CherrySelMultiledgs]
+	Use			: XName Field 
+	Table		: ChrLedgersUnderSelectedGroup 				: $$line = 1
+	Table		: ChrLedgersUnderSelectedGroup, End Of List : $$line > 1
+	Show Table	: Always
+	Unique		: Yes 
+	Set as		: $$ListValue:MultiLedgerVar:$$Line
+	On:Accept	: Yes: Field Accept		
+	On:Accept	: Yes: List Add	: MultiLedgerVar	: $$Line : $$Value
+
+
+	
+;;========= Multi StkItems Selection
+
+[Report:Multi StockItemsCherry]
+	Title		: "Stock Items"
+	Form		: Multi StockItemsCherry
+	
+[Form:Multi StockItemsCherry]
+	Part		: Form Subtitle, Multi StockItemsCherry
+	Local		: Field	: Form Subtitle				: Info	: "Stock Items"
+	Space Left	: 1
+	Space Right	: 1
+	Space Bottom: 1.5
+	Full Width	: No
+	Height		: 100% Screen
+	
+	
+[Part:Multi StockItemsCherry]
+	Line		: Multi StkItemsCherry	
+	Repeat		: Multi StkItemsCherry			: MultiStkItemList	
+	Break On	: #MultiStkItemsCherry = $$SysName:EndOfList
+	Scroll		: Vertical
+	
+[Line:Multi StkItemsCherry]
+	Field		: Multi StkItemsCherry	
+	
+[Field:Multi StkItemsCherry]
+	Use			: XName Field
+	Table		: PcrRepItemColl				: $$Line = 1
+	Table		: PcrRepItemColl, End Of List	: $$line > 1
+	Set Always	: Yes
+	Set as		: $$ListValue:MultiStkItemList:$$line
+	Show Table	: Always
+	On:Accept	: Yes	: Field Accept
+	On:Accept	: Yes	: List Add	: MultiStkItemList : $$Line : $$Value 

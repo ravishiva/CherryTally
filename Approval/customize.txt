@@ -1,0 +1,318 @@
+;[#Form:Accounting Voucher]
+;	Add		: On: Form Accept	: $$InCreateMode	: Call		: Save as Optional 
+;[#Form:Voucher]
+;;	Add		: On: Form Accept	: Yes			: Form Accept	 
+;	Add		: On: Form Accept	: $$InCreateMode	: Call		: Save as Optional 
+;	
+;[#Form:Inventory Voucher]	
+;	Add		: On: Form Accept	: Yes			: Form Accept	 
+;	Add		: On: Form Accept	: $$InCreateMode	: Call		: Save as Optional 
+	
+[Function:Save as Optional]
+	
+	020 : Log	: "Post as Optional " + $VoucherNumber
+	030 : Set Object	
+	040 : Set Target		
+	050 : Set Value		: IsOptional		: Yes	
+	060 : If	: $$InCreateMode
+	070 : Set Value		: EneredByUser		: $$CmpUserName
+	075 : Log	: "-----"
+	076 : Log	: $$TgtObject:$EneredByUser	
+;	077	: Save Target
+	080 : End If
+	
+	
+[Collection:Test VchColl]
+	Type		: Voucher;s	: VoucherType
+;	Child Of	: $$VchTypeJournal
+;	Child Of	: $$VchTypeSales
+;	Child Of	: $$VchTypePayment
+	Belongs To	: Yes
+	
+	Fetch		: EnteredBy, 
+	
+	
+[Function:TestVchSetOptionsl]
+	
+	Local Formula			: AlllVchs	: $$FilterCount:TestVchColl
+	Variable				: ProgressCount	: Number
+	000 : Start Progress	: @AlllVchs:"Please wait..."	
+	010 : Walk Collection	: Test VchColl
+;	safdf: If				: $$MonthOfDate:$Date > 7
+;	011 : Log				: $EnteredBy + " - " + $EneredByUser
+
+	040 : Set Target	
+;	050 : Set Value		: EneredByUser		: "user b"
+;	055 : Set Value		: EnteredBy		: "user b" 
+	060 : Set Value		: IsOptional 		: yes 
+	070 : Alter Target
+;;	111 : If			: $$LastResult
+;	112 : Log			: "Vch No. "+$VoucherNumber+" Saved As Options"
+;	113 : End If
+	
+;	075 : End If
+	090 : Increment		: Progresscount
+	095 : Show Progress		: ##Progresscount
+	100 : End Walk
+	120 : End Progress
+
+	
+	
+	
+;	
+;[Collection:userValidation]
+;	
+;	Source Collection	: ..
+;[Function:userValidation]
+;	
+;	010 : Walk Collection	: USer List; userValidation
+;	020 : Log		: $Name
+;	040 : End Walk
+;	050 : Log		: "-----------------"
+	
+[System:Udf]
+	ApproveAuth			: String			: 1902
+	EneredByUser		: String			: 1903
+	CHERRY USERLIST 	: Aggregate			: 1904 
+	UDFApproverName		: String			: 1905
+	UDFApprovVchs		: String			: 1906 	
+
+	
+	
+[#Report:Voucher]
+	Option		: Add BottomPartToVCHS	: Yes;$IsVchApproved		
+[#Report:AccountingVoucher]		
+	Option		: Add BottomPartToVCHS	: Yes;$IsVchApproved
+[#Report:Inventory Voucher]	
+	Option		: Add BottomPartToVCHS	: Yes;$IsVchApproved
+	
+[!report:Add BottomPartToVCHS]	
+	Local		: Form	: Default		: 	Add			: Bottom Part	: At End			: Voucher Approval Part Def 
+;	Local		: Part	: Voucher Approval Part			: Background	: White
+;	Local		: Part	: Voucher Approval Part			: Invisible	: Not $IsVchApproved
+;	Local		: Field	: Default		: Read Only		: ($IsVchApproved Or $..IsVchApproved)AND(Not $$IsCmpOwner)
+;	Local		: Form	: Default		: Option			: DeleteSubformsTable			: ($IsVchApproved Or $..IsVchApproved)AND(Not $$IsCmpOwner) 
+;	
+[!Form:DeleteSubformsTable]
+	
+	Local		: Field	: Default		: Delete			: Sub Form
+	Local		: Field	: Default		: Delete			: Table
+	Local		: Field	: EI Consignee	: Add			: Sub Form    : EI Supplementary disp  			: ##ICFGSupplementary AND NOT @@IsExciseSupplementaryInv
+	Local		: Field	: EI Consignee	: Add			: Sub Form    : EI Excise Supplementary Disp 	: @@IsExciseSupplementaryInv	
+	No Confirm	: Yes
+[Report:EI Supplementary disp]
+	Use			: EI Supplementary
+	Local		: Field	: Default		: Read Only		: Yes
+	
+[Report:EI Excise Supplementary Disp]
+	Use			: EI Excise Supplementary 
+	Local		: Field	: Default		: Read Only		: Yes
+
+[Part:Voucher Approval Part Def]
+	
+	Use			: Voucher Approval Part 
+	Background	: White
+	Invisible		: Not $IsVchApproved
+	Local		: Field	: VchApprove Now Title 	: Invisible	: Yes
+	Local		: Field	: VchApprove Now		: Invisible	: Yes
+	Local		: Field	: Default				: Delete		: Storage
+	Local		: Field	: VchApproved PostedBy	: Storage		: EneredByUser
+	Local		: Field	: VchApproved PostedBy	: Setas			: $$CmpUserName
+	Local		: Field	: VchApproved By		: Set as		: $VchApprovedBy
+	Local		: Field	: VchApprove Date		: Set as		: $VchApprovalDate	
+	Local		: Field	: VchApproveTime		: Set as		: $VchApprovalTime
+	Local		: Field	: VchApprove Now		: Set as		: $IsVchApproved	
+	
+;==========================================================VOUCHER=APPROVAL=ACCESS=CONFIG===================================================================================
+	
+[Report:UserVchApvAccessConfig]
+	
+	Title			: "Approval Access"
+	Form			: UserVchApvAccessConfig
+	Object			: Company		: ##SVCurrentCompany
+	
+[Form:UserVchApvAccessConfig]
+	
+	Width			: 50
+	Height			: 20
+	Space Left		: 1
+	Space Right		: 1
+	Part			: UserVchApvAccessConfig Outer; 
+	Local			: Field	: Form Subtitle		: Info		: "Voucher Approval Access"
+	Background		: White
+
+[Part:UserVchApvAccessConfig Outer]
+		
+	Parts			: Form Subtitle, UserVchApvAccessConfig
+	Vertical		: Yes
+	Border			: Grey Box
+
+[Part:UserVchApvAccessConfig]
+	
+	Line			: UserVchApvAccess Title ,UserVchApvAccess		
+	Repeat			: UserVchApvAccess	: CHERRY USER LIST  ;UsersCollectionsTable
+	Scroll			: Vertical
+	Break On		: $$IsEndOfList:$UDFApproverName
+
+[Line:UserVchApvAccess Title]	
+	Fields			: USERAccessApv NAme, USERAccessApv Level
+	Right Field		: USERAccessApv USerTitle,USERAccessApvVchsTitle
+		
+	Local			: Field	: Default				: Delete		: Storage
+	Local			: Field	: Default				: Delete		: Table
+	Local			: Field	: Default				: Style			: Small Bold
+	Local			: Field	: USERAccessApv NAme	: Info			: "Approver Name"
+	Local			: Field	: USERAccessApv Level	: Info			: "Level"
+	Local			: Field	: USERAccessApv USerTitle: Info			: "Posted By User"
+	Local			: Field	: USERAccessApvVchsTitle: Info			: "Voucher Types"  
+	Border			: Thin Top Bottom
+	
+[Field:USERAccessApv USerTitle]
+	Width			: 10
+[Field:USERAccessApvVchsTitle]
+	Width			: 10
+[Line:UserVchApvAccess]
+	
+	Fields			: USERAccessApv NAme, USERAccessApv Level
+	Right Field		: USERAccessApv USer, USERAccessApv Vchs,   
+	
+
+[Field:USERAccessApv NAme]
+	Use				: NAme Field
+	Width			: 13
+	Storage			: UDFApproverName
+	Style			: Small Bold
+;	Skip			: Yes
+	Case			: Normal
+	Table			: CherryAllUSERTable, EndOfList 
+	Show Table		: On Empty
+[Field:USERAccessApv Level]
+	Use				: Name Field
+	Width			: 10
+	Set as			: $$Table:USERAccessApvNAme:$Security
+	Skip			: Yes
+	Set Always		: Yes
+	Case			: Normal
+	Style			: Small; Bold
+	Inactive		: $$IsEndOfList:$UDFApproverName
+	
+[Field:USERAccessApv USer]
+	Use				: Name Field
+	Width			: 9
+	Show Table		: On Empty
+	Delete			: Case
+	Case			: Normal 
+	Style			: Small Bold
+	Table			: AddSkipTAble
+	Show Table		: On First Key
+	Width			: 10
+	Sub Form		: USERAccessApv AddUsers		:  $$Value	= "Add/Alter" 
+	Set as			: "Skip"
+	Inactive		: $$IsEndOfList:$UDFApproverName
+	Set Always		: Yes
+[Field:USERAccessApv Vchs]
+	Use				: Name Field
+	Style			: Small Bold
+	Set as			: "Skip"
+	Table			: AddSkipTAble
+	Show Table		: On First Key
+	Width			: 10
+	Inactive		: $$isEmpty:#USERAccessApvNAme
+	Sub Form		: USERAccessApv Vchs			: $$Value	= "Add/Alter"
+	Inactive		: $$IsEndOfList:$UDFApproverName
+	Set Always		: Yes
+[Field:DmyFld]
+	Width			: 1
+	Skip			: Yes
+	
+[Table:AddSkipTAble]
+	Title			: "Select"
+	List Name		: "Skip", "Add/Alter" 
+	
+[Collection:USerAllAndNone]
+	
+	List Name		: "ALL", "NONE"
+	
+
+[#Button: Optional Button]
+	
+	Delete			: Inactive	
+	Add				: Inactive	: $IsOptional:VoucherType:##SVVoucherType
+	
+[#Field:VTYPoptional]
+		
+	Skip			: Not $$IsCmpOwner
+	
+
+;=========================================USERAccessApv AddUsers
+
+[Report:USERAccessApv AddUsers]
+	Title			: "Posted By Users"
+	Form			: USERAccessApv AddUsers
+[Form:USERAccessApv AddUsers]	
+	Part			: Form Subtitle, USERAccessApv AddUsers
+	Space Left		: 1
+	Space Right		: 1
+	Width			: 30
+	Height			: 98% Screen
+	Local			: Field	: Form Subtitle			: Info		: "Posted By Users"
+	
+[Part:USERAccessApv AddUsers]
+	Line			: USERAccessApv AddUsers
+	Repeat			: USERAccessApv AddUsers	: ApproveAuth
+	Scroll			: Vertical
+	Break On		: $$IsEndOfList:$ApproveAuth Or #USERAccessApvAddUsers = $$SysName:AllItems
+	
+[Line:USERAccessApv AddUsers]
+	Field			: USERAccessApv AddUsers
+	
+[Field:USERAccessApv AddUsers]
+	Use				: Name Field
+	Storage			: ApproveAuth
+	Style			: Small Bold
+	Table			: CherryAllUSERTable, All Items 		: $$Line = 1
+	Table			: CherryAllUSERTable, End Of List 		: $$Line > 1
+	Show Table		: On Empty
+	Unique			: Yes
+	Full Width		: Yes
+	
+;;------------	
+
+[Report:USERAccessApv Vchs]
+	Use				: USERAccessApv AddUsers
+	Title			: "VoucherTypes" 
+	Local			: Part					: USERAccessApv AddUsers : Delete	: Repeat
+	Local			: Part					: USERAccessApv AddUsers : Add		: Repeat	: USERAccessApv AddUsers	: UDFApprovVchs
+	Local			: Field					: USERAccessApv AddUsers : Storage	: UDFApprovVchs 
+	Local			: Field					: USERAccessApv AddUsers : Delete	: Table	
+	Local			: Field					: USERAccessApv AddUsers : Add		: Table		: CherryVoucherTypes, AllItems		: $$Line = 1
+	Local			: Field					: USERAccessApv AddUsers : Add		: Table		: CherryVoucherTypes, End Of List	: $$Line > 1
+	Local			: Part					: USERAccessApv AddUsers : Break On	: $$IsEndOfList:$UDFApprovVchs Or #USERAccessApvAddUsers = $$SysName:AllItems
+	
+;;-----------------------
+[Collection:CherryAllUSERTableType]
+	Type			: Company
+[Collection:CherryAllUSERTable]
+	
+	Source Collection: CherryAllUSERTableType
+	Title			: "Users"	
+	Walk			: User List
+	Compute			: Name				: $Name
+	Compute			: Security			: $Security
+;	Type			: User List	: Company
+	Format			: $Name, 10
+	Format			: $Security,10 
+	Fetch			: NAme, Security
+	
+	
+[Collection:CherryVoucherTypes]	
+	Title			: "Voucher Type"
+	Type			: VoucherType
+	Fetch			: Name, Parent
+	Format			: $Name
+	
+	
+	
+	
+
+	

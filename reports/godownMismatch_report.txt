@@ -1,0 +1,76 @@
+[Report:Godown Mismatch Report]
+	Form		: Godown Mismatch Report
+;	Set			: SVFromDate						: ##SVCurrentDate
+;	Set			: SVToDAte							: ##SVCurrentDate
+;	
+[Form:Godown Mismatch Report]
+	Part		: Form Subtitle, Godown Mismatch Report
+	Local		:Field	: For mSubtitle				: Info		: "Mismatched Godowns Vouchers"
+	
+[Part:Godown Mismatch Report]
+	
+	Line		: Godown Mismatch ReportTitle,Godown Mismatch Report
+	Repeat		: Godown Mismatch Report			: Godown Mismatched VchColl
+	Scroll		: Vertical			
+	
+[Line:Godown Mismatch ReportTitle]
+	Use			: Godown Mismatch Report
+	Local		: Field	: GodownMismVch Date		: Info	: "Date"
+	Local		: Field	: GodownMismVch Type		: Info	: "VchType"
+	Local		: Field	: GodownMismVch No			: Info	: "Vch No."
+	Local		: Field	: GodownMismVch Amount		: Info	: "Amount"
+	Local		: Field	: Default					: Type	: String
+	Local		: Field : Default					: Style	: Small Bold
+	Local		: Field	: GodownMismVch User		: Info	: "User"
+	Border		: Thin Top Bottom
+
+[Line:Godown Mismatch Report]
+	Field		: GodownMismVch Date, GodownMismVch Type, GodownMismVch No, GodownMismVch User
+	Right Field	: GodownMismVch Amount
+	Option		: AlterOnEnter			: Yes
+
+[Field:GodownMismVch Date]
+	Width		: 8
+	Set as		: $Date
+	Alter		: Voucher
+[Field:GodownMismVch Type]
+	Set as		: $VoucherTYpeNAme
+	Width		: 14
+[Field:GodownMismVchNo]
+	Set as		: $VoucherNumber
+	Width		: 16
+[Field:GodownMismVch User]
+	Set as		: $ENTEREDBY
+	Invisible	: Yes
+[Field:GodownMismVch Amount]
+	SETAS		: $Amount
+	Use			: Amount Field
+	
+[Collection:Godown Mismatched VchColl]
+	Type		: Vouchers			: VoucherTYpe
+	Child Of	: $$VchTypeSales
+	Belongs To	: Yes
+	Fetch		: Date, VoucherNumber, VoucherTypeName,ChrVchGodown ,ENTEREDBY
+	Filter		: FilterByMismatchedVchs	
+
+
+[System:Formulas]
+	
+	FilterByMismatchedVchs			: $$GetGodownTest:$ChrVchGodown;$(InventoryEntries[1,@@HasDifferentGodown].StockItemName) 
+	HasDifferentGodown				: No;Not $$isEmpty:($$FilterValue:$GodownName:BATCHALLOCATIONS:First:FltByMatchedGodown)
+	FltByMatchedGodown				: $GodownName = $...ChrVchGodown		
+
+[Function:GetGodownTest]
+	Parameter	: VhrVchGodown		: String
+	
+	Return		: Logical	
+;	010 : Log	: $InventoryEntries[1,@@HasDifferentGodown].StockItemName 
+	030 : Walk Collection			: AllInventoryEntries
+	040 : Walk Collection			: BatchAllocations
+;	050 : Log	: $StockItemName + "-" + ##VhrVchGodown + " - " + $GodownName + " - " + $$String:$Amount
+	055 : Do If	: (##VhrVchGodown != $GodownName ) : Return	: YEs
+	060 : End Walk
+	070 : End Walk
+	
+	 
+

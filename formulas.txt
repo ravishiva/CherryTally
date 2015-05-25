@@ -1,0 +1,121 @@
+[System:Formulas]
+	FilterByBranches			: $category = "Branches"
+	IsVchDistributionType		: $ChrVchDefDivision:VoucherType:##SVVoucherType = "Distribution"		
+	FltByCondition				: ##CustomStkItemVar = $Name 
+	NoFutureDateAllowed			: "Not Allowed !"
+	OrderNotSelected			: "Please select Order(s)"
+	NegativeStockBal			: "Negative Stock ! \n\n " + $$string:@GododownNegStock
+	NegativeStockBalAlter		: "Negative Stock ! \n\n " + $$string:(@GododownNegStock + @CurrQtyInAlterMode)
+	NegativeStockBalAlter1		: "Negative Stock ! \n\n " + $$string:(@@FinalStockTotal+@CurrQtyInAlterMode)
+	ChrReturnYes				: Yes
+	FilterVchForServiceVch		: $Name Contains "Service"
+	FltByBankAllCond			: $Name = ##TransTypeVar 
+	IsCustomVchEnabled			: Not  $UseTallyDefaultVoucher:VoucherType:##SVVoucherType
+	IsBatchAllocRemoved			: Not $IsOrderMandtry:VoucherType:##SVVoucherType
+	FilterCatBySalesMan			: $Name = "SalesMan"
+	NotIsEmptySalesMAn			: Not $$IsEmpty:$SalesManName 
+	FilterCategoryBySalesMan	: $Category = "SalesMan"
+	CherryNoAccessAllowed		: "No Access Allowed !"
+	FilterByLedgerSalesMan		: If(##CherrySalesManVar = $$SysName:AllItems) then Yes Else  $ChrLedgerCostCentre:LEDGER:$PartyName =  ##CherrySalesManVar 
+	CherryDaysOfBackDatedVch	: $(Company, ##SVCurrentCompany).Security[1, @@CurrentSecurityLevel].Threshold
+	ChrParentLevel				: $(Company, ##SVCurrentCompany).Security[1, @@CurrentSecurityLevel].Parent
+	
+	IsDivSmDisabled 			: $IsDivSmDisabled:VoucherTYpe:##SVVoucherType
+	CurrentSecurityLevel		: $Name = $$CmpUserLevel
+	
+	CherryVchAlterAccess		: IF ($$IsCmpOwner OR $$CmpUserLevel = "Owner") then No Else +
+								  if (@@CherryDaysOfBackDatedVch = 0 ) then Yes Else +
+								  If ($$Machinedate - $DAte <= @@CherryDaysOfBackDatedVch) then Yes Else No
+	
+	CurrentCherryUserName		: $$CmpUserName = $UDFApproverName
+	DisplayApprovalList			: Not $$IsEmpty:$(Company, ##SVCurrentCompany).CHERRYUSERLIST[1,@@CurrentCherryUserName].UDFApproverName
+	 CherryVchSTDRate    		: If($$IsSales:##SVVoucherType Or $$IsSalesOrder:##SVVoucherType Or $$IsCreditNote:##SVVoucherType)then @@ChrerryItemStdRate Else @@StdVchRate
+
+	ChrItemStdRate				: $(StockItem,$StockItemName).StandardPriceList[Last].Rate
+	ChrerryItemStdRate			: If($$IsEmpty:@@ChrItemStdRate) then $$TgtObject:($$AsRate:"0.00") Else @@ChrItemStdRate	
+	
+	CherryStdVchRate			: If($IsItemClosingRate:VoucherType:##SVVoucherType) then @@ChrItemClosingRate Else @@CherryVchSTDRate;$$TgtObject:($$AsRate:"0.00")
+	
+	ChrItemClosingRate			: if ($$isEmpty:$ClosingRate:StockItem:$StockItemName) then $$TgtObject:($$AsRate:"0.00")  Else $ClosingRate:StockItem:$StockItemName
+	ISChrPymtRcptJrnl			: @@IsReceipt Or @@IsPayment OR @@IsContra or $$IsJournal:##SVVoucherType
+	ESugamNotificationTxt		: "Please update E-Sugam "
+	CherryNegStkChkMode			: $$InCreateMode;Yes
+	
+	IsChrOutwardType	        : $$IsDelNote:##SVVoucherType OR $$IsRejIn:##SVVoucherType OR $$IsSales:##SVVoucherType OR $$IsReceipt:##SVVoucherType OR $$IsSalesOrder:##SVVoucherType OR $$IsDebitNote:##SVVoucherType ;OR ($$IsStockJrnl:##SVVoucherType AND NOT $IsDeemedPositive)
+	FltGodownByUserLogin		: if ($$IsPurchase:##SVVOUCHERTYPE)then yes Else +  
+								  if (##SVVoucherType Contains 'trm') then $Name = "Trm" Else $Name != 'Trm' 
+								  
+	HideFromGodownList			: Not $HideFromGodownList
+	HideFromGodownList2			: Not $HideFromGodownList:GODOWN:$Name
+	
+								  
+	FilterRefreshColl			: $$FilterRefreshColl:$Name:$Category
+								
+	FltByChrVchTypeSales		: $$IsSales:$VoucherTypeName
+	ChrFLtBySalesMan			: if (##ProdRepSalesMan = $$SysName:AllItems) then Yes Else  $$IsBelongsToChrCostCentre:$ChrVchSalesMan:##ProdRepSalesMan
+	FilterVchsbyChrItmGroup		: if (##ProdRepItemGroup = $$SysName:AllItems) Then Yes Else  $$IsBelongsToStockGroup:$StockItemName:##ProdRepItemGroup
+	FilterByChrVchLedgers		: If (##ProdRepLedger = $$sysName:AllItems) then Yes Else if (##ProdRepLedger Contains "Multi Ledger") then $$SearchMultiLedgerVar:$LedgerName Else   $LedgerName = ##ProdRepLedger
+	FilterByCherryStkItem		: If (##ProdRepItemName = $$SysName:AllItems)Then Yes Else If (##ProdRepItemName Contains "Multi Items") then $$SearchMultiItemVar:$StockItemName else $stockItemName = ##ProdRepItemName
+	CannotMoreThanOrderQty		: "Cannot be more than Order Qty"							
+	LongSElectedDate			: "Output may take a longer period to display since you have choosen a longer period"
+	
+	FilterByCherryDeemed		: $$IsReceipt:$voucherTypeName Or $$IsPayment:$VoucherTypeName 
+	ChrIsLedIsGroupBank			: ($$IsLedOfGrp:$LedgerName:$$GroupBank	Or $$IsLedOfGrp:$LedgerName:$$GroupBankOD) AND $$IsReceipt:$..VoucherTypeName
+	
+	CHRLEDGERSalesMan			: $ChrLedgerCostCentre:LEDGER:@@ChrLedgerSndbtSM
+	ChrLedgerSndbtSM			: $LEDGERENTRIES[1,@@IsLedCherrySndbtr].LEDGERNAME
+	
+	ChrLedgerSndbtSMAMT			: IF( $$IsEmpty:$LEDGERENTRIES[1,@@IsLedCherrySndbtr].Amount) then $$AsAmount:"0.00" Else $LEDGERENTRIES[1,@@IsLedCherrySndbtr].Amount
+	ChrLedgerSndbtBankAMT		: IF( $$IsEmpty:$LEDGERENTRIES[1,@@ChrIsLedIsGroupBank].Amount) then $$AsAmount:"0.00" Else $LEDGERENTRIES[1,@@ChrIsLedIsGroupBank].Amount 
+	ChrLedgerSndbtCashAMT		: IF( $$IsEmpty:$LEDGERENTRIES[1,@@IsLedChrSndbtrCashLeger].Amount) then $$AsAmount:"0.00" Else $LEDGERENTRIES[1,@@IsLedChrSndbtrCashLeger].Amount  
+	ChrLedgerSndbtReturnAMT		: IF( $$IsEmpty:$LEDGERENTRIES[1,@@IsSaleREturnVchLedger].Amount) then $$AsAmount:"0.00" Else $LEDGERENTRIES[1,@@IsSaleREturnVchLedger].Amount  
+	
+	IsLedCherrySndbtr			: $$IsLedOfGrp:$ledgerName:$$GroupSundryDebtors
+	IsLedChrSndbtrCashLeger		: (($$IsLedOfGrp:$ledgerName:$$GroupSundryDebtors AND $Ledgername Contains  "Cash") Or  $$IsLedOfGrp:$ledgerName:$$GroupCash) AND $$IsReceipt:$..VoucherTypeName
+
+;	IsSaleREturnVchLedger		: ((($$IsLedOfGrp:$ledgerName:$$GroupSundryDebtors AND $Ledgername Contains  "Cash") Or  $$IsLedOfGrp:$ledgerName:$$GroupCash) AND $$IsPayment:$..VoucherTypeName)Or +
+	IsSaleREturnVchLedger		: ($$IsLedOfGrp:$LedgerName:$$GroupBank	Or $$IsLedOfGrp:$LedgerName:$$GroupBankOD  ) AND $$IsPayment:$..VoucherTypeName
+
+;OR ($$IsLedOfGrp:$ledgerName:$$GroupSundryDebtors AND $Ledgername Contains  "Cash")OR $$IsLedOfGrp:$ledgerName:$$GroupCash	
+	FilterBySalesManCC			: if (##ProdRepSalesMan = $$SysName:AllItems) then Yes Else  $$IsBelongsToChrCostCentre:@@CHRLEDGERSalesMan:##ProdRepSalesMan
+	FilterByExplodedSalesMan 	: $LEDSALESMAN = #SMWiseCollAggrCCName
+	;RemoveEmptySalesman			: Not $$IsEmpty:@@CHRLEDGERSalesMan 
+	
+[Function:SearchMultiLedgerVar]
+	Parameter	: LedName		: String
+  
+	016 : Walk Collection	: MultiLedgerVar
+	
+	018	: Do If	: ($MultiLedgerVar = ##LedName)		: Return	: Yes
+	019 : End Walk
+
+
+[Function:SearchMultiItemVar]
+	Parameter	: ItemName		: String
+	016 : Walk Collection	: MultiStkItemList
+	
+	018	: Do If	: ($MultiStkItemList = ##ItemName)		: Return	: Yes
+	019 : End Walk
+
+[Function:FilterRefreshColl]
+	Parameter	: Var1			: String
+	Parameter	: Var2			: String
+	Return		: Logical	
+	010 : Log		: "_________"+##Var1 + " -- " + ##Var2
+	
+	200 : Return	: Yes
+	
+	
+[Function:IsBelongsToStockGroup]
+	Parameter	: ChildItemVar			: String	: ;"Maruti Tube 145/70-12"
+	Parameter	: ParentGroupVar		: String	: ;"MARUTI TUBES A/M"
+	030 : Set Object:(StockItem,##ChildItemVar).
+;	040 : Log	: "_._"+$NAme
+;	045 : Log	: $$IsBelongsTo:##ParentGroupVar
+	050 : Return	: $$IsBelongsTo:##ParentGroupVar
+	
+		
+[Function:ItemLastPriceRate]
+	Parameter		: ItemVar	: String 	: "1000 4T 210 Ltr."
+	
+	010 : Log		: $(StockItem,##ItemVar).StandardPriceList[Last].Rate

@@ -1,0 +1,96 @@
+[#Menu: Main Menu] 
+	Delete		: Option		: Gateway of Tally
+	Add			: Option		: CHERRY MENU			: Not $$IsCmpOwner AND $$CmpUserLevel != "Owner" AND ($$CmpUserLEvel != "LR")
+	Add			: Option		: Cherry LRENTRY		: $$CmpUserLevel = "LR" AND  Not $$IsCmpOwner AND $$CmpUserLevel != "Owner" 
+	Add			: Option		: Gateway of Tally		: NOT $$InMigrationMode AND NOT $$IsEmpty:$$SelectedCmps AND ($$IsCmpOwner Or $$CmpUserLEvel = "Owner")
+	
+	
+[#Menu:GatewayOfTally]
+	Option		: ADDCherryAdminMenuIFAdmin	: $$CheckCherryOwner;$$IsCmpOwner Or $$CmpUserLevel = "Owner"
+;	Item	: TEST			: Call			: ItemsBranchRate
+	
+	
+[!Menu:ADDCherryAdminMenuIFAdmin]
+	Add			: Key Item					: before	: @@LocQuit	: "CHERRY" : C : Menu	: CHERRY ADMIN MENU 
+	Add			: Key Item					: before	: @@LocQuit	: Blank
+;	Add			: Key Item					: before	:  Blank
+;	Key Item	: "CostCentre Outstandings"	: C : Display	: CC Outstanding Report
+	
+[Menu:CHERRY ADMIN MENU ]
+	
+	Title		: "Main Menu"
+	Key Item	: "Transactions"			: T :  Create Collection	: Company AccVouchers	; Create Collection		: CHERRY AccVouchers
+	Key Item	: Blank
+	Key Item	: "Voucher Search"			: V	: Execute				: CherryVoucherSearch
+	Key Item	: Blank
+	Key Item	: "LR Entry"				: L : Alter					: Kisan vch Report
+	Key Item	: Blank
+	Key Item	: "Reports"					: R : Menu					: Cherry Reports 
+	
+
+
+[!Menu:CHERRY MENU ]
+	
+	Title		: "Main Menu"
+	Key Item	: "Transactions"			: T : Create Collection		: Company AccVouchers	;Create Collection		: CHERRY AccVouchers
+	Key Item	: "Reports"					: R : Menu					: Cherry Reports 
+	Key Item	: Blank
+;	Key Item	: Test			: T : Call	: UserLoginCreditals
+	Key Item	: "Voucher Search"			: V	: Alter					: CherryVoucherSearch 
+;	Key Item	: "LR Entry"				: L : Alter					: Kisan vch Report
+	Key Item	: Blank
+	;ChryVoucherTypes
+	Key Item	: "Accounts "				: T	: Menu					: GatewayOfTally
+
+[!Menu:Cherry LRENTRY]
+	Title		: "Main Menu"
+	Key Item	: "LR Entry"				: L : Alter					: Kisan vch Report
+
+[Menu:Cherry Reports]
+	
+	Title		: "Reports"				
+	Key Item	: "Day Book"						: D	: Display			: DayBook
+;	Key Item	: "Bank deposit slip"				: B	: Alter				: ChrBankVchTrig;CherryBankVouchers
+	Key Item	: Blank
+	Key Item	: "Godown Stock"					: G : Alter				: SelectStockItemForStock ;Display	: GodownStockReport   
+	Key Item	: "Routewise Party"					: P : Display			: ledger_mst_day_alloc
+
+	Key Item	: Blank
+	Key Item	: "Salesman wise Outstandings"		: S : Alter				: CC Outstanding Report Single
+	Key Item	: "All Salesman wise Outstandings"	: A : Display			: CC Outstanding Report
+	Key Item	: "Routewise Receivables" 			: R :  Modify Variables	: RECvByDaysTrig; ReceivablesByDays		
+
+	Key Item	: Blank
+	Key Item	: "Product Sales Report"			: P : Alter				: Pcr Tyres Trigger  
+	Key Item	: "Salesmanwise Collection "		: S : Alter				: SMWiseCollREportTrig 
+	Key Item	: "Salesmanwise Summary"			: S : Alter				: Cherry Salesman Summary
+;	Item:Test	: Call	: TestFunction;IsBelongsToStockGroup;CherryTEstfunction
+	Key Item	: "Mismatched Godowns Vouchers"		: G	: Display			: Godown Mismatch Report
+
+[#Menu: IndianBanking]
+	Add			: Key Item					: At Beginning			: Blank
+	Add			: Key Item					: At Beginning			:  "Bank Deposit Slip"		: B	: Alter				: ChrBankVchTrig
+
+;	Key Item	: "Branches" 				: B	: Menu	: Cherry branchMenu
+;	Key Item	: "Sales Person Name"		: S	: Menu	: Cherry SAlesPersonName
+;	Key Item	: Test						: T : Call	: UserLoginCreditals
+;	Key Item	: Purchase					: P : Call	: CherryPurchaseVoucher
+;	Key Item	: Sales						: S : Call	: SalesServiceVoucher
+	
+;	Key Item	: VchTest					: V	: Call	: CHRSLEVOucher
+;	Key Item	: CHERYDayBook				: D : Display	: CHERYDayBook
+	
+;	Key Item	: Tes						: T : Call	: CherryDaysAllowed;ChrNegativeStkValue;ShoTestCstCen
+;	
+;[Menu:Cherry branchMenu]
+;	Title		: "Branches"
+;	Key Item	: @@locCreate				: C	: Create Collection		: ChryCategoryBranch
+;	Key Item	: @@locDisplay				: D	: Display Collection	: ChryCategoryBranch
+;	Key Item	: @@locAlter				: A	: Alter Collection		: ChryCategoryBranch
+;	
+;
+;[Menu:Cherry SAlesPersonName]
+;	Title		: "Sales Person Name"
+;	Key Item	: @@locCreate				: C	: Create Collection		: CherrySalesPersonName
+;	Key Item	: @@locDisplay				: D	: Display Collection	: CherrySalesPersonName
+;	Key Item	: @@locAlter				: A	: Alter Collection		: CherrySalesPersonName

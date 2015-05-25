@@ -1,0 +1,1369 @@
+[#Part: VTYP Main Left]
+	
+	Option		: VTYP Main LeftIsSales		: Yes;Yes$$IsSales:$Name OR $$IsPurchase:$Name
+[!Part:VTYP Main LeftIsSales]	
+	Add			: Part	: AddVchCostAllocation, 
+	
+[Part:AddVchCostAllocation] ;; ChrVch Default DocType,
+	Line		: ChrVch Default Voucher 
+	
+[Report:AddCustomVchDetails]
+	Title		: "Custom Setting"
+	Form		: AddCustomVchDetails
+[Form:AddCustomVchDetails]
+	Part		: AddCustomVchDetails
+	Vertical Align: Top
+	Horizontal Align:Left
+	Full Width	: No
+	Space Left	: 1
+	Space Right	: 1
+	Background	: Lily Yellow
+[Part:AddCustomVchDetails]
+	Line		: ChrVch Default Division, ChrVch Default Location, ChrVch DefaultGodown , ChrVchApplicableFor, +
+				  ChrVchIsOrderMindtry,ChrVchIsOrderMindtrySales,ChrVchSkipLocation,ChrVchSkipSalesMan,ChrVchSkipDivision, ISChrServiceVch,ChrVchEnableSms, ChrVchBranchLocation,+
+				  EnableESugamWarning, ChrDisableGodownSecurity,DefaultLedgerForCounter,CherryHideLocAndSM,CherryApplyItemsClRate;,PartyLedgerControlType
+	Local		: Field	: ChrVch Default Division		: Skip	:	Not ($$IsVchTypeOfFamily:$Parent:$$VchTypeSales Or $$IsVchTypeOfFamily:$Parent:$$VchTypeSalesOrder)
+	Local		: Field	: Long Prompt			: Style	: Small
+	Local		: Field	: Long Prompt			: Width : 27
+	Space Bottom: 1
+	Space Top	: 0.7
+	
+[Line:ChrVch Default Voucher]
+	Field		: Long Prompt, ChrVch Default Voucher
+	Local		: Field	: Long Prompt			: Info	: "Use Tally Default Voucher"
+
+[Field:ChrVch Default Voucher]
+	Use			: Logical Field
+	Storage		: UseTallyDefaultVoucher
+	Set as		: No
+	Sub Form	: AddCustomVchDetails			: Not $$Value	
+
+[Line:ChrVch Default Division]
+	Field		: Long Prompt, ChrVch Default Division
+	Local		: Field	: Long Prompt			: Info	: "Sales Vch Type" 
+[Field:ChrVch Default Division]
+	Use			: XName Field
+	Table		: ChrVchDivisionTable, NotApplicable	
+	Show Table	: On Empty
+	Storage		: ChrVchDefDivision
+;	Skip		: $$IsGroupSales:$Parent
+	Set Always	: Yes
+	Set as		: if ( $$InAlterMode AND $$IsEmpty:$$Value)then $$SysName:NotApplicable Else $$Value
+	
+[Table:ChrVchDivisionTable]
+	Title		: "Division"
+	Type		: CostCentre
+	Fetch		: Name
+	Format		: $Name
+	Filter		: FilterByChrDivision,FilterByApplicableCC
+
+[Line:ChrVchSkipLocation]
+	Field		: Long Prompt, ChrVchSkipLocation
+	Local		: Field	: Long Prompt		: Info	: "Skip Location"
+
+[Field:ChrVchSkipLocation]
+	Use			: Logical Field
+	Storage		: SLESkipLocation
+[Line:ChrVchSkipSalesMan]
+	Field		: Long Prompt, ChrVchSkipSalesMan
+	Local		: Field	: Long Prompt		: Info	: "Skip SalesMan"
+	
+[Field:ChrVchSkipSalesMan]
+	Use			: Logical Field
+	Storage		: SLESkipSalesMan
+	
+[Line:ChrVchSkipDivision]
+	Field		: LongPrompt,ChrVchSkipDivision
+	Local		: Field	: Long Prompt		: Info	: "Skip Division"
+	
+[Field:ChrVchSkipDivision]
+	Use			: Logical Field
+	Storage		: SLESkipDivision
+
+[Line:ChrVchEnableSms]
+	Fields		: Long Prompt, ChrVchEnableSms
+	Local		: Field	: Long Prompt		: Info	: "Enable SMS ?"
+	
+[Field:ChrVchEnableSms]
+	Use			: Logical Field
+	Storage		: EnableChrVchSMS
+	Style		: Small Bold
+	
+[Line:ISChrServiceVch]
+	Field		: LongPrompt, ISChrServiceVch
+	Local		: Field	: Long Prompt		: Info	: "Is Service Voucher ?"
+
+[Field:ISChrServiceVch]
+	Use			: Logical Field
+	Style		: Small Bold
+	Storage		: ISChrServiceVoucher
+	
+[Line:ChrVchBranchLocation]
+	Field		: Long Prompt, ChrVchBranchLocation
+	Local		: Field	: Longprompt		: Info	: "Branch Name (In sms)"
+	
+[Field:ChrVchBranchLocation]
+	Use			: NAme Field
+	Storage		: UdfChrBranchName
+	
+[Line:EnableESugamWarning]
+	Field		: Long Prompt, EnableESugamWarning,ChrSimple Prompt, ChrESugamNotifyAmount
+	Local		: Field	: LongPrompt		: Info	: "Enable E-Sugam Notification"
+;	Local		: Field	: Simple Prompt		: Setas	: "Amount >="
+;	Local		: Field	: Simple Prompt		: Style	: Tiny ;Italic
+;	Local		: Field	: Simple Prompt		: Inactive		: Not #EnableESugamWarning
+
+
+	
+[Field:EnableESugamWarning]
+	Use			: Logical Field
+	Storage		: ChrNotifyESugam
+	Style		: Small Bold
+[Field:ChrSimple Prompt]
+	Align		: Prompt
+	Style		: Tiny
+	Set as		: "Amount >="
+	Inactive	: Not #EnableESugamWarning
+	Skip		: Yes
+	Set Always	: Yes
+	Width		: 8
+	
+
+	
+	
+[Field:ChrESugamNotifyAmount]
+	Use			: XAmount Field
+	Storage		: ChrNotifyAmount
+	Inactive	: Not #EnableESugamWarning
+	Align		: Left
+	
+[Line:ChrDisableGodownSecurity]
+	Field		: Long Prompt, ChrDisableGodownSecurity
+	Local		: Field	: Long Prompt			: Info	: "Disable Godown Security ?"
+
+[Field:ChrDisableGodownSecurity]
+	Use			: Logical Field
+	Storage		: DisableGodownSec
+	Style		: Small Bold
+	
+
+;;----
+[Line:DefaultLedgerForCounter]
+	Field		: Long Prompt, DefaultLedgerForCounter
+	Local		: Field	: Long PRompt			: Info	: "Default Counter Cash Ledger"
+
+[Field:DefaultLedgerForCounter]
+	Use			: XName Field
+	Storage		: DefCounterCashLedger
+	Table		: CherryCashLedgerTable, NotApplicable
+	Set as		: if ($$IsEmpty:$$Value) then $$SysName:NotApplicable Else $$Value
+	Show Table	: On First Key
+;;---
+[Line:PartyLedgerControlType]
+	Field		: Long Prompt, PartyLedgerControlType
+	Local		: Field	: Long Prompt			: Info	: "Party Ledger Control Type"
+
+[Field:PartyLedgerControlType]
+	Use			: XNAme Field
+	Storage		: PtyLedControlType
+	Table		: ControlTypeTable, NotApplicable
+	Set as		: if ($$IsEmpty:$$Value) then $$SysName:NotApplicable Else $$Value
+	Show Table	: On First Key
+[Table:ControlTypeTable]
+	Title		: "Select"
+	List Name	: "Notify","Block" 
+[Table:CherryCashLedgerTable]
+	Title		: "Cash Ledgers"
+	Type		: LEDger 
+	Child Of	: $$GroupCash
+	Belongs To	: Yes
+	Fetch		: Name
+	Format		: $Name
+	Align		: Right
+	Full Height	: Yes
+
+;;------------------
+[Line:CherryHideLocAndSM]
+	Field		: LongPrompt, CherryHideLocAndSM
+	Local		: Field	: Long Prompt				: Info		: "Disable Division & Salesman ?"
+
+[Field:CherryHideLocAndSM]
+	Use			: Logical Field
+	Style		: Small Bold
+	Storage		: IsDivSmDisabled
+	
+
+[Line:CherryApplyItemsClRate]
+	Field		: Long Prompt, CherryApplyItemsClRate
+	Local		: Field	: Long prompt				: Info		: "Apply Items closing rate ?"
+
+[Field:CherryApplyItemsClRate]
+	Use			: Logical Field 
+	Style		: Small Bold
+	Storage		: IsItemClosingRate 
+
+;===================================================================================================
+;;--
+[Line:ChrVch Default Location]
+	Field		: Long Prompt, ChrVch Default Location
+	Local		: Field	: Long Prompt		: Info	: "Location"
+[Field:ChrVch Default Location]
+	Use			: XName Field
+	Table		: CherryLocatonTable
+	Show Table	: On Empty
+	Storage		: ChrVchDefLocation
+
+[Table:CherryLocatonTable]
+	Title		: "Location"
+	Type		: CostCentre
+	Fetch		: Name, Category
+	Format		: $Name
+	Filter		: FilterByChrLocation,FilterByApplicableCC
+	
+[System:Formulae]
+	FilterByChrDivision		: $Category = "Division"
+	FilterByChrLocation		: $Category	= "Location"
+	FilterBySalesMan		: $Category	= "Salesman"	
+	
+
+[Line:ChrVch Default DocType]
+	Field		: Long Prompt	, ChrVch Default DocType
+	Local		: Field		: Long Prompt		:	Info	: "DocumentType"
+	
+[Field:ChrVch Default DocType]
+	Use			: XName Field
+	Skip		: #ChrVchDefaultDivision != "Distribution"
+	Set Always	: Yes
+	Table		: CherryDocType
+	Show Table	: OnEmpty
+	Storage		: VchUdfDocType
+	
+[Table:CherryDocType]
+	Title		: "Document"
+	List Name	: "ACP", "CNC", "LUB", "NA", "RPL" ,"RR","NET","MCN","PCR","CON" 
+	Format		: $Name,10 
+		
+
+[Line:ChrVchIsOrderMindtry]
+	Field		: Long PRompt, ChrVchIsOrderMindtry
+	Local		: Field	: Long Prompt		: Info	: "Enable godown allocation subform ?"
+[Field:ChrVchIsOrderMindtry]
+	Use			: Logical Field
+	Style		: Small Bold
+	Set as		: "No"
+	Storage		: IsOrderMandtry
+	
+[Line:ChrVchIsOrderMindtrySales]
+	Field		: Long PRompt, ChrVchIsOrderMindtrySales
+	Local		: Field	: Long Prompt		: Info	: "Is order mandatry in sales ?"
+[Field:ChrVchIsOrderMindtrySales]
+	Use			: Logical Field
+	Style		: Small Bold
+	Set as		: "No"
+	Storage		: IsOrderMandtrySales
+	Inactive	: Not $IsOrderMandtry 
+	Set Always	: Yes
+
+;;====================================
+
+[Line:AddVchCostAllocation]
+	Field		: Long Prompt, AddVchCostAllocation	
+	Local		: Field	: Long Prompt			: Info	: "Default Cost Allocation for Items "
+	Local		: Field	: Long Prompt			: Style	: Tiny
+	
+[Field:AddVchCostAllocation]
+	Use			: XName Field
+	Table       : AutoCostList, Not Applicable
+	Storage		: ChrVchCostAlloc
+;	Use			: Logical Field
+;	Set as		: "No"
+;	Sub Form	: VchCostAllocation	: $$Value
+	
+
+[Line:ChrVch Default Godown]
+	Field		: Long Prompt, ChrVch Default Godown 
+	Local		: Field	: Long Prompt			: Info	: "Godown" 
+	
+[Field:ChrVch Default Godown ]
+	Use			: XName Field
+	Table		: CHRDefaultGodownTable
+	Storage		: VCHDefaultGodown
+	Show Table	: On Empty
+;;---	
+[Collection:CHRDefaultGodownTable]
+	Title		: "Godown"
+	Type		: Godown
+	Fetch		: NAme, Parent
+	Format		: $Name, 20
+	Align		: Right
+	Full Height	: Yes
+	
+	Filter		: HideFromGodownList
+;	Filter		: FltGodownByUserLogin
+	
+
+[Line:ChrVchApplicableFor]
+	Field		: Long Prompt, ChrVchApplicableFor
+	Local		: Field	: Long Prompt			: Info	: "Sales Type"
+	Invisible	: Yes;$$IsSales:$Name
+[Field:ChrVchApplicableFor]
+	Use			: XName Field
+	Storage		: ChrSalesVchType
+	Table		: ChrSalesVchTypeTable;,NotApplicable
+	Show Table	: On Empty
+	Skip			: Not $$IsSales:$Name
+	
+[Table:ChrSalesVchTypeTable]
+	Title		: "Select"
+	List Name	: "Retail","Distributor"
+	Format		: $Name, 13
+
+;;=====================================
+[Report:VchCostAllocation]
+	Title		: "Default Cost Allocation for Item" 
+	Form		: VchCostAllocation
+[Form:VchCostAllocation]
+	Width		: 50
+	Height		: 27
+	Part		: VchCostAllocationOut
+	Space Left	: 1
+	Space Right	: 1
+	Background	: White
+	
+[Part:VchCostAllocationOut]
+	Part		: Form Subtitle,VchCostAllocation
+	Local		: Field	: Form Subtitle		: Info	: " Cost Allocation for Items"
+	Local		: Field	: Form Subtitle		: Style	: Small Bold
+	Border		: Grey Box
+	Vertical	: Yes
+
+;;=======================	
+[Part:VchCostAllocation]
+	Line		: VchCosCatAllocTitle,VchCosCatAlloc		
+	Repeat		: VchCosCatAlloc				: VCHCostCategoryAlloc
+	Scroll		: Vertical
+	Break On	: $$IsEndOfList:$VchCostCatName
+
+[Line:VchCosCatAllocTitle]
+	Field		: VchCostTitle
+	Right Field	: VchPerTitle
+	Border		: Grey Top Bottom
+
+[Field:VchCostTitle]
+	Use			: XNAme Field	
+	Set as		: "Cost"
+[Field:VchPerTitle]
+	Use			: XNumber Field
+	Type		: String
+	Set as		: "Percentage"
+	Width		: 10
+
+[Line:VchCosCatAlloc]
+	Field		: VchCostCategoryName
+	Explode		: VchCostCentreAlloc			: Not $$IsEndOfList:$VchCostCatName
+[Field:VchCostCategoryName]
+	Use			: XName Field
+	Storage		: VchCostCatName;
+	Table		: CHRCostCatTable, End OfList	: $$Line > 1
+	Table		: CHRCostCatTable				: $$Line = 1
+	Show Table	: On Empty		
+	Style		: Small Italic
+	
+[Collection:CHRCostCatTable]
+	Title		: "Cost Category"
+	Type		: CostCategory
+	Fetch		: Name, Parent
+	Format		: $Name
+	Filter		: NotPrimaryCat
+;;=======================
+[Part:VchCostCentreAlloc]
+	Line		: VchCostCentreAlloc			
+	Repeat		: VchCostCentreAlloc			: VchCostCentreAlloc
+;	Break On	: $$IsEndOfList:$VchCostCentreName
+	
+[Line:VchCostCentreAlloc]
+	
+	Field		: CHRVchCostCenDmy,CHRVchCostCentreName, 
+	Right Field	: VchCostPercentage
+	
+[Field:CHRVchCostCenDmy]
+	Width		: 3
+	Skip		: Yes
+[Field:CHRVchCostCentreName]
+	Use			: XName Field
+	Storage		: VchCostCentreName
+	Table		: CHRCostCentTable,End OfList	: $$Line > 1
+	Table		: CHRCostCentTable				: $$Line = 1
+	Show Table	: On Empty
+	
+[Field:VchCostPercentage]
+	Use			: XNumber Field
+	Storage		: VchCostPercentage
+	Format		: "Symbol,Percentage"
+	Inactive	: $$IsEndOfList:$VchCostCentreName	
+	Set as		: 100
+		
+;;--
+	
+[Collection:CHRCostCentTable]
+	Title		: "Cost Centre"
+	Type		: CostCentre
+	Fetch		: Name, Parent, Category
+	Format		: $Name
+	Filter		: ByCostCategory
+		
+
+	
+		
+;=================================================================================================
+[#Part: Company Users]
+;	Local		: Line		: Company Users 	: Add	: Field		: CherryUserOfBranch, CherryUserAccessType 
+	
+[Field:CherryUserOfBranch]
+	Use			: XNameField
+	Storage		: UDFUserOfBranch
+	Table		: CherryBranchTable
+	Show Table	: on Empty
+	Inactive	: $$IsEndOfList:$Security
+	Width		: 13
+	
+[Field:CherryUserAccessType]
+	Use			: XNameField
+	Storage		: UdfUserAccessType
+	Table		: UserAccessTypeTAble,NotApplicable
+	Show Table	: OnEmpty
+	Width		: 14
+;;---
+[Collection:CherryBranchTable]
+	Title		: "Branch"
+	Type		: CostCentre
+	Format		: $Name
+	Fetch		: Name, Category
+	Filter		: FilterByBranches
+	
+[Table:UserAccessTypeTAble]
+	Title		: "Access"
+	List Name	: "Sales Voucher","All Voucher"
+	
+[#Line: CUTitle]
+;	Add			: Fields	: CherryUserOfBranch, CherryUserAccessType 
+	Local		: Field		: CherryUserOfBranch			: Info		: "Branch"
+	Local		: Field		: Default						: Delete	: Storage 
+	Local		: Field		: CherryUserAccessType 			: Info		: "Access Type"
+	Local		: Field		: Default						: Style		: Small
+	
+;==================================VOUCHERS============================================
+
+[Collection: CHERRY AccVouchers]
+
+    Type        : Voucher
+    Child of    : ##SVCurrentDate
+    Report      : SalesServiceVoucher
+    Filter      : NotPayrollVoucherFilter
+	
+
+;;=====================================================================================
+[#Report:Chg Vch Type]
+	
+;	  Local 	: Field	: ChgVchTypeFld		: Background	: Green
+
+[#Form: Chg Vch Type]
+	Space Top		: 0.5
+	Space Bottom	: 0.5 
+	Local			: Field	: Form Subtitle					: Style		: Small Bold 
+	Background		: Light Petal Pink  
+;	Local			: Line	: ChgVchType					:  Local 	: Field	: ChgVchTypeFld		: Skip Forward	: No
+;	Local			: Line	: ChgVchType					:  Local 	: Field	: ChgVchTypeFld		: Background	: RED
+	
+[*Part: Chg Vch Type]
+	
+	Part			: Chg Vch TypeOut
+	Border			: Grey Box
+	Space Left		: 1
+	Space Right		: 1
+	Space Bottom	: 1
+	
+		
+
+	
+[Part:Chg Vch TypeOut]		
+
+        Lines       : Form SubTitle, ChgVchType, ChgVchSubType, ChgAutoCost
+        Local       : Field : Form SubTitle : Info 			: $$LocaleString:"Voucher Type"
+		Local		: Field	: Default		: Style			: Small Bold
+		Local       : Field : Short Prompt 	: Style			: Small   
+		Local       : Field : Medium Prompt : Style			: Small 
+		Options		: ChrrySetValueInUserLogin				: Yes;NOT $$IsCmpOwner 
+		Local		: Field	: ChgAutoCost	: Skip			: No
+[!Part:ChrrySetValueInUserLogin]		
+		Local		: Line	: ChgAutoCost	: Invisible		: Yes
+	;	Local		: Field	: ChgAutoCost	: Background	: REd
+		Local		: Field	: ChgAutoCost	: Set as		: $$SysName:NotApplicable;$ChrVchCostAlloc:VoucherType:#ChgVchTypeFld
+		Local		: Field	: ChgAutoCost	: Set Always	: Yes
+;		Local		: Field	: ChgAutoCost	: Skip			: Yes
+		Local		: Field	: ChgVchTypeFld	: Delete		: Table		 
+		Local		: Field	: ChgVchTypeFld	: Add			: Table		: CherryList of VchTypes 
+		Local		: Field	: ChgVchTypeFld	: Skip Forward	: No
+		Local		: Field	: ChgVchTypeFld	: Delete		: Skip Forward
+		Local		: Field	: ChgVchTypeFld	: Delete		: Skip on
+		Local		: Field	: ChgVchTypeFld	: Delete		: Skip
+  	
+
+[Table:CherryList of VchTypes]
+		Use			: List of VchTypes	
+		Align		: Justified
+		Full Height	: No
+		
+
+;;;=====================================================================
+
+;	
+;[#Form:SalesColor]
+;	Option			: CherrySalesColor				: Not $$IsCmpOwner
+;	
+;[#Form:PurchaseColor]
+;	Option			: CherryPurchaseColor			: Not $$IsCmpOwner	
+;	
+;[!Form:CherrySalesColor]
+;	Background		: StoneWash	
+;[!Form:CherryPurchaseColor]
+;	Background		: Light Grey
+
+
+;;===========================================VCH BILL ALLOCATIONS=======================
+ [#Line: VCHBILL DueDateLine]
+;	Add				: Field			: After			: VCH ShortTitle	: CherryBillSalesManTitle
+[#Line: VCHBILL MainLine]
+;	Add				: Fields		: After			: VCHBILLName 		: CherryBillSalesMan  
+;	Local			: Field			: CherryBillSalesMan  	: Setas		: $$ChrVchLocation:##SVAutoCost:##SVVoucherType:"SalesMan" 
+	Option			: AddVchDocTypeIfDistribution		: ($ChrVchDefDivision:VoucherType:##SVVoucherType = "Distribution" ) Or Not ##InvoicingModeFlag 
+	
+[!Line:AddVchDocTypeIfDistribution]
+	Add				: Field		: After				: VchBillName		: CherryVchBillDocType
+
+[Field:CherryVchBillDocType]
+	Use				: XName Field
+	Width			: 10
+;	Skip			: Yes
+	Set as			: $...VchUdfDocType;$VchUdfDocType:VoucherType:##SVVoucherType
+	Storage			: VchUdfDocType
+	Set Always		: Yes
+	Align			: Centre
+	Table			: CherryDocType, None
+	Show Table		: On First Key
+	Set Always		: Yes
+[Field:CherryBillSalesMan]
+	Use				: XNAmeField
+	Width			: 10
+	Set as			: ""
+	Table			: CherrySalesManTable
+	Show Table		: On Empty
+;	Background		: White
+	Storage			: BilledSalesMan
+;	Set as			: $$ChrVchLocation:##SVAutoCost:##SVVoucherType:"SalesMan" 
+	Set Always		: Yes
+	
+[Table:CherrySalesManTable]
+	Title			: "Sales Man"
+	Type			: CostCentre
+	Belongs To		: Yes
+;	Child Of		: "Sales Man"
+	Fetch			: Name, Category
+	Filter			: FilterBySalesMan,FilterByApplicableCC
+	Align			: Centre
+;	Full Height		: Yes
+	
+	
+	
+[#Part: VCHBILL Title]
+	Option			: AddDocTitleIfDistribution		: ($ChrVchDefDivision:VoucherType:##SVVoucherType = "Distribution" ) Or Not ##InvoicingModeFlag 
+	
+;	Local			: Line			: Default		: Add	: Field		: After	:    VCH ShortTitle 	: CherryBillSalesManTitle	
+
+[!Part:AddDocTitleIfDistribution]
+	Local			: Line			: Default		: Add	: Field		: After	: VCH ShortTitle			: CherryVchBillDocTypeTitle
+[#Line: VCHBILL CTLineOne]
+	
+	Option			: AddDocTitleIfDistribution		: $ChrVchDefDivision:VoucherType:##SVVoucherType = "Distribution"
+;	Add				: Fields		: After			: VCH ShortTitle 	: CherryBillSalesManTitle
+;	Local			: Field			: CherryBillSalesManTitle			: Info	: "Sales Man" 
+	
+[!Line:AddDocTitleIfDistribution]
+	Add				: Field			: After			: VCH ShortTitle	: CherryVchBillDocTypeTitle
+	Local			: Field			: CherryVchBillDocTypeTitle			: Info	: "Doc Type"	
+	
+[Field:CherryVchBillDocTypeTitle]
+	Width			: 10
+	Info			: ""
+	Skip			: Yes
+	Style			: Tiny
+[Field:CherryBillSalesManTitle]
+;	Background		: White
+	Info			: ""
+	Width			: 10
+
+
+
+;===============================LEDGER BILL ALLOCATION================================
+
+ [#Part: LEDALLOC Column]
+	 Local		: Line		: Default			: Add		: Field	: After	: LEDALLOC NameTitle 	: CherryVchBillDocTypeTitle
+	 Local		: Line		: LEDALLOC CTLineOne: Local		: Field	: CherryVchBillDocTypeTitle		: Info	: "Doc Type"
+	 
+;	 Local		: Line		: Default			: Add		: Field	: After	: LEDALLOC NameTitle 	: CherryBillSalesManTitle
+;	 Local		: Line		: LEDALLOC CTLineOne: Local		: Field	: CherryBillSalesManTitle		: Info	: "Sales Man"
+	 
+ [#Line:LEDALLOC MainLine]
+	 
+	Add			: Field		: After				: LEDALLOCName		: CherryBillSalesManLedg
+;	Add			: Field		: After				: LEDALLOCName		: CherryBillSalesMan
+	
+
+[Field:CherryBillSalesManLedg]
+	Use				: XName Field
+	Width			: 10
+	Table			: CherryDocType,None
+	Show Table		: On First Key
+	Storage			: VchUdfDocType
+
+ [#Line: LEDALLOC DueDateLine]
+	 
+;	Add			: Field		: After				: LEDALLOCNameTitle	: CherryBillSalesManTitle
+	 
+
+	 
+;;===============================================================
+
+[#Field: Chg VchSubType]
+	Option		: Chg VchSubTypeIsUser	: If ($$IsCmpOwner) then No Else If ($$IsPurchase:##ChgVchType) then No Else Yes
+;Background: Red
+	
+[!Field:Chg VchSubTypeIsUser]
+	
+	Delete		: Table	
+	Add			: Table	:  ClassTable
+	
+
+
+;;=================================================05-MARCH-2015================================================
+
+[#Form:Chg Vch Type]
+	Add			: Key		: RemoveKeyESC
+	
+[Key:RemoveKeyESC]
+	Key			: ESC
+	Action		: Call		: FunctionDisabled
+	
+[Function:FunctionDisabled]
+	010 : Log	: "Esc Disabled.."
+	
+;;=============================================LEDGER MASTER ALTER======================
+
+[#Part: MST LED Details]
+	Add			: Line		: After: MST Parent : CherryLedMstCostCentre,ChrVch Default Division, ChrApplicableTaxPercent   
+	Local		: Line		: ChrVch Default Division	: Local		: Field	: LongPrompt	: Info	: "Division"
+	
+[Line:CherryLedMstCostCentre]
+	Field		: Long Prompt, CherryLedMstCostCentre
+	Local		: Field	: Long Prompt			: Info	: "Salesman "
+	
+[Field:CherryLedMstCostCentre]
+	Use			: XName Field
+	Table		: CherryLedMstCostCentre,NotApplicable
+	Show Table	: On Empty
+	Storage		: ChrLedgerCostCentre 
+	Set as		: If($$InAlterMode AND $$IsEmpty:$$Value) Then $$SysName:NotApplicable Else $$Value
+	
+[Table:CherryLedMstCostCentre]
+	Title		: "Salesman"
+	Type		: CostCentre
+	Format		: $Name
+	Format		: if ($Parent = $$SysName:Primary)then "" Else $Parent 
+	
+	Fetch		: NAme, Parent, Category
+	Filter		: Filter BySalesMan 
+
+	
+[Line:ChrApplicableTaxPercent]
+	Field		: Long Prompt, ChrApplicableTaxPercent
+	Local		: Field	: Long Prompt 				: Info	: "Applicable Tax %"
+	
+[Field:ChrApplicableTaxPercent]
+	Use			: XNumber Field
+	Storage		: ChrApplicableTaxPer
+	Format		: "Symbol,NoZero,Percentage"
+
+;;-------------------------------- Godown- STock------------------------------------
+
+;[#Field:VCHStockITEM]
+[#Field: VCHACC StockItem]
+	Delete		: Table       : Vch Stock Item Extract, EndofList	;: NOT ##VCHStkCommonTable
+	Delete		: Table       : List of ExtractStockItems, EndOfList   ;  : ##VCHStkCommonTable
+	
+	Add			: Table			: List of ExtractStockItems Cherry 			: $$Line = 1
+	Add			: Table			: List of ExtractStockItems Cherry,EndOfList: $$Line > 1
+
+[Collection:List of ExtractStockItems Cherry]
+	
+	Title				: "List Of Items - " +  ##CustomGodownVar  
+	Use					: ExtractAlias Collection
+	Source Collection	: Stock Item Src
+	Parm Var			: GodownVar			: String		: #ChrVchGodown 
+	Parm Var			: pvsGodownName		: String		: "BTM";#ChrVchGodown 
+;	Collection			: StockItem PartNo With Closing
+	Title       		: $$LocaleString:"List of Items"
+	Fetch       		: Name, VchStkItmBalance
+	Set as		 		: $FirstName
+	Keep Source			: ().
+	Client Only			: Yes
+	Unique				: $StockItemName
+;	Format  			: $VchStkItmBalance   : "Base"
+	Format       		: $Name, 25
+;	Format  			: $VchStkItmBalance   : "Base"	
+	Format				: $StkClBalance,6
+	Unique  			: $FirstName, $Name
+	
+
+	Compute			: StkClBalance		: $$AsSignedQty:$$GodownItemValue:##CustomGodownVar:$Name:$ClosingBalance;If $$IsEmpty:$$AsSignedQty:$$GodownItemValue:##CustomGodownVar:$Name:$ClosingBalance Then 0 Else $$AsSignedQty:$$GodownItemValue:##CustomGodownVar:$Name:$ClosingBalance
+;;----------------------
+
+
+
+[System:Variable]
+	 CustomGodownVar	: ""
+	 CustomStkItemVar	: ""
+	 
+[Variable:CustomGodownVar]
+[Variable:CustomStkItemVar]
+	
+
+;;-------------------------LEDGER BILLL Receivables Doc Type-------------------
+[*Field: BILLFixed]
+
+        Fields 		: BILLDate, BILLRef,BILLRefDoc Type, BILLIsAdvance, BILLParty
+	;	Background	: Green
+		
+[Field:BILLRefDoc Type]
+	
+	Width			: 10
+	Set as			: if ($$IsEmpty:$VchUdfDocType) then $LEdgerEntries[1].VchUdfDocType Else 	$VchUdfDocType
+	Style			: Small Italic
+
+[#Part: BILLTitle]
+;	Background	: White
+;	
+;    [*Part: BILL ScrTitle]
+;	Background	: Red
+;        Line        : BILL MainTitle
+;        Space Bottom: 0.25
+
+[#Line: BILL Column]
+		Local : Line	: BILLCol1	:  Local		: Field	: BILLRefDoc Type		: Info	: "Doc Type"
+		Local : Line	: BILLCol1	:  Local		: Field	: BILLRefDoc Type		: Style	: Tiny
+
+
+;;ll---------------------------
+[System:EVENT]
+	ChangeCurDateAsSystemDate		: Load Company		: Yes		: Call		: ChangeCurDateAsSystemDate
+
+[Function:ChangeCurDateAsSystemDate]
+	
+;	010 : Log		: $$MachineDate
+	020 : Set		: SVCurrentDate		: $$MachineDate
+	030 : Log		: ##SVCurrentDate
+	
+;[#Field:SVCurDate]
+;	
+;	Validate    : $$Value >= ##SVFromDate AND $$Value <= $$MachineDate;##SVToDate
+;	Control		: NoFutureDateAllowed	:  $$Value > $$MachineDate
+;
+; [#Field: Chg SVDate]
+;	Control		: NoFutureDateAllowed	:  $$Value > $$MachineDate
+
+
+;;--------------------------------------------------------
+
+[#Form:Voucher]
+;	Add			: Buttons		: ServiceInvoiceButton
+	
+[Button:ServiceInvoiceButton]
+	Title		: "Service Inv"
+	Key			: ALT + 8
+	Action		: Call		: ServiceInvTrigger
+	Inactive	: $$FilterCount:UserwiseServiceInVColl
+
+[Function:ServiceInvTrigger]
+	010 : Log	: ##SVVoucherType
+	030 : Log	: $$FilterValue:$Name:UserwiseServiceInVColl:1:ChrReturnYes
+	040 : Set	: ChgVchType		: $$VchTypeSales
+	050 : Log	: ##ChgVchType
+	060 : Modify Variables			: Chg Vch TypeCust
+	
+[Report:Chg Vch TypeCust]
+	Use			: Chg Vch Type
+	Local		: Line		: ChgVchType		: Local		: Field		: ChgVchTypeFld		: Delete		: Table		 
+	Local		: Line		: ChgVchType		: Local		: Field		: ChgVchTypeFld		: Add			: Table		: UserwiseServiceInVColl
+	Local		: Line		: ChgVchType		: Local		: Field		: ChgVchTypeFld		: Set as		: $$FilterValue:$Name:UserwiseServiceInVColl:1:ChrReturnYes
+	
+[Form:Chg Vch TypeCust]
+	Use			: Chg Vch Type
+
+
+	
+[Collection:UserwiseServiceInVColl]
+	Title		: "Service Voucher"
+	Type		: VoucherType
+	Fetch		: Name,Parent
+	Filter		: FltByChrryVchTypeMst,FilterVchForServiceVch
+	
+
+;;------------------------------------------------------
+
+    [#Line: VCHACC Info]
+		
+		Add		: Explode		: VCHACC LedNarr			: @@UseLedgerNarration
+		
+  [#Line: VCHACC Info]
+	  Add		: Explode		: VCHACC LedNarr			: @@UseLedgerNarration
+
+ [*Line: VCHACC Details]
+
+        Line        : VCHACC Info
+
+   ;     Option      : VCHACC LedNarrOption  : @@UseLedgerNarration
+
+[Part:VCHACC LedNarr]
+	Line			: VCHACC LedNarr
+	
+    [*Line: VCHACC Details]
+
+        Line        : VCHACC Info
+
+       ; Option      : VCHACC LedNarrOption  : @@UseLedgerNarration
+
+[#Field:AclsAmt]
+;	Delete			: Sub Form		: VCHCST Allocation
+	
+
+
+;VCH Display
+
+;[#Field: DSP VchAccount]
+;	Background		: White
+
+
+[#Field: DSP VchDate]
+	;Background		: White
+	Option			: SeprateByOwnerUser		: If ($$IsCmpOwner) then No Else  if @@ChrParentLevel = "Limited" then Yes Else "No" ;Yes;not $$Allow:Alter:BackDatedVouchers AND ($Date < ($$Date:(@@PayVchLastVchDate) - @@DaysOfBackDatedVch));No;Yes;Not  $$Allow:Alter:$VoucherTypeNAme 
+	
+[!Field:SeprateByOwnerUser]
+	Delete			: Alter
+	Delete			: Display
+	Add				: Display					: VCH Display;Cherry VCH Display ; VCH Display;Cherry VCH Display 
+	
+[#Line: DSP VchDetail]
+	
+	Add				: Field						: VCHMasterID
+	Delete			: Option  					: Alter On Enter			;: Not $$IsCmpOwner
+	Delete			: Option              		: DSP VchToolBarVariableSet	;: Not $$IsCmpOwner
+	Add				: Option					: Alter On Enter			: if($$isCmpOwner) then Yes Else If (@@ChrParentLevel= 'Limited') then No Else Yes ;($$CherryDaysAllowed);$$CherryDaysAllowed;Not $$Allow:Alter:$VoucherTypeNAme; Or $$Allow:Create:$VoucherTypeNAme;@@CherryVchAlterAccess;$$IsCmpOwner AND $$IsVoucher AND NOT $IsDeleted
+	Add				: Option              		: DSP VchToolBarVariableSet	: if($$isCmpOwner) then Yes Else if (@@ChrParentLevel= 'Limited') then No Else Yes ;Yes;$$IsCmpOwner;$$Allow:Alter:$VoucherTypeNAme ;Or $$Allow:Create:$VoucherTypeNAme;$$IsCmpOwner
+
+
+
+[Field:VCHMasterID]
+	Width			: 10
+;	Background		: Red
+	Set as			: $$Sprintf:"ID:%s":$MasterId 
+	Variable		: VoucherID
+	Invisible		: Yes
+
+[#Part : VCH Display Head]
+
+;	Local			: Line	: VCH Display PartyLed	: Local	: Field	: Simple Field	: Background	: Yellow
+	Local			: Line	: VCH Display PartyLed	: Local	: Field	: Simple Field	: Set as		: $AllLedgerEntries[1].LedgerName;"TEST" 
+	Local			: Line	: VCH Display PartyLed	: Local	: Field	: Simple Field	: Invisible		: No
+;[#Part : VCH Display Body]	
+;;	Line			: Empty;Option			: AddLineIfInventoryVch		: Yes;$$IsInventoryVch
+;add:	Background		: Green
+;;	Option			: VCH Display AsInvoice Body	: Yes
+;	
+;;	Local			: Field	: Default		: Background	: Red
+;;	Local			: Field	: Default		: Info			: "TES"
+;	Add : Part	: VCH Display Detail
+;	Local		: Line	: VCH Display InvDetail	: Local	: Field		: VCHDSP AccName	: Cells	: 2
+;	Local		: Line: VCH Display InvDesc GodownInv	: Local		: Field		: Simple Field	: Cells	: @@InvoiceTitlePackCells + 1
+
+
+;	[*Part: VCH Display BodyWObj]
+;	
+;;		Part		: TEST Part;VCH Display Body
+;	    ObjectEx   	: (Voucher,##VoucherID).
+;		Vertical	: Yes
+;		Scroll		: Vertical
+;		Option		: VCH Display AsInvoice Body	: $$IsInventoryVch:##SVVoucherType;$$IsInventoryVch:$VoucherTypeNAme;Yes	
+;		Option		: VCH Display Body Opt			: Not $$IsInventoryVch:##SVVoucherType
+;;		Add : Part	: VCH Display Detail
+;		Local		: Line	: VCH Display InvDetail	: Local	: Field		: VCHDSP AccName	: Cells	: 2
+;		Local		: Line: VCH Display InvDesc GodownInv	: Local		: Field		: Simple Field	: Cells	: @@InvoiceTitlePackCells + 1
+	
+;[#Part: VCH Display HeadWObj]
+;	Background		: Green
+;	
+[#Part:VCH Display VCHType]
+;	Background	: Red
+
+[!Part:VCH Display Body Opt]
+	Part			: VCH Display Body 
+
+[Part:TEST Part]
+	Line			: TEST Part
+[Line:TEST Part]
+	Field			: TEST Part,TestField11
+[Field:TEST Part]
+	Use				: Name Field
+	Background		: Green
+	Set as			: $VoucherTypeNAme + ##SVVoucherType
+			
+[Field:TestField11]
+	Width			: 10
+	Background		: Red
+	Set as			: $$IsInventoryVch:##SVVoucherType
+	
+
+
+[Part:AddLineIfInventoryVch]
+	Add		: Line			: Empty
+	
+
+[Function:CherryDaysAllowed]
+	Variable		: DaysVar					: Number
+;	Parameter		: VchType					: String 
+;	010 : Log		: @@CherryDaysOfBackDatedVch
+;	015 : Log		: $$String:$$MachineDate  + " -- " + $$String:$Date + " -- " + $$string:@@PayVchLastVchDate
+;	020 : Set		: DaysVar					: $$MachineDate - $Date;@@PayVchLastVchDate - $Date;$$MachineDate -  $Date 
+;	025 : Log		: "--"+$$string:##DaysVar
+;	030 : Log		: ##DaysVar <= @@CherryDaysOfBackDatedVch
+;	040 : Log		: @@PayVchLastVchDate
+;	045 : Log		: @@DaysOfBackDatedVch
+	
+;	050 : Return	: ##DaysVar <= @@CherryDaysOfBackDatedVch
+;	030 : Log		: $$Allow:Alter:BackDatedVouchers;$$Allow:Alter:##SVVoucherType
+;	
+	050 : Do If		: (@@CherryDaysOfBackDatedVch = 0): Return	: No
+;	0203 : Log		:" ------ "
+	Log	: Return	: ($Date < ($$Date:(@@PayVchLastVchDate) - @@DaysOfBackDatedVch))
+;	Log	: Return	: ($Date < ($$Date:($$MachineDate) - @@CherryDaysOfBackDatedVch))
+;	
+;	123  : Return	: No 
+
+;[Function:TestFunction]
+;	
+;	010 : Log		: $(Company, ##SVCurrentCompany).Security[1, @@CurrentSecurityLevel].Parent
+
+
+[Report:Cherry VCH Display]
+	Use				: VCH Display 
+	Delete			: Family
+	Add				: Family			: $$Translate:"CHERRY VOUCHER PRINT"
+	Form			: Cherry VCH Display
+[Form:Cherry VCH Display]
+	Use				: VCH Display
+	Delete			: Family
+	Add				: Family			: $$Translate:"CHERRY VOUCHER PRINT"
+	
+
+[#Form:Voucher]
+	Option			: Disable PageUpPAgeDownBtn		: Not ($$IsCmpOwner Or $$CmpUserLevel = "Owner")
+	
+[!Form:Disable PageUpPAgeDownBtn]
+	Add				: Key			: PAgeUpDummy, PAgeDownDummy
+	
+[Key:PAgeUpDummy]
+	Key				: PgUp
+	Action			: Call			: PageUpDownDmy
+[Key:PAgeDownDummy]
+	Key				: PgDn
+	Action			: Call			: PageUpDownDmy
+	
+[Function:PageUpDownDmy]
+	Variable		: SetVar		: Logical
+	000 : Set		: SetVar		: ""
+;	010 : Log		: "Disabled"
+	
+[#Field: VCHBATCH Discount]
+	Invisible		: yES
+	
+[#Field: VCH DiscTitle]
+	Invisible		: yES
+
+[#Form:Voucher]
+	
+	Option			: DisblePrintInCreatemode	: $$InCreateMode 
+	Option			: DisableF2ChangeDateSales	: $$IsSales:##SVVoucherType	AND Not $$IsCmpOwner
+	
+[!Form:DisblePrintInCreatemode]
+	
+	Local			: Button	: Print Button 	: Inactive	: Yes
+	Local			: Button	: Export Button	: Inactive	: Yes
+	Local			: Button	: Upload Button	: Inactive	: Yes
+	Local			: Button	: Mail Button	: Inactive	: Yes
+	
+[!Form:DisableF2ChangeDateSales]
+	
+	Local			: Button	: Change Voucher Date		: Inactive	: Yes	
+
+
+[#Field: VCH Particulars]
+	Width			: 40
+	
+[#Field:VchStockItem]
+	Control			: CherryNoAccessAllowed	: If (@@IsSales) then @ValidateCon Else @ValidateCon;No
+	
+	ValidateCon		: if ($$Value = $$SysName:EndOfList) then No Else If (@ISserviceVch) then Not @IsBelongsToGroupService Else @IsBelongsToGroupService
+	ISserviceVch	: $ISChrServiceVoucher:VoucherType:##SVVoucherType
+	IsBelongsToGroupService		: $$IsBelongsToChrGroup:$$Value;$$IsChildOf;$$Value 
+	
+	On:Focus		: Yes		: Call	: SetChrStkitemNameVar:#VchStockItem:#VchChrLineNo
+	
+[Function:IsBelongsToChrGroup]
+	Parameter		: ItemVar		: String
+	Variable		: GroupName		: String		: "SERVICES"
+	Return			: Logical
+;	010 : Log		: ##ItemVar 
+	020 : Set Object:(StockItem,##ItemVar).
+;	030 : Log		: $$IsChildOf:##GroupName
+	050 : Return	: $$IsChildOf:##GroupName
+	
+
+[#Menu:DisplayMenu]
+	
+	Option			: RemoveKeyItemIFNotAdmin		: Not $$CheckCherryOwner;$$IsCmpOwner 
+	
+[#Menu:GatewayOfTally]
+	Option			: RemoveItemsInNotAdmin			: Not $$CheckCherryOwner
+	
+[!Menu:RemoveItemsInNotAdmin]
+	Delete			: Key Item	: @@LocBanking	 	
+	
+
+	
+[!Menu:RemoveKeyItemIFNotAdmin]
+	Delete			: Key Item	: @@locListofAccounts
+	Delete			: Key Item	: @@locExceptionReports
+	
+[#Menu: Account Statements]
+	Delete			: Option		: AccStmt TallyAudit;AccStmtIntTallyAudit
+	
+
+[*Menu: Account Statements]
+
+	Title		: $$LocaleString:"Statements of Accounts"
+	
+    Key Item    : @@locStatistics           	: S : Display   : Statistics            : NOT $$IsEmpty:$$SelectedCmps 
+    Item    	: BLANK 
+    Key Item    : @@locQuit						: Q
+
+	Option		: AccStmt OutstandingsMenu		: NOT $$IsEmpty:$$SelectedCmps AND $$IsBillWiseOn
+	Option		: AccStmt TCSMenu				: NOT $$IsEmpty:$$SelectedCmps AND $$IsTCSOn
+	Option		: AccStmt InterestCalcMenu		: NOT $$IsEmpty:$$SelectedCmps AND $IsInterestOn:Company:$$CurrentCompany 
+	Option		: AccStmt CostCentresMenu		: NOT $$IsEmpty:$$SelectedCmps
+	Option		: AccStmt JobWorkAnalysisMenu	: NOT $$IsEmpty:$$SelectedCmps AND $IsJobCostingOn:Company:$$CurrentSimpleCompany  AND $$Allow:Display:CostCentreDetails AND $$IsInventoryOn:$$CurrentSimpleCompany
+	Option		: AccStmt TallyAudit			: NOT $$IsEmpty:$$SelectedCmps
+	Option		: AccStmtIntTallyAudit			: NOT ($$IsEmpty:$$SelectedCmps) 
+	
+    Control 	: @@locOutstandings         	: $$IsBillWiseOn AND $$Allow:Display:Outstandings
+    Control 	: @@locTDSOutstandings      	: $$IsTDSOn
+	Control 	: @@locTCSOutstandings      	: $$IsTCSOn
+    Control 	: @@locInterestCalculations 	: $IsInterestOn:Company:$$CurrentCompany
+    Control 	: @@locCostCentres				: $$IsCostCentresOn AND $$Allow:Display:CostCentreDetails
+    Control 	: @@locJobWorkAnalysis			: $$IsCostCentresOn AND $$Allow:Display:CostCentreDetails AND $IsJobCostingOn:Company:$$CurrentSimpleCompany 
+    Control 	: @@locTallyAudit           	: ($$IsCmpOwner OR $$ExplicitAllow:Display:AuditListings) AND $IsTallyAuditOn:Company:$$CurrentSimpleCompany 
+	
+
+[#Key: DSPShowGP]
+	Inactive	: NOT $$Allow:Display:ProfitLossAc Or Not $$CheckCherryOwner;($$IsCmpOwner Or $$CmpUserLevel = "Owner" )
+[#Key: DSPShowConsumption]
+	Inactive	: NOT $$Allow:Display:ProfitLossAc Or Not $$CheckCherryOwner;($$IsCmpOwner Or $$CmpUserLevel = "Owner" )	
+[#Key: SchVIPandL]	
+	
+
+[Function:CherryTEstfunction]
+	
+
+	010 : Log	: @@DisplayApprovalList	
+	020 : Log	: $(Company, ##SVCurrentCompany).CHERRYUSERLIST[1,@@CurrentCherryUserName].UDFApproverName
+	
+	050 : Log	: $$UserApprovalAccess
+;	010 : Log: $$IsEmpty:$(Company, ##SVCurrentCompany).CHERRYUSERLIST[1,@@CurrentCherryUserName].UDFApproverName
+;	Local Formula: ParentVar		: $(Company, ##SVCurrentCompany).Security[1, @@CurrentSecurityLevel].Parent
+;	010 : Log	: $$IsOwner:@ParentVar
+;	020 : Log	: $$CmpUserLevel
+;	030 : Log	: $$IsCmpOwner
+;	040 : Log	: $$IsOwner
+;	050 : Log	: $(Company, ##SVCurrentCompany).Security[1, @@CurrentSecurityLevel].Parent
+
+[Function:UserApprovalAccess]
+	Variable		: UserVar		: String
+	010 : Set		: UserVar		: $(Company, ##SVCurrentCompany).CHERRYUSERLIST[1,@@CurrentCherryUserName].UDFApproverName
+;	020 : Log		: ##UserVar
+	030 : Return	: Not $$IsEmpty:##UserVar
+
+		
+[Function:CheckCherryOwner]
+	Local Formula: ParentVar		: $(Company, ##SVCurrentCompany).Security[1, @@CurrentSecurityLevel].Parent
+		
+	010 : If	: $$IsCmpOwner OR $$IsOwner
+	020 : Return: Yes
+	030 : Else
+	040 : If	: @ParentVar = "Owner" 
+	050 : Return: Yes
+	060 : Else	
+	070 : Return: No
+	080 : End If
+	090 : End If
+	
+
+	
+[#Form:Godown]
+	Local		: Part	: MstParent				: Add	: Line 		: Cherry Allow NegativeStock,CherryRemoveFormSleList	
+	
+	
+[Line:Cherry Allow NegativeStock]
+	Field		: LongPrompt ,Cherry Allow NegativeStock	
+	Local		: Field	: LongPrompt			: Info	: "Allow Negative Stock ?"
+	Space Bottom: 0.5
+[Field:Cherry Allow NegativeStock]
+	Use			: Logical Field
+	Storage		: GodownAllowNegStk
+	Style		: Small Bold
+
+[Line:CherryRemoveFormSleList]
+	Field		: Long Prompt, CherryRemoveFormSleList
+	Local		: Field	: Long Prompt			: Info	: "Hide form list ?"
+
+[Field:CherryRemoveFormSleList]
+	Use			: Logical Field
+	Storage		: HideFromGodownList
+	Style		: Small Bold
+
+[#Part: GTRNDetails]
+	Local		: Line:GTRNDetails:Add	: Fields	: At Beginning	: VchChrLineNo
+
+[#Part: SJ Body]	
+
+	Local		: Line		: SJDetailsA		: Add	: Field	:  At Beginning	: VchChrLineNo
+	Local		: Line		: SJDetailsC		: Add	: Field	: At Beginning	: VchChrLineNo
+
+[#Collection: Pending STaxParty Bills]
+	Sort		: @@default			: $BillDate
+[#Collection: Pending Bills]
+	Sort		: @@default			: $BillDate	
+[#Collection: Pending Bills SRC]
+	Sort		: @@default			: $BillDate
+	
+[Field:VchChrLineNo]
+	Width		: 3
+	Background	: Red
+	Set Always	: Yes
+	SETAS		: $$Line
+	Invisible	: Yes
+
+[#Field: VCH BilledQty]
+	Validate    : if ($$IsEmpty:$$VAlue)then no Else @ValidateCnd
+	ValidateCnd	: NOT $$IsEmpty:$$Value OR $$IsSysName:$TrackingNumber OR ($DiffActualQty AND NOT $$IsStockJrnl:##SVVoucherType)
+
+[#Field:VchBatchBilledqty]	
+	Validate    : if ($$IsEmpty:$$VAlue)then no Else @ValidateCnd
+	ValidateCnd	: NOT $$IsEmpty:$$Value OR $$IsSysName:$TrackingNumber OR ($DiffActualQty AND NOT $$IsStockJrnl:##SVVoucherType)
+	;On:Focus:Yes:Call	: TestCherryFunction:@IsEdited
+	IsEdited	: $$IsFieldEdited
+	Control		: CannotMoreThanOrderQty		: 	$$ValidateChrOrderQuantity:$$Value:@IsEdited:@LineNoOwner:$StockItemName AND @IsOrderMndt ;AND $$InCreateMode
+	LineNoOwner	: #VchChrLineNo
+	IsOrderMndt : $$IsSales:##SVVoucherTYpe AND ($IsOrderMandtrySales:VoucherType:##SVVoucherType Or Not $$IsCherryOrderSelected)
+	
+	ISrateEdited: $$IsFieldEdited:VchStockItem
+	
+		
+	
+	On:Accept:Yes:Field Accept	
+	On:Accept:Yes:Call	: UpdateRateDetails	: @ISrateEdited 
+
+	On:Focus		: Yes		: Call	: SetChrStkitemNameVar:#VchStockItem:#VchChrLineNo
+	
+[Function:SetChrStkitemNameVar]
+	Parameter		: ItemVar		: String
+	Parameter		: LineNo		: Number
+	
+;	L10 : If		: $$IsEmpty:##ChrStkitemNameVar Or $$IsEmpty:##ChrStkitemLineNo
+;	L20 : Set		: ChrStkitemNameVar		: ##ItemVar
+;	L30 : Set		: ChrStkitemLineNo		: ##LineNo
+;	L40 : End If
+;	
+	
+;	a230: Log		: "PrevStkItem1 - " + ##ChrStkitemNameVar +" -- " + ##ItemVar + " -- " + $$string:##LineNo + " -- " + $$String:##ChrStkitemLineNo
+	
+	100 : If		: (##ChrStkitemNameVar = ##ItemVar)AND(##LineNo = ##ChrStkitemLineNo)
+	110 : Set		: ChrStkItemChanged		: No
+	010 : Set		: ChrStkitemNameVar		: ##ItemVar
+	030 : Set		: ChrStkitemLineNo		: ##LineNo
+;	035 : Log		: "Item Not Changed"
+	
+	050 : Else		
+	
+	060 : If		: (##LineNo = ##ChrStkitemLineNo) AND (##ChrStkitemNameVar != ##ItemVar)
+	070 : Set		: ChrStkItemChanged		: Yes
+	080 : Set		: ChrStkitemNameVar		: ##ItemVar
+	090 : Set		: ChrStkitemLineNo		: ##LineNo
+;	095 : Log		: "Item Changed"
+	200 : End If
+	210 : End If
+;	220 : Log		: "IsItem Changed- " + $$string:##ChrStkItemChanged
+;	230: Log		: "PrevStkItem1 - " + ##ChrStkitemNameVar +" -- " + ##ItemVar + " -- " + $$string:##LineNo + " -- " + $$String:##ChrStkitemLineNo
+	
+;	L10 : If		: $$IsEmpty:##ChrStkitemNameVar Or $$IsEmpty:##ChrStkitemLineNo
+	L20 : Set		: ChrStkitemNameVar		: ##ItemVar
+	L30 : Set		: ChrStkitemLineNo		: ##LineNo
+;	L40 : End If
+	
+
+[System:Variables]
+	ChrStkitemNameVar	: ""
+	ChrStkItemChanged	: No
+	ChrStkitemLineNo	: ""
+[Variable:ChrStkitemNameVar]
+[Variable:ChrStkItemChanged]
+	Type	: Logical
+[Variable:ChrStkitemLineNo]
+	Type	: Number
+
+[#Field:VchBatchRate]
+;	Type		: Rate	: Forced
+;	Set Always	: Yes
+;;	Set as		: @@ChrerryItemStdRate
+;;	Delete		: Set By Condition
+	StdRate     : @@ChrerryItemStdRate;@@StdVchRate
+	ByResidualRate : @@ChrerryItemStdRate
+
+[*Field: VCHBATCH ItemRate]
+
+    Use         : Rate Field
+	Type		: Rate		: Forced
+    Invisible   : Yes
+    Skip        : Yes
+    Storage     : Rate
+    Set as      : if $$Line = 1 then $BatchRate else $$Value
+    Set always  : Yes
+	Background	: RED
+	StdRate     : @@ChrerryItemStdRate
+
+[#Field:VchBatchValue]
+	
+[Function:TestFunv]
+
+	Parameter		: Var		: Logical
+	010 : Log		: "IsEdited-"+$$String:##Var		
+	020 : Return	: Yes;##VAr
+
+[Function:UpdateRateDetails	]
+	
+	Parameter	: ISFieldEdited		: Logical
+	Local Formula:Condition	: if ($$IsEmpty:$BatchRate or $$IsEmpty:$Rate ) then Yes  Else If ##ChrStkItemChanged then Yes Else No
+	Local Formula: 	Rate	: @@CherryStdVchRate;If($$IsEmpty:@@ChrItemStdRate) then "0.00" Else $$String:@@ChrItemStdRate	
+	
+	;a201 : Log	: $$IsEdited:$stockItemName 
+	
+	a000 : Log	:  "IsRateEdited--"+  $$string:##ISFieldEdited
+	100 : If	: @Condition;$$InCreateMode 
+	002 : Log	: "------"
+	001 : Set Target
+	005 : If		: $$IsSales:##SVVoucherType Or $$IsSalesOrder:##SVVoucherType or $$IsCreditNote:##SVVoucherTYpe
+	000 : Log		: $Rate
+	010 : Set Value	: RATE			: $$TgtObject:($$AsRate:@Rate)
+	A10 : Set Value	: Batch Rate	: $$TgtObject:($$AsRate:@Rate)
+	012 : Log : $Rate
+	030 : End If
+	200 : End If
+	
+
+[Function:ValidateChrOrderQuantity]
+	Parameter	: Var			: String
+	Parameter	: IsEdited		: Logical
+	Parameter	: LineNoOwner	: Number
+	Parameter	: StkItemName	: String
+	Variable	: IndexVar		: Number
+	Return		: Logical
+	
+	000 : If	: $$ListCount:ItemsCurQtyList > 0
+	010 : Log	: ##Var + " -- " + $$String:##LineNoOwner + " -- " + $$String:##IsEdited + " -- " + ##StkItemName
+	
+	030 : Set	: IndexVar		: $$ListIndex:ItemsCurQtyList:##StkItemName
+	040 : Log	: "Last qty- " + ##ItemsCurQtyList[##IndexVar].Quantity  + " -- " + ##ItemsCurQtyList[##IndexVar].StkItemNAme
+	050 : If	: $$Number:##Var > $$Number:##ItemsCurQtyList[##IndexVar].Quantity 
+	060 : Return: Yes 
+	080 : End If
+	100 : EndIf
+	
+[Function:SetChrCurrentQty]
+	
+;	Parameter	: StkItemNAme		: String
+;	Parameter	: Quantity			: String
+	Variable	: IndexVar			: Number
+	Variable	: LineNo			: Number
+	LocalFormula: IsOrderMndt 		: $$IsSales:##SVVoucherTYpe AND $IsOrderMandtrySales:VoucherType:##SVVoucherType 	
+	
+	200 : If	: ((@IsOrderMndt or Not $$IsCherryOrderSelected)	OR ($$InAlterMode AND Not ($$IsPurchase:##SVVoucherType))) AND $$ListCount:ItemsCurQtyList = 0
+	210 : Walk Collection			: ALLINVENTORYENTRIES
+	220 : Log	: "Coll--"+$StockItemName + " -- " + $$string:$BilledQty
+	230 : Increment	: LineNo
+	010 : List Add	: ItemsCurQtyList	: $StockItemName;##LineNo
+	020 : Set	: IndexVar			: $$ListIndex:ItemsCurQtyList:$StockItemName;##LineNo
+	030 : Set	: ItemsCurQtyList[##IndexVar].StkItemNAme		: $StockItemName
+	040 : Set	: ItemsCurQtyList[##IndexVar].Quantity			: $$string:$BilledQty
+	050 : Set	: ItemsCurQtyList[##IndexVar].LineNo			: ##LineNo
+	
+	060 : Log	: "List--"+##ItemsCurQtyList[IndexVar].StkItemNAme + " -- " + ##ItemsCurQtyList[IndexVar].Quantity
+	
+	300 : End Walk
+	320 : End If
+	
+;[#Field:VchBatchOrder]
+		
+	
+
+[!Field:MakeOrderSelectMndtry]
+
+	Delete		: Table
+	Add			: Table       : VCH So                   : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(NOT @@HasBatchWise AND NOT $$IsMultiGodownOn)
+	Add			: Table       : VCH SoG					 : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(NOT @@HasBatchWise AND $$IsMultiGodownOn)
+	Add			: Table       : VCH SoB					 : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(@@HasBatchWise AND NOT $$IsMultiGodownOn)
+	Add			: Table       : VCH SoBG				 : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(@@HasBatchWise AND $$IsMultiGodownOn)
+
+
+[!Field:MakeOrderSelectMndtryAlter]
+	Delete		: Table
+	Add			: Table       : VCH So,NotApplicable	 : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(NOT @@HasBatchWise AND NOT $$IsMultiGodownOn)
+	Add			: Table       : VCH SoG,NotApplicable	 : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(NOT @@HasBatchWise AND $$IsMultiGodownOn)
+	Add			: Table       : VCH SoB,NotApplicable	 : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(@@HasBatchWise AND NOT $$IsMultiGodownOn)
+	Add			: Table       : VCH SoBG,NotApplicable	 : NOT $$TableObj:VCHBATCHTrack:$$IsTrack AND(@@HasBatchWise AND $$IsMultiGodownOn)
+
+[#Field: VCHSalesOrderTO]
+
+	IsOrderMndt : $IsOrderMandtrySales:VoucherType:##SVVoucherType
+	Option		: MakeOrderSelectMndtry				: $IsOrderMandtrySales:VoucherType:##SVVoucherType AND ($$InCreateMode OR ($$InAlterMode AND Not $$IsEmpty:$OrderNo))
+	Option		: MakeOrderSelectMndtryAlter		: $IsOrderMandtrySales:VoucherType:##SVVoucherType AND $$InAlterMode AND $$isEmpty:$OrderNo
+	
+
+[Function:ItemsBranchRate]
+	
+	Parameter		: ItemVar			: String		: "Cancelled"
+	
+	010 : Log		: ##ItemVar			
+	020 : Log		: $ClosingRate:StockItem:##ItemVar
+	
+	035 : Log		: ##SVvoucherType
+	040 : Log		: @@CherryStdVchRate
+	
+	050 : Log		: $IsItemClosingRate:VoucherType:##SVVoucherType
+	
+	

@@ -1,0 +1,125 @@
+[*Key: BottomToolBarBtn4]
+
+	Key     		: Alt+X
+	Title   		: $$LocaleString:"Cancel"
+	Type    		: BottomToolBarBtn4
+	Action List	: CancelledPartyNameLine, CancelObjects
+	
+[*Key: Cancel Line Object]
+
+    Key     : Alt+X
+ ;  Action  : Cancel Object
+    Action List	: CancelledPartyNameLine, CancelObjects
+    Mode    : Display
+    Inactive: $$ISExploded OR NOT $$CanCancel  
+	
+[*Key: BottomToolBarBtn4_Cancel]
+
+	Key     : Alt+X
+	Title   : $$LocaleString:"Cancel"
+	Type    : BottomToolBarBtn4
+	Inactive: NOT $$InAlterMode
+	
+	Action List	: CancelledPartyName, CancelForm
+	
+[*Key   : Form Cancel]
+
+    Key     : Alt+X
+  	Action List	: CancelledPartyName, CancelForm
+    Mode    : Edit
+    Inactive: NOT $$CanCancel
+
+	
+[Key:CancelForm]
+	Key			: Alt+X  	
+	Action  		: Cancel
+
+		
+[Key:CancelObjects]
+	Key			: Alt+X  	
+	Action  		: Cancel Object
+
+[Key:CancelledPartyName]
+	
+	Key			: ALT+X
+	Action		: Call	: CancelledPartyName
+	
+[Key:CancelledPartyNameLine]
+
+	Key			: ALT+X
+	Action		: Call	: CancelledPartyNameLine
+	
+
+[Function:CancelledPartyNameLine] 
+	Local Formula	: MstID 	: $$Sprintf:"ID:%s":$MAsterId
+	
+;	001 : Log		: @MstID
+;	002 : Log		: $IsCancelled
+	;005 : Log		: " Pty- " + $$TgtObject:$PTYFirstLed
+	
+	
+	
+	009 : Set Object	: (Voucher,@MstID).
+	010 : Set Target
+;	015 : Log			: "Pty--"+$FirstLedger+ " --> " + $$TgtObject:$PTYFirstLed;$AllLedgerEntries[1].LedgerName
+;	020 : Log			: $Date
+;	040 : Log			: $MAsterId
+	045 : If			: Not $IsCancelled
+	050 : Set Value	: PTYFirstLed		: $FirstLedger
+	060 : Alter Target
+;	070 : Log	: $$LastResult
+	080 : End If
+	
+[Function:PtyNameIfCanclled]
+	
+	Parameter			: MstId	: String
+	Local Formula		: MstID 	: $$Sprintf:"ID:%s":##MstId
+	
+;	001 : Log	: "MSG-" + @MstID
+	009 : Set Object	: (Voucher,@MstID).
+	010 : Set Target
+;	015 : Log			: "Pty--"+$FirstLedger+ " --> " + $$TgtObject:$PTYFirstLed
+	016 : Return		: $$TgtObject:$PTYFirstLed 
+	
+	
+	
+
+
+[Function:CancelledPartyName] 
+	
+	Variable	: NameVar		: String
+	
+	000 : Set Object
+;	001 : Log		: $$IsInventoryVch:$VoucherTypeName
+	010 : Set Target
+	
+	020 : If		: $$IsInventoryVch:$VoucherTypeName
+	030 : Set		: NameVar	: $AllInventoryEntries[1].StockItemName
+	040 : Else 
+	050 : If		: Not $$IsEmpty:$AllLedgerEntries[1].LedgerName
+	060 : Set		: NameVar	: $AllLedgerEntries[1].LedgerName
+	070 : End If
+	080 : End If
+	
+;	100 : Log		: "Pty--"+##NameVar  + " --- " + $AllLedgerEntries[1].LedgerName
+	090 : If		: Not $$ISEmpty:##NameVar
+	
+;	120 : Log		: $Date
+	140 : Set Value: PTYFirstLed			: ##NameVar
+	150 : Alter Target
+;	160 : Log		: $$LastResult
+	200 : End If
+	
+	
+
+[*Field: DSP VchCNCAccount]
+
+   Set as  : if $IsCancelled then ($$PtyNameIfCanclled:$MasterId +" (" + $$LocaleString:"cancelled"+ ")") else  +                                             ;;; Voucher List Reports
+			    $$LocaleString:"(DELETED - Audited Voucher)"                                                    ;;; Voucher List Reports
+   Style   : Normal Italic
+   Indent  : 2
+   Color	 : Red
+   
+[System:UDF]
+	
+	PTYFirstLed:String:1501 
