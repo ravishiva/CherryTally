@@ -1,3 +1,4 @@
+; New change
 ;[#Menu:GateWayOfTally]
 ;	Add		: Key Item	: "DEMO" :  D	: Display		: AgewiseReportDemo
 ;	Add		: Item		: "TESt" : Call	: TESTCollection	
